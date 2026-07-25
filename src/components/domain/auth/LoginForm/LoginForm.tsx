@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import type { UseMutationResult } from "@tanstack/react-query";
@@ -8,8 +8,12 @@ import { SocialButton } from "@/components/domain/auth/SocialButton";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import type { ApiResponse } from "@/lib/api/response";
-import type { AuthUser, LoginRequest, SocialProvider } from "@/app/(page)/type/auth";
-import { loginFormStyles, rememberIndicatorVariants } from "./styles";
+import type {
+  AuthUser,
+  LoginRequest,
+  SocialProvider,
+} from "@/app/(page)/type/auth";
+import { loginFormStyles } from "./styles";
 
 export function LoginForm({
   loginMutation,
@@ -29,7 +33,6 @@ export function LoginForm({
   >;
 }) {
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(true);
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -37,7 +40,7 @@ export function LoginForm({
     loginMutation.mutate({
       email: String(form.get("email")),
       password: String(form.get("password")),
-      remember,
+      remember: false,
     });
   }
 
@@ -89,18 +92,6 @@ export function LoginForm({
           </div>
         </label>
         <div className={loginFormStyles.optionsRow}>
-          <button
-            type="button"
-            role="checkbox"
-            aria-checked={remember}
-            onClick={() => setRemember(!remember)}
-            className={loginFormStyles.rememberButton}
-          >
-            <span className={rememberIndicatorVariants({ checked: remember })}>
-              {remember && <Check size={14} strokeWidth={3} />}
-            </span>
-            로그인 상태 유지
-          </button>
           <Link href="/password-reset" className={loginFormStyles.forgotLink}>
             비밀번호 찾기
           </Link>
