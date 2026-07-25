@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 
 export const clusterVisualVariants = cva(
-  "relative h-28 overrlow-hidden bg-gradient-to-br",
+  "overrlow-hidden relative h-28 bg-gradient-to-br",
   {
     variants: {
       tone: {
@@ -26,7 +26,7 @@ export const newsClustersStyles = {
   body: "p-5",
   meta: "mb-2 flex items-center justify-between",
   topic: "text-sm font-extrabold text-brand-600",
-  source: "flex items-center gap-1 text-[11px] text-subtle",
+  source: "flex items-center gap-1 text-[0.6875rem] text-subtle",
   title: "leading-6 font-bold",
   summary: "mt-2 text-sm leading-6 text-muted",
 } as const;

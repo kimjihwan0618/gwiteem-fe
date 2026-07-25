@@ -29,7 +29,7 @@ export function DashboardSkeleton() {
           </Card>
           <Card className={dashboardSkeletonStyles.stockCard}>
             <Skeleton className={dashboardSkeletonStyles.stockTitle} />
-            {[0, 1, 2].map((item) => (
+            {[0, 1, 2, 3, 4].map((item) => (
               <div key={item} className={dashboardSkeletonStyles.stockRow}>
                 <div className={dashboardSkeletonStyles.stockInfo}>
                   <Skeleton className={dashboardSkeletonStyles.stockName} />

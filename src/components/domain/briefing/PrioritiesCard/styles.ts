@@ -7,5 +7,5 @@ export const prioritiesCardStyles = {
   index:
     "grid h-8 w-8 shrink-0 place-items-center rounded-full bg-surface-subtle text-xs font-bold text-muted",
   icon: "grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700",
-  text: "min-w-0 flex-1 text-sm leading-6 font-semibold sm:text-[15px]",
+  text: "min-w-0 flex-1 text-sm leading-6 font-semibold sm:text-[0.9375rem]",
 } as const;

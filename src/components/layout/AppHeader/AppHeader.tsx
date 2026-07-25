@@ -11,12 +11,13 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/domain/auth/AuthProvider";
 import { NotificationMenu } from "../NotificationMenu";
 import { ProfileMenu } from "../ProfileMenu";
 import {
   appHeaderStyles,
+  desktopActiveIndicatorVariants,
   desktopNavItemVariants,
   mobileNavItemVariants,
 } from "./styles";
@@ -30,7 +31,28 @@ const navItems = [
 
 export function AppHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeHref, setActiveHref] = useState("/");
   const { user, isReady } = useAuth();
+  const activeNavIndex = Math.max(
+    navItems.findIndex(({ href }) => href === activeHref),
+    0,
+  );
+  const activeNavPosition =
+    activeNavIndex === 1
+      ? 1
+      : activeNavIndex === 2
+        ? 2
+        : activeNavIndex === 3
+          ? 3
+          : 0;
+
+  useEffect(() => {
+    const syncActiveHref = () =>
+      setActiveHref(window.location.hash ? `/${window.location.hash}` : "/");
+    syncActiveHref();
+    window.addEventListener("hashchange", syncActiveHref);
+    return () => window.removeEventListener("hashchange", syncActiveHref);
+  }, []);
 
   return (
     <>
@@ -47,16 +69,23 @@ export function AppHeader() {
             Gwiteem
           </Link>
           <nav className={appHeaderStyles.desktopNav}>
-            {navItems.map(({ label, href }, index) => (
+            <span
+              aria-hidden="true"
+              className={desktopActiveIndicatorVariants({
+                position: activeNavPosition,
+              })}
+            />
+            {navItems.map(({ label, href }) => (
               <Link
                 key={label}
                 href={href}
-                className={desktopNavItemVariants({ active: index === 0 })}
+                onClick={() => setActiveHref(href)}
+                aria-current={activeHref === href ? "page" : undefined}
+                className={desktopNavItemVariants({
+                  active: activeHref === href,
+                })}
               >
                 {label}
-                {index === 0 && (
-                  <span className={appHeaderStyles.activeIndicator} />
-                )}
               </Link>
             ))}
           </nav>
@@ -101,12 +130,18 @@ export function AppHeader() {
               </button>
             </div>
             <nav className={appHeaderStyles.mobileNav}>
-              {navItems.map(({ label, href, icon: Icon }, index) => (
+              {navItems.map(({ label, href, icon: Icon }) => (
                 <Link
                   key={label}
                   href={href}
-                  onClick={() => setMenuOpen(false)}
-                  className={mobileNavItemVariants({ active: index === 0 })}
+                  onClick={() => {
+                    setActiveHref(href);
+                    setMenuOpen(false);
+                  }}
+                  aria-current={activeHref === href ? "page" : undefined}
+                  className={mobileNavItemVariants({
+                    active: activeHref === href,
+                  })}
                 >
                   <Icon size={19} /> {label}
                 </Link>

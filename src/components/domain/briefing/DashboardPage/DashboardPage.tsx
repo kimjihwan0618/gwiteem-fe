@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, RefreshCw } from "lucide-react";
+import { Info, Play, RefreshCw, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
@@ -10,7 +10,19 @@ import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/ToastProvider";
 import { ApiError } from "@/lib/api/response";
 import type { ApiResponse } from "@/lib/api/response";
-import type { Briefing, FeedbackValue, Priority } from "@/app/(page)/(home)/type/briefing";
+import type {
+  Briefing,
+  Commute,
+  FavoriteCreatePayload,
+  Favorites,
+  FeedbackValue,
+  Priority,
+  Stock,
+  StockDuration,
+  StockMarket,
+  StockSearchResult,
+  Weather,
+} from "@/app/(page)/(home)/type";
 import { BriefingModal, type ModalState } from "../BriefingModal";
 import { DashboardSkeleton } from "../DashboardSkeleton";
 import { FeedbackBar } from "../FeedbackBar";
@@ -19,20 +31,35 @@ import { NewsClusters } from "../NewsClusters";
 import { PrioritiesCard } from "../PrioritiesCard";
 import { ScheduleCard } from "../ScheduleCard";
 import { StockImpactCard } from "../StockImpactCard";
+import { WeatherCard } from "../WeatherCard";
+import { FavoriteAddModal, type FavoriteModalKind } from "./FavoriteAddModal";
 import { dashboardPageStyles } from "./styles";
 
 export function DashboardPage({
   briefing,
   actions,
+  guest,
+  favorites,
 }: {
   briefing: UseQueryResult<Briefing, Error>;
   actions: BriefingActions;
+  guest: GuestTopData | null;
+  favorites: {
+    data?: Favorites;
+    isLoading: boolean;
+    isPending: boolean;
+    onCreate: (payload: FavoriteCreatePayload) => void;
+    searchResults: StockSearchResult[];
+    isSearching: boolean;
+    onSearchStocks: (query: string) => void;
+  } | null;
 }) {
   const { data, isLoading, isError, error, refetch, isFetching } = briefing;
   const toast = useToast();
   const [modal, setModal] = useState<ModalState>(null);
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
   const [saved, setSaved] = useState(false);
+  const [favoriteModal, setFavoriteModal] = useState<FavoriteModalKind>(null);
   const dateLabel = useMemo(
     () =>
       new Intl.DateTimeFormat("ko-KR", {
@@ -111,21 +138,89 @@ export function DashboardPage({
       />
     );
 
+  const displayedStocks = favorites?.data
+    ? favorites.data.stocks.map(mapFavoriteStock)
+    : guest?.stocks.data
+      ? guest.stocks.data.map((stock) =>
+          mapGuestStock(stock, guest.stockMarket),
+        )
+      : data.stocks;
+
   return (
     <div id="top" className={dashboardPageStyles.root}>
       <AppHeader />
       <main className={dashboardPageStyles.main}>
         <StatusBar updatedAt={data.updatedAt} />
-        <div className={dashboardPageStyles.primaryGrid}>
+        <div className={dashboardPageStyles.briefingHeader}>
+          <div className={dashboardPageStyles.briefingIntro}>
+            <h1 className={dashboardPageStyles.greeting}>
+              {data.user.isGuest || !data.user.name
+                ? "좋은 아침이에요"
+                : `좋은 아침, ${data.user.name}님`}
+            </h1>
+            <p className={dashboardPageStyles.date}>{dateLabel}</p>
+          </div>
+          <div
+            className={dashboardPageStyles.briefingActions}
+            aria-label="브리핑 작업"
+          >
+            <Button
+              size="lg"
+              isPending={actions.start.isPending}
+              loadingText="시작하는 중..."
+              onClick={startBriefing}
+            >
+              <Play size={18} fill="currentColor" /> 브리핑 시작
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              isPending={actions.share.isPending}
+              loadingText="공유 기록 중..."
+              onClick={shareBriefing}
+            >
+              <Share2 size={18} /> 공유
+            </Button>
+          </div>
+        </div>
+        <div className={dashboardPageStyles.featureGrid}>
+          <WeatherCard
+            weather={data.weather}
+            guestWeather={guest?.weather.data}
+            isLoading={guest?.weather.isLoading}
+            hasFavorites={
+              favorites ? favorites.data?.weather.length !== 0 : undefined
+            }
+            favoriteLabels={favorites?.data?.weather.map(
+              (item) => item.favorite.label,
+            )}
+            onAddFavorite={
+              favorites ? () => setFavoriteModal("weather") : undefined
+            }
+          />
           <HeroCard
             data={data}
-            dateLabel={dateLabel}
-            onStart={startBriefing}
-            onShare={shareBriefing}
-            startPending={actions.start.isPending}
-            sharePending={actions.share.isPending}
+            guestCommute={guest?.commute}
+            hasCommuteFavorites={
+              favorites ? favorites.data?.commutes.length !== 0 : undefined
+            }
+            favoriteCommuteLabels={favorites?.data?.commutes.map(
+              (item) => item.favorite.label,
+            )}
+            onAddFavorite={setFavoriteModal}
           />
-          <StockImpactCard stocks={data.stocks} />
+          <StockImpactCard
+            stocks={displayedStocks}
+            market={guest?.stockMarket}
+            duration={guest?.stockDuration}
+            onMarketChange={guest?.onStockMarketChange}
+            onDurationChange={guest?.onStockDurationChange}
+            isLoading={guest?.stocks.isLoading}
+            hasFavorites={
+              favorites ? favorites.data?.stocks.length !== 0 : undefined
+            }
+            onAddFavorite={() => setFavoriteModal("stock")}
+          />
         </div>
         <div className={dashboardPageStyles.secondaryGrid}>
           <PrioritiesCard
@@ -167,6 +262,20 @@ export function DashboardPage({
         onClose={() => setModal(null)}
         onChange={setModal}
       />
+      {favorites && (
+        <FavoriteAddModal
+          kind={favoriteModal}
+          isPending={favorites.isPending}
+          searchResults={favorites.searchResults}
+          isSearching={favorites.isSearching}
+          onSearchStocks={favorites.onSearchStocks}
+          onCreate={(payload) => {
+            favorites.onCreate(payload);
+            setFavoriteModal(null);
+          }}
+          onClose={() => setFavoriteModal(null)}
+        />
+      )}
     </div>
   );
 }
@@ -192,6 +301,57 @@ type BriefingActions = {
   >;
   share: UseMutationResult<BriefingActionResponse, Error, string, unknown>;
 };
+
+type GuestTopData = {
+  weather: UseQueryResult<Weather, Error>;
+  stocks: UseQueryResult<Stock[], Error>;
+  stockMarket: StockMarket;
+  stockDuration: StockDuration;
+  onStockMarketChange: (market: StockMarket) => void;
+  onStockDurationChange: (duration: StockDuration) => void;
+  commute: UseMutationResult<
+    ApiResponse<Commute>,
+    Error,
+    { origin_address: string; destination_address: string },
+    unknown
+  >;
+};
+
+function mapGuestStock(
+  stock: Stock,
+  market: StockMarket,
+): Briefing["stocks"][number] {
+  const currency = market === "domestic" ? "KRW" : "USD";
+  return {
+    symbol: stock.symbol,
+    name: stock.name,
+    price: new Intl.NumberFormat(market === "domestic" ? "ko-KR" : "en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: market === "domestic" ? 0 : 2,
+    }).format(stock.price),
+    change: stock.changeRate,
+    issue: stock.relatedIssues[0]?.title ?? "",
+    changeDirection: stock.changeDirection,
+    priceHistory: stock.priceHistory,
+    relatedIssues: stock.relatedIssues,
+  };
+}
+
+function mapFavoriteStock(
+  item: Favorites["stocks"][number],
+): Briefing["stocks"][number] {
+  return {
+    symbol: item.stock.code,
+    name: item.stock.name,
+    price: item.current_price.toLocaleString(),
+    change: item.change_rate,
+    issue: item.related_issue_summary ?? "",
+    changeDirection: item.change_direction,
+    priceHistory: item.sparkline_7d,
+    relatedIssues: [],
+  };
+}
 
 function StatusBar({ updatedAt }: { updatedAt: string }) {
   return (

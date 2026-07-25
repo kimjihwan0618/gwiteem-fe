@@ -5,7 +5,7 @@ export const profileMenuStyles = {
   userName: "hidden text-sm font-bold text-ink-soft md:inline",
   chevron: "hidden text-subtle md:block",
   panel:
-    "absolute top-[54px] right-0 z-50 w-[260px] overflow-hidden rounded-card border border-border bg-white p-2 shadow-2xl",
+    "animate-state-in absolute top-[54px] right-0 z-50 w-[260px] origin-top-right overflow-hidden rounded-card border border-border bg-white p-2 shadow-2xl",
   identity: "flex items-center gap-3 border-b border-border-subtle px-3 py-3",
   identityText: "min-w-0",
   name: "font-bold text-ink",

@@ -2,8 +2,8 @@ export const registerFormStyles = {
   root: "w-full max-w-[420px]",
   intro: "mb-7 text-center",
   title:
-    "text-[32px] font-extrabold tracking-[-0.045em] text-ink sm:text-[36px]",
-  description: "mt-2 text-sm leading-6 text-muted sm:text-[15px]",
+    "text-[2rem] font-extrabold tracking-[-0.045em] text-ink sm:text-[2.25rem]",
+  description: "mt-2 text-sm leading-6 text-muted sm:text-[0.9375rem]",
   form: "space-y-4",
   field: "block",
   label: "mb-2 block text-sm font-bold text-ink-soft",

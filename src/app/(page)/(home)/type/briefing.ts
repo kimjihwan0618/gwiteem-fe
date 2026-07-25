@@ -30,6 +30,11 @@ export const briefingSchema = z.object({
       price: z.string(),
       change: z.number(),
       issue: z.string(),
+      changeDirection: z.enum(["UP", "DOWN", "FLAT"]).optional(),
+      priceHistory: z.array(z.number()).optional(),
+      relatedIssues: z
+        .array(z.object({ id: z.number(), title: z.string() }))
+        .optional(),
     }),
   ),
   schedule: z.array(
@@ -58,7 +63,7 @@ export type FeedbackValue = "up" | "down";
 
 export const demoBriefing: Briefing = {
   updatedAt: "오전 7:28",
-  user: { name: "지환", isGuest: true },
+  user: { name: "", isGuest: true },
   commute: {
     leaveBy: "8:10",
     etaMinutes: 53,

@@ -28,7 +28,7 @@ export const socialMarkVariants = cva(
 
 export const socialButtonStyles = {
   loader: "animate-spin",
-  label: "truncate text-[13px] whitespace-nowrap sm:text-sm",
+  label: "truncate text-[0.8125rem] whitespace-nowrap sm:text-sm",
   brandIcon: "h-4 w-4",
   naverGlyph: "text-sm leading-none font-black",
 } as const;

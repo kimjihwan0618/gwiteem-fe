@@ -1,13 +1,15 @@
 import { cva } from "class-variance-authority";
 
 export const feedbackButtonVariants = cva(
-  "focus-ring rounded-full border p-2.5 disabled:cursor-not-allowed disabled:opacity-60",
+  "focus-ring rounded-full border p-2.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60",
   {
     variants: {
       tone: {
         idle: "border-border",
-        positive: "border-brand-300 bg-brand-50 text-brand-700",
-        negative: "border-danger-200 bg-danger-50 text-danger-700",
+        positive:
+          "animate-state-in border-brand-300 bg-brand-50 text-brand-700",
+        negative:
+          "animate-state-in border-danger-200 bg-danger-50 text-danger-700",
       },
     },
     defaultVariants: { tone: "idle" },

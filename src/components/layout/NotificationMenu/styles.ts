@@ -22,9 +22,9 @@ export const notificationMenuStyles = {
   root: "relative",
   trigger: "focus-ring relative rounded-full p-2.5 hover:bg-canvas",
   count:
-    "absolute top-0.5 right-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-danger-500 px-1 text-[10px] font-bold text-white ring-2 ring-white",
+    "absolute top-0.5 right-0.5 grid h-[1.125rem] min-w-[1.125rem] place-items-center rounded-full bg-danger-500 px-1 text-[0.625rem] font-bold text-white ring-2 ring-white",
   panel:
-    "absolute top-[52px] right-[-56px] z-50 w-[min(370px,calc(100vw-2rem))] overflow-hidden rounded-card border border-border bg-white shadow-2xl sm:right-0",
+    "animate-state-in absolute top-[52px] right-[-56px] z-50 w-[min(370px,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-card border border-border bg-white shadow-2xl sm:right-0",
   header:
     "flex items-center justify-between border-b border-border-subtle px-5 py-4",
   title: "font-bold",
@@ -37,7 +37,7 @@ export const notificationMenuStyles = {
   itemTitle: "flex-1 text-sm leading-5 text-ink",
   unreadDot: "mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-500",
   description: "mt-1 block text-xs leading-5 text-muted",
-  createdAt: "mt-2 block text-[11px] text-subtle",
+  createdAt: "mt-2 block text-[0.6875rem] text-subtle",
   viewAll:
     "focus-ring flex w-full items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold text-brand-600 hover:bg-surface-muted",
 } as const;
