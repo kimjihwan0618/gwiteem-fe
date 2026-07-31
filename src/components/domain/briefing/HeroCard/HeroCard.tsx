@@ -1,8 +1,7 @@
-import { Plus, Search } from "lucide-react";
+import { ArrowRight, Clock3, MapPin, Plus, Search } from "lucide-react";
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
 import type { UseMutationResult } from "@tanstack/react-query";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import type { ApiResponse } from "@/lib/api/response";
@@ -120,17 +119,13 @@ export function HeroCard({
         <Script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" />
       )}
       <CardHeader>
-        <CardTitle>출근길</CardTitle>
-        <div className={heroCardStyles.badges}>
-          <Badge>3분 브리핑</Badge>
-          {data.user.isGuest && <Badge variant="outline">비회원 체험 중</Badge>}
-        </div>
+        <CardTitle>길찾기</CardTitle>
       </CardHeader>
       <div className={heroCardStyles.content}>
         {guestCommute ? (
           <>
             <h2 className={heroCardStyles.guestHeadline}>
-              오늘 출근길을 확인해 보세요
+              원하는 경로를 확인해 보세요
             </h2>
             <form
               className={heroCardStyles.commuteForm}
@@ -162,6 +157,13 @@ export function HeroCard({
                 길찾기
               </Button>
             </form>
+            {guestCommuteData && (
+              <RouteSummary
+                commute={guestCommuteData}
+                originLabel={origin}
+                destinationLabel={destination}
+              />
+            )}
           </>
         ) : (
           <>
@@ -178,7 +180,7 @@ export function HeroCard({
             className={heroCardStyles.favoritePrompt}
             onClick={() => onAddFavorite("commute")}
           >
-            <Plus size={15} /> 즐겨찾기 출근길을 등록하세요
+            <Plus size={15} /> 즐겨찾기 경로를 등록하세요
           </button>
         )}
         {favoriteCommuteLabels && favoriteCommuteLabels.length > 0 && (
@@ -195,8 +197,63 @@ export function HeroCard({
         routePolyline={guestCommuteData?.routePolyline}
         originLabel={origin || undefined}
         destinationLabel={destination || data.commute.destination}
+        isLoading={guestCommute?.isPending}
       />
     </Card>
+  );
+}
+
+function RouteSummary({
+  commute,
+  originLabel,
+  destinationLabel,
+}: {
+  commute: Commute;
+  originLabel: string;
+  destinationLabel: string;
+}) {
+  const resolvedOrigin = commute.origin?.label || originLabel || "출발지";
+  const resolvedDestination =
+    commute.destination?.label || destinationLabel || "도착지";
+
+  return (
+    <section className={heroCardStyles.routeSummary} aria-label="경로 요약">
+      <div className={heroCardStyles.routeSummaryHeader}>
+        <span className={heroCardStyles.durationIcon} aria-hidden="true">
+          <Clock3 size={18} />
+        </span>
+        <div className={heroCardStyles.durationCopy}>
+          <span className={heroCardStyles.durationLabel}>예상 소요시간</span>
+          <strong className={heroCardStyles.durationValue}>
+            {commute.durationMinutes}분
+          </strong>
+        </div>
+        <span className={heroCardStyles.trafficBadge}>실시간 교통 반영</span>
+      </div>
+      <div className={heroCardStyles.routePath}>
+        <MapPin size={14} aria-hidden="true" />
+        <span className={heroCardStyles.routeEndpoint}>{resolvedOrigin}</span>
+        <ArrowRight
+          className={heroCardStyles.routeArrow}
+          size={14}
+          aria-hidden="true"
+        />
+        <span className={heroCardStyles.routeEndpoint}>
+          {resolvedDestination}
+        </span>
+      </div>
+      {commute.delayMinutes !== null && commute.delayMinutes > 0 && (
+        <p className={heroCardStyles.routeNotice}>
+          교통 상황으로 약 {commute.delayMinutes}분 지연
+          {commute.delayReason ? ` · ${commute.delayReason}` : ""}
+        </p>
+      )}
+      {commute.recommendedDepartureTime && (
+        <p className={heroCardStyles.routeNotice}>
+          권장 출발시간 {commute.recommendedDepartureTime}
+        </p>
+      )}
+    </section>
   );
 }
 

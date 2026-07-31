@@ -19,27 +19,46 @@ export default function Home() {
     latitude: number;
     longitude: number;
   } | null>(null);
+  const [isLocationUnavailable, setIsLocationUnavailable] = useState(false);
   const [stockMarket, setStockMarket] = useState<StockMarket>("domestic");
-  const [stockDuration, setStockDuration] = useState<StockDuration>("realtime");
+  const [stockDuration, setStockDuration] = useState<StockDuration>("1d");
   const isGuest = isReady && !user;
   const briefing = useDailyBriefing();
   const actions = useBriefingMutations();
-  const weather = useGuestWeather(coordinates, isGuest);
+  const weather = useGuestWeather(coordinates, isGuest, isLocationUnavailable);
   const stocks = useTopStocks(stockMarket, stockDuration, isGuest);
   const commute = useCommuteCheck();
   const favorites = useFavorites(isReady && Boolean(user));
 
   useEffect(() => {
-    if (!isGuest || !navigator.geolocation) return;
+    if (!isGuest) return;
+    if (!navigator.geolocation) {
+      const unavailableTimer = window.setTimeout(
+        () => setIsLocationUnavailable(true),
+        0,
+      );
+      return () => window.clearTimeout(unavailableTimer);
+    }
+    const locationFallbackTimer = window.setTimeout(
+      () => setIsLocationUnavailable(true),
+      8500,
+    );
     navigator.geolocation.getCurrentPosition(
-      ({ coords }) =>
+      ({ coords }) => {
+        window.clearTimeout(locationFallbackTimer);
         setCoordinates({
           latitude: coords.latitude,
           longitude: coords.longitude,
-        }),
-      () => undefined,
+        });
+        setIsLocationUnavailable(false);
+      },
+      () => {
+        window.clearTimeout(locationFallbackTimer);
+        setIsLocationUnavailable(true);
+      },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 },
     );
+    return () => window.clearTimeout(locationFallbackTimer);
   }, [isGuest]);
 
   return (

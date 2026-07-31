@@ -98,18 +98,23 @@ export function useBriefingMutations() {
 export function useGuestWeather(
   coordinates: { latitude: number; longitude: number } | null,
   isEnabled = true,
+  useDefaultLocation = false,
 ) {
-  const query = coordinates
-    ? `?lat=${coordinates.latitude}&lng=${coordinates.longitude}`
-    : "";
   return useQuery({
     queryKey: queryKeys.guest.weather(
       coordinates?.latitude,
       coordinates?.longitude,
     ),
-    queryFn: () => apiClient(`/api/public/weather${query}`, weatherSchema),
+    queryFn: () => {
+      if (!coordinates) return apiClient("/api/public/weather", weatherSchema);
+      const query = new URLSearchParams({
+        lat: String(coordinates.latitude),
+        lng: String(coordinates.longitude),
+      });
+      return apiClient(`/api/public/weather?${query}`, weatherSchema);
+    },
     select: (response) => response.data,
-    enabled: isEnabled,
+    enabled: isEnabled && (coordinates !== null || useDefaultLocation),
   });
 }
 
@@ -125,7 +130,8 @@ export function useTopStocks(
         `/api/public/stocks?market=${market}&duration=${duration}`,
         stocksSchema,
       ),
-    select: (response) => response.data.slice(0, 5),
+    placeholderData: (previousData) => previousData,
+    select: (response) => response.data.slice(0, 10),
     enabled: isEnabled,
   });
 }

@@ -8,7 +8,7 @@ export const dashboardPageStyles = {
   greeting: "text-2xl font-bold tracking-[-0.04em] text-ink sm:text-3xl",
   date: "mt-1.5 text-sm font-medium text-muted",
   briefingActions: "flex shrink-0 flex-wrap items-center gap-3",
-  featureGrid: "grid items-stretch gap-5 xl:grid-cols-3",
+  featureGrid: "grid items-stretch gap-5 xl:grid-cols-2",
   secondaryGrid:
     "mt-5 grid gap-5 xl:grid-cols-[minmax(0,2.05fr)_minmax(330px,0.95fr)]",
   callout:

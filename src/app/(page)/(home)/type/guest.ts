@@ -1,6 +1,14 @@
 import { z } from "zod";
 
 const numericValue = z.union([z.number(), z.string()]).transform(Number);
+const stockChartPointSchema = z.object({
+  timestamp: z.string(),
+  open: numericValue,
+  high: numericValue,
+  low: numericValue,
+  close: numericValue,
+  volume: numericValue,
+});
 
 export const weatherSchema = z
   .object({
@@ -29,6 +37,15 @@ export const weatherSchema = z
     city: z.string().optional(),
     region: z.string().optional(),
     address: z.string().optional(),
+    hourly: z
+      .array(
+        z.object({
+          time: z.string(),
+          temp_c: numericValue,
+          condition: z.string(),
+        }),
+      )
+      .default([]),
   })
   .transform((value) => {
     const weather =
@@ -55,6 +72,11 @@ export const weatherSchema = z
         value.region ??
         value.address ??
         "현재 위치",
+      hourly: value.hourly.map((forecast) => ({
+        time: forecast.time,
+        temperature: forecast.temp_c,
+        condition: forecast.condition,
+      })),
     };
   });
 
@@ -70,6 +92,7 @@ export const stockSchema = z
     change_percent: numericValue.optional(),
     change_direction: z.enum(["UP", "DOWN", "FLAT"]).optional(),
     price_history_7d: z.array(numericValue).default([]),
+    price_chart: z.array(stockChartPointSchema).default([]),
     related_issues: z
       .array(
         z.object({
@@ -90,6 +113,7 @@ export const stockSchema = z
         value.change_direction ??
         (changeRate > 0 ? "UP" : changeRate < 0 ? "DOWN" : "FLAT"),
       priceHistory: value.price_history_7d,
+      priceChart: value.price_chart,
       relatedIssues: value.related_issues,
     };
   });
@@ -118,6 +142,8 @@ export const commuteSchema = z
     estimated_minutes: numericValue.optional(),
     delay_minutes: numericValue.optional(),
     delay: numericValue.optional(),
+    delay_reason: z.string().nullable().optional(),
+    recommended_departure_time: z.string().nullable().optional(),
     route_polyline: z
       .array(
         z.object({
@@ -137,6 +163,8 @@ export const commuteSchema = z
       value.duration ??
       null,
     delayMinutes: value.delay_minutes ?? value.delay ?? null,
+    delayReason: value.delay_reason ?? null,
+    recommendedDepartureTime: value.recommended_departure_time ?? null,
     message: value.message ?? null,
     origin: value.origin,
     destination: value.destination,
@@ -147,4 +175,4 @@ export type Weather = z.infer<typeof weatherSchema>;
 export type Stock = z.infer<typeof stockSchema>;
 export type Commute = z.infer<typeof commuteSchema>;
 export type StockMarket = "domestic" | "overseas";
-export type StockDuration = "realtime" | "1d" | "1w" | "1mo";
+export type StockDuration = "1d" | "1w" | "1mo" | "1y";

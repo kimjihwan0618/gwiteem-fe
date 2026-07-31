@@ -32,6 +32,18 @@ export const briefingSchema = z.object({
       issue: z.string(),
       changeDirection: z.enum(["UP", "DOWN", "FLAT"]).optional(),
       priceHistory: z.array(z.number()).optional(),
+      priceChart: z
+        .array(
+          z.object({
+            timestamp: z.string(),
+            open: z.number(),
+            high: z.number(),
+            low: z.number(),
+            close: z.number(),
+            volume: z.number(),
+          }),
+        )
+        .optional(),
       relatedIssues: z
         .array(z.object({ id: z.number(), title: z.string() }))
         .optional(),

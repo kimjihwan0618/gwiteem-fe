@@ -13,7 +13,7 @@ export const queryKeys = {
       ["guest", "weather", latitude, longitude] as const,
     stocks: (
       market: "domestic" | "overseas",
-      duration: "realtime" | "1d" | "1w" | "1mo",
+      duration: "1d" | "1w" | "1mo" | "1y",
     ) => ["guest", "stocks", market, duration] as const,
   },
   favorites: {

@@ -1,12 +1,23 @@
 "use client";
 
 import type { Commute } from "@/app/(page)/(home)/type";
-import { MapPin } from "lucide-react";
+import { LoaderCircle, LocateFixed, MapPin } from "lucide-react";
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
 import { routeMapStyles } from "./styles";
 
 type LocationPoint = Commute["origin"];
+type KakaoLatLng = unknown;
+type KakaoMapInstance = {
+  setBounds: (bounds: unknown, padding?: number) => void;
+  panTo: (point: KakaoLatLng) => void;
+  setLevel: (level: number) => void;
+  relayout: () => void;
+};
+type KakaoOverlayInstance = {
+  setMap: (map: KakaoMapInstance | null) => void;
+  setPosition: (position: KakaoLatLng) => void;
+};
 
 declare global {
   interface Window {
@@ -18,12 +29,14 @@ declare global {
         Map: new (
           container: HTMLElement,
           options: { center: unknown; level: number },
-        ) => { setBounds: (bounds: unknown, padding?: number) => void };
-        Marker: new (options: {
-          map: unknown;
+        ) => KakaoMapInstance;
+        CustomOverlay: new (options: {
+          map: KakaoMapInstance;
           position: unknown;
-          title?: string;
-        }) => unknown;
+          content: HTMLElement;
+          yAnchor?: number;
+          zIndex?: number;
+        }) => KakaoOverlayInstance;
         Polyline: new (options: {
           map: unknown;
           path: unknown[];
@@ -47,9 +60,13 @@ export function KakaoMap({
   routePolyline?: Commute["routePolyline"];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<KakaoMapInstance | null>(null);
+  const currentLocationMarkerRef = useRef<KakaoOverlayInstance | null>(null);
   const [sdkStatus, setSdkStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const appKey = process.env.NEXT_PUBLIC_KAKAO_MAP_JS_KEY;
 
   useEffect(() => {
@@ -66,6 +83,8 @@ export function KakaoMap({
             : fallback,
         level: origin && destination ? 7 : 9,
       });
+      mapRef.current = map;
+      currentLocationMarkerRef.current = null;
       const bounds = new maps.LatLngBounds();
       const path = routePolyline.map(
         (point) => new maps.LatLng(point.lat, point.lng),
@@ -85,7 +104,13 @@ export function KakaoMap({
 
       if (origin) {
         const originPosition = new maps.LatLng(origin.lat, origin.lng);
-        new maps.Marker({ map, position: originPosition, title: "출발지" });
+        new maps.CustomOverlay({
+          map,
+          position: originPosition,
+          content: createMapMarker("출발", "origin"),
+          yAnchor: 1.15,
+          zIndex: 3,
+        });
         bounds.extend(originPosition);
       }
       if (destination) {
@@ -93,16 +118,69 @@ export function KakaoMap({
           destination.lat,
           destination.lng,
         );
-        new maps.Marker({
+        new maps.CustomOverlay({
           map,
           position: destinationPosition,
-          title: "도착지",
+          content: createMapMarker("도착", "destination"),
+          yAnchor: 1.15,
+          zIndex: 3,
         });
         bounds.extend(destinationPosition);
       }
       if (path.length > 1 || origin || destination) map.setBounds(bounds, 60);
     });
   }, [destination, origin, routePolyline, sdkStatus]);
+
+  useEffect(() => {
+    const relayoutMap = () => mapRef.current?.relayout();
+    window.addEventListener("resize", relayoutMap);
+    document.addEventListener("fullscreenchange", relayoutMap);
+    return () => {
+      window.removeEventListener("resize", relayoutMap);
+      document.removeEventListener("fullscreenchange", relayoutMap);
+    };
+  }, []);
+
+  function moveToCurrentLocation() {
+    if (!navigator.geolocation || !window.kakao || !mapRef.current) {
+      setLocationError("현재 위치를 확인할 수 없어요.");
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationError(null);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        if (!window.kakao || !mapRef.current) return;
+        const position = new window.kakao.maps.LatLng(
+          coords.latitude,
+          coords.longitude,
+        );
+        const marker = currentLocationMarkerRef.current;
+        if (marker) {
+          marker.setPosition(position);
+          marker.setMap(mapRef.current);
+        } else {
+          currentLocationMarkerRef.current =
+            new window.kakao.maps.CustomOverlay({
+              map: mapRef.current,
+              position,
+              content: createMapMarker("내 위치", "current"),
+              yAnchor: 1.15,
+              zIndex: 4,
+            });
+        }
+        mapRef.current.setLevel(4);
+        mapRef.current.panTo(position);
+        setIsLocating(false);
+      },
+      () => {
+        setIsLocating(false);
+        setLocationError("위치 권한을 허용해 주세요.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
+    );
+  }
 
   if (!appKey)
     return (
@@ -121,6 +199,27 @@ export function KakaoMap({
         onError={() => setSdkStatus("error")}
       />
       <div ref={containerRef} className={routeMapStyles.map} />
+      {sdkStatus === "ready" && (
+        <button
+          type="button"
+          className={routeMapStyles.currentLocationButton}
+          onClick={moveToCurrentLocation}
+          aria-label="내 위치로 이동"
+          title="내 위치로 이동"
+          disabled={isLocating}
+        >
+          {isLocating ? (
+            <LoaderCircle size={19} className={routeMapStyles.locationLoader} />
+          ) : (
+            <LocateFixed size={19} />
+          )}
+        </button>
+      )}
+      {locationError && (
+        <p className={routeMapStyles.locationError} role="status">
+          {locationError}
+        </p>
+      )}
       {sdkStatus === "loading" && (
         <div className={routeMapStyles.mapState}>카카오맵 불러오는 중...</div>
       )}
@@ -132,4 +231,15 @@ export function KakaoMap({
       )}
     </>
   );
+}
+
+function createMapMarker(
+  label: string,
+  kind: "origin" | "destination" | "current",
+) {
+  const marker = document.createElement("div");
+  marker.className = routeMapStyles.marker[kind];
+  marker.textContent = label;
+  marker.setAttribute("aria-label", label);
+  return marker;
 }

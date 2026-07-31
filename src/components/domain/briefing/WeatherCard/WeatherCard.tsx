@@ -1,4 +1,13 @@
-import { MapPin, Plus, Sun } from "lucide-react";
+import {
+  Cloud,
+  CloudDrizzle,
+  CloudRain,
+  CloudSun,
+  MapPin,
+  Plus,
+  Snowflake,
+  Sun,
+} from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import type { Weather } from "@/app/(page)/(home)/type";
 import type { Briefing } from "@/app/(page)/(home)/type/briefing";
@@ -32,7 +41,10 @@ export function WeatherCard({
       </CardHeader>
       <div className={weatherCardStyles.weatherBody}>
         <div className={weatherCardStyles.icon}>
-          <Sun size={24} />
+          <WeatherIcon
+            condition={guestWeather?.condition ?? weather.condition}
+            size={24}
+          />
         </div>
         <div className={weatherCardStyles.content}>
           {isLoading ? (
@@ -48,11 +60,32 @@ export function WeatherCard({
             {isLoading
               ? "위치 확인 중"
               : guestWeather
-                ? `${guestWeather.location} 기준`
-                : "브리핑 설정 지역 기준"}
+                ? guestWeather.location
+                : "브리핑 설정 지역"}
           </p>
         </div>
       </div>
+      {guestWeather && guestWeather.hourly.length > 0 && (
+        <div className={weatherCardStyles.hourly} aria-label="시간대별 날씨">
+          {guestWeather.hourly.slice(0, 8).map((forecast) => (
+            <div key={forecast.time} className={weatherCardStyles.hourlyItem}>
+              <time
+                className={weatherCardStyles.hourlyTime}
+                dateTime={forecast.time}
+              >
+                {formatForecastTime(forecast.time)}
+              </time>
+              <WeatherIcon condition={forecast.condition} size={19} />
+              <strong className={weatherCardStyles.hourlyTemperature}>
+                {Math.round(forecast.temperature)}°
+              </strong>
+              <span className={weatherCardStyles.hourlyCondition}>
+                {forecast.condition}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
       <div className={weatherCardStyles.favorites}>
         {hasFavorites === false && onAddFavorite && (
           <button
@@ -73,4 +106,25 @@ export function WeatherCard({
       </div>
     </Card>
   );
+}
+
+function formatForecastTime(value: string) {
+  const forecastDate = new Date(value);
+  const isNextDay = forecastDate.toDateString() !== new Date().toDateString();
+  const time = new Intl.DateTimeFormat("ko-KR", {
+    hour: "numeric",
+    hour12: true,
+  }).format(forecastDate);
+  return isNextDay ? `내일 ${time}` : time;
+}
+
+function WeatherIcon({ condition, size }: { condition: string; size: number }) {
+  if (condition.includes("눈")) return <Snowflake size={size} />;
+  if (condition.includes("소나기") || condition === "비")
+    return <CloudRain size={size} />;
+  if (condition.includes("빗방울") || condition.includes("강수"))
+    return <CloudDrizzle size={size} />;
+  if (condition.includes("흐림")) return <Cloud size={size} />;
+  if (condition.includes("구름")) return <CloudSun size={size} />;
+  return <Sun size={size} />;
 }

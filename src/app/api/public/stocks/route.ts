@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       { status: 400 },
     );
   }
-  if (!duration || !["realtime", "1d", "1w", "1mo"].includes(duration)) {
+  if (!duration || !["1d", "1w", "1mo", "1y"].includes(duration)) {
     return NextResponse.json(
       {
         success: false,

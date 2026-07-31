@@ -187,7 +187,7 @@ export function DashboardPage({
           <WeatherCard
             weather={data.weather}
             guestWeather={guest?.weather.data}
-            isLoading={guest?.weather.isLoading}
+            isLoading={guest?.weather.isPending}
             hasFavorites={
               favorites ? favorites.data?.weather.length !== 0 : undefined
             }
@@ -215,7 +215,7 @@ export function DashboardPage({
             duration={guest?.stockDuration}
             onMarketChange={guest?.onStockMarketChange}
             onDurationChange={guest?.onStockDurationChange}
-            isLoading={guest?.stocks.isLoading}
+            isLoading={guest?.stocks.isFetching}
             hasFavorites={
               favorites ? favorites.data?.stocks.length !== 0 : undefined
             }
@@ -334,6 +334,7 @@ function mapGuestStock(
     issue: stock.relatedIssues[0]?.title ?? "",
     changeDirection: stock.changeDirection,
     priceHistory: stock.priceHistory,
+    priceChart: stock.priceChart,
     relatedIssues: stock.relatedIssues,
   };
 }
