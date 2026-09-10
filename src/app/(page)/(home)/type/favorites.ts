@@ -11,6 +11,15 @@ const weatherFavoriteSchema = z.object({
     temp_c: z.number(),
     condition: z.string(),
   }),
+  hourly: z
+    .array(
+      z.object({
+        time: z.string(),
+        temp_c: z.number(),
+        condition: z.string(),
+      }),
+    )
+    .default([]),
 });
 
 const stockFavoriteSchema = z.object({

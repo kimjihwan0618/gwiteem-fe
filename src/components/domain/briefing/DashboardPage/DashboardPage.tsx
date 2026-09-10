@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, Play, RefreshCw, Share2 } from "lucide-react";
+import { Info, Play, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
@@ -140,24 +140,19 @@ export function DashboardPage({
 
   const displayedStocks = favorites?.data
     ? favorites.data.stocks.map(mapFavoriteStock)
-    : guest?.stocks.data
-      ? guest.stocks.data.map((stock) =>
+    : guest
+      ? (guest.stocks.data?.map((stock) =>
           mapGuestStock(stock, guest.stockMarket),
-        )
+        ) ?? [])
       : data.stocks;
 
   return (
     <div id="top" className={dashboardPageStyles.root}>
       <AppHeader />
       <main className={dashboardPageStyles.main}>
-        <StatusBar updatedAt={data.updatedAt} />
         <div className={dashboardPageStyles.briefingHeader}>
           <div className={dashboardPageStyles.briefingIntro}>
-            <h1 className={dashboardPageStyles.greeting}>
-              {data.user.isGuest || !data.user.name
-                ? "좋은 아침이에요"
-                : `좋은 아침, ${data.user.name}님`}
-            </h1>
+            <h1 className={dashboardPageStyles.greeting}>오늘의 브리핑</h1>
             <p className={dashboardPageStyles.date}>{dateLabel}</p>
           </div>
           <div
@@ -216,6 +211,7 @@ export function DashboardPage({
             onMarketChange={guest?.onStockMarketChange}
             onDurationChange={guest?.onStockDurationChange}
             isLoading={guest?.stocks.isFetching}
+            isError={guest?.stocks.isError}
             hasFavorites={
               favorites ? favorites.data?.stocks.length !== 0 : undefined
             }
@@ -352,19 +348,6 @@ function mapFavoriteStock(
     priceHistory: item.sparkline_7d,
     relatedIssues: [],
   };
-}
-
-function StatusBar({ updatedAt }: { updatedAt: string }) {
-  return (
-    <div className={dashboardPageStyles.statusBar}>
-      <div className={dashboardPageStyles.updatedAt}>
-        <RefreshCw size={14} /> {updatedAt} 업데이트
-      </div>
-      <div className={dashboardPageStyles.liveStatus}>
-        <span className={dashboardPageStyles.liveDot} /> 실시간 정보 정상
-      </div>
-    </div>
-  );
 }
 
 function PageState({

@@ -4,6 +4,7 @@ import type { Commute } from "@/app/(page)/(home)/type";
 import { LoaderCircle, LocateFixed, MapPin } from "lucide-react";
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { routeMapStyles } from "./styles";
 
 type LocationPoint = Commute["origin"];
@@ -221,7 +222,17 @@ export function KakaoMap({
         </p>
       )}
       {sdkStatus === "loading" && (
-        <div className={routeMapStyles.mapState}>카카오맵 불러오는 중...</div>
+        <div
+          className={routeMapStyles.mapState}
+          role="status"
+          aria-label="카카오맵 불러오는 중"
+        >
+          <Skeleton className={routeMapStyles.mapSkeleton} />
+          <div className={routeMapStyles.mapSkeletonBadge}>
+            <Skeleton className={routeMapStyles.mapSkeletonTitle} />
+            <Skeleton className={routeMapStyles.mapSkeletonLine} />
+          </div>
+        </div>
       )}
       {sdkStatus === "error" && (
         <div className={routeMapStyles.mapError}>

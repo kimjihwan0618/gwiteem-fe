@@ -8,37 +8,35 @@ export function DashboardSkeleton() {
     <div className={dashboardSkeletonStyles.root}>
       <AppHeader />
       <main className={dashboardSkeletonStyles.main}>
-        <div className={dashboardSkeletonStyles.status}>
-          <Skeleton className={dashboardSkeletonStyles.statusText} />
-          <Skeleton className={dashboardSkeletonStyles.statusBadge} />
+        <div className={dashboardSkeletonStyles.briefingHeader}>
+          <div className={dashboardSkeletonStyles.briefingIntro}>
+            <Skeleton className={dashboardSkeletonStyles.greeting} />
+            <Skeleton className={dashboardSkeletonStyles.date} />
+          </div>
+          <div className={dashboardSkeletonStyles.actions}>
+            <Skeleton className={dashboardSkeletonStyles.primaryAction} />
+            <Skeleton className={dashboardSkeletonStyles.secondaryAction} />
+          </div>
         </div>
-        <div className={dashboardSkeletonStyles.primaryGrid}>
-          <Card className={dashboardSkeletonStyles.hero}>
-            <div className={dashboardSkeletonStyles.heroContent}>
-              <Skeleton className={dashboardSkeletonStyles.badge} />
-              <Skeleton className={dashboardSkeletonStyles.greeting} />
-              <Skeleton className={dashboardSkeletonStyles.date} />
-              <Skeleton className={dashboardSkeletonStyles.headline} />
-              <Skeleton className={dashboardSkeletonStyles.description} />
-              <div className={dashboardSkeletonStyles.actions}>
-                <Skeleton className={dashboardSkeletonStyles.primaryAction} />
-                <Skeleton className={dashboardSkeletonStyles.secondaryAction} />
+        <div className={dashboardSkeletonStyles.featureGrid}>
+          {[0, 1, 2].map((card) => (
+            <Card key={card} className={dashboardSkeletonStyles.featureCard}>
+              <div className={dashboardSkeletonStyles.cardHeader}>
+                <Skeleton className={dashboardSkeletonStyles.cardIcon} />
+                <Skeleton className={dashboardSkeletonStyles.cardTitle} />
+                <Skeleton className={dashboardSkeletonStyles.cardAction} />
               </div>
-            </div>
-            <Skeleton className={dashboardSkeletonStyles.map} />
-          </Card>
-          <Card className={dashboardSkeletonStyles.stockCard}>
-            <Skeleton className={dashboardSkeletonStyles.stockTitle} />
-            {[0, 1, 2, 3, 4].map((item) => (
-              <div key={item} className={dashboardSkeletonStyles.stockRow}>
-                <div className={dashboardSkeletonStyles.stockInfo}>
-                  <Skeleton className={dashboardSkeletonStyles.stockName} />
-                  <Skeleton className={dashboardSkeletonStyles.stockIssue} />
-                </div>
-                <Skeleton className={dashboardSkeletonStyles.stockValue} />
+              <Skeleton className={dashboardSkeletonStyles.cardMetric} />
+              <div className={dashboardSkeletonStyles.cardRows}>
+                {[0, 1, 2].map((row) => (
+                  <Skeleton
+                    key={row}
+                    className={dashboardSkeletonStyles.cardRow}
+                  />
+                ))}
               </div>
-            ))}
-          </Card>
+            </Card>
+          ))}
         </div>
         <div className={dashboardSkeletonStyles.secondaryGrid}>
           <Card className={dashboardSkeletonStyles.priorityCard}>
@@ -60,6 +58,17 @@ export function DashboardSkeleton() {
             ))}
           </Card>
         </div>
+        <Card className={dashboardSkeletonStyles.newsCard}>
+          <Skeleton className={dashboardSkeletonStyles.newsTitle} />
+          <div className={dashboardSkeletonStyles.newsGrid}>
+            {[0, 1, 2].map((item) => (
+              <Skeleton
+                key={item}
+                className={dashboardSkeletonStyles.newsItem}
+              />
+            ))}
+          </div>
+        </Card>
       </main>
     </div>
   );

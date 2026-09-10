@@ -14,7 +14,11 @@ export const favoritesCardStyles = {
   form: "animate-fade-up grid gap-2 rounded-xl bg-white p-3",
   empty:
     "focus-ring flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong px-3 py-6 text-sm font-semibold text-muted hover:bg-white",
-  loading: "animate-pulse py-6 text-center text-sm text-muted",
+  skeletonList: "space-y-2",
+  skeletonItem:
+    "flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2.5",
+  skeletonLabel: "h-4 w-24",
+  skeletonValue: "h-4 w-16",
 } as const;
 
 export const favoriteModalStyles = {

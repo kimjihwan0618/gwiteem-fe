@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Skeleton } from "@/components/ui/Skeleton";
 import type {
   FavoriteCreatePayload,
   Favorites,
@@ -228,7 +229,18 @@ function FavoriteSection({
       </div>
       <div className={favoritesCardStyles.list}>
         {isLoading ? (
-          <p className={favoritesCardStyles.loading}>불러오는 중...</p>
+          <div
+            className={favoritesCardStyles.skeletonList}
+            role="status"
+            aria-label={`${title} 즐겨찾기 불러오는 중`}
+          >
+            {Array.from({ length: 3 }, (_, index) => (
+              <div key={index} className={favoritesCardStyles.skeletonItem}>
+                <Skeleton className={favoritesCardStyles.skeletonLabel} />
+                <Skeleton className={favoritesCardStyles.skeletonValue} />
+              </div>
+            ))}
+          </div>
         ) : isEmpty ? (
           <button
             type="button"

@@ -2,20 +2,21 @@
 
 import {
   ArrowLeft,
+  ChartNoAxesCombined,
   ChevronRight,
   Info,
-  LoaderCircle,
   Plus,
 } from "lucide-react";
 import { useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Skeleton } from "@/components/ui/Skeleton";
 import type { Briefing } from "@/app/(page)/(home)/type/briefing";
 import type { StockDuration, StockMarket } from "@/app/(page)/(home)/type";
+import { DetailModal } from "../DetailModal";
 import {
   stockChangeVariants,
-  stockDurationIndicatorVariants,
+  stockFavoriteChipVariants,
   stockImpactCardStyles,
-  stockTabIndicatorVariants,
 } from "./styles";
 
 const durationOptions = [
@@ -32,8 +33,12 @@ export function StockImpactCard({
   onMarketChange,
   onDurationChange,
   isLoading,
+  isError,
   hasFavorites,
   onAddFavorite,
+  favoriteOptions,
+  selectedFavoriteId,
+  onFavoriteSelect,
 }: {
   stocks: Briefing["stocks"];
   market?: StockMarket;
@@ -41,24 +46,120 @@ export function StockImpactCard({
   onMarketChange?: (market: StockMarket) => void;
   onDurationChange?: (duration: StockDuration) => void;
   isLoading?: boolean;
+  isError?: boolean;
   hasFavorites?: boolean;
   onAddFavorite?: () => void;
+  favoriteOptions?: Array<{ id: number; label: string }>;
+  selectedFavoriteId?: number;
+  onFavoriteSelect?: (id: number) => void;
 }) {
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const selectedStock =
     stocks.find(({ symbol }) => symbol === selectedSymbol) ?? null;
 
   return (
     <Card id="stocks" className={stockImpactCardStyles.root}>
       <CardHeader className={stockImpactCardStyles.header}>
-        <CardTitle>{market ? "주식 종목 Top10" : "관심 종목 영향"}</CardTitle>
-        {market && onMarketChange ? (
+        <div className={stockImpactCardStyles.titleGroup}>
+          <span className={stockImpactCardStyles.titleIcon} aria-hidden="true">
+            <ChartNoAxesCombined size={19} />
+          </span>
+          <CardTitle className={stockImpactCardStyles.title}>
+            {market ? "시장 요약" : "관심 종목 영향"}
+          </CardTitle>
+        </div>
+        {market ? (
+          <button
+            type="button"
+            className={stockImpactCardStyles.expandButton}
+            aria-haspopup="dialog"
+            onClick={() => {
+              setSelectedSymbol(null);
+              setIsModalOpen(true);
+            }}
+          >
+            Top10 전체 보기
+            <ChevronRight size={16} />
+          </button>
+        ) : (
+          <button
+            aria-label="관심 종목 전체 보기"
+            className={stockImpactCardStyles.moreButton}
+          >
+            <ChevronRight size={19} />
+          </button>
+        )}
+      </CardHeader>
+      <div className={stockImpactCardStyles.body}>
+        <div className={stockImpactCardStyles.list}>
+          {hasFavorites === false && onAddFavorite ? (
+            <button
+              type="button"
+              className={stockImpactCardStyles.emptyFavorite}
+              onClick={onAddFavorite}
+            >
+              <Plus size={17} />
+              관심 종목을 등록하세요
+            </button>
+          ) : isLoading ? (
+            <StockRowsSkeleton count={3} />
+          ) : isError ? (
+            <div className={stockImpactCardStyles.error} role="alert">
+              <Info size={17} />
+              <span>주식 데이터를 불러오지 못했습니다.</span>
+            </div>
+          ) : stocks.length === 0 ? (
+            <div className={stockImpactCardStyles.empty}>
+              표시할 주식 데이터가 없습니다.
+            </div>
+          ) : (
+            <>
+              {stocks.slice(0, 3).map((stock, index) => (
+                <div key={stock.symbol}>
+                  <StockRow
+                    stock={stock}
+                    rank={index + 1}
+                    onSelect={() => {
+                      setSelectedSymbol(stock.symbol);
+                      setIsModalOpen(true);
+                    }}
+                  />
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      </div>
+      {favoriteOptions && favoriteOptions.length > 0 && (
+        <div className={stockImpactCardStyles.favoriteList}>
+          {favoriteOptions.map((favorite) => (
+            <button
+              key={favorite.id}
+              type="button"
+              className={stockFavoriteChipVariants({
+                isActive: favorite.id === selectedFavoriteId,
+              })}
+              aria-pressed={favorite.id === selectedFavoriteId}
+              onClick={() => onFavoriteSelect?.(favorite.id)}
+            >
+              {favorite.label}
+            </button>
+          ))}
+        </div>
+      )}
+      <DetailModal
+        title="주식 종목 Top10"
+        icon={<ChartNoAxesCombined size={19} />}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setSelectedSymbol(null);
+          setIsModalOpen(false);
+        }}
+      >
+        {market && onMarketChange && (
           <div className={stockImpactCardStyles.controls}>
             <div className={stockImpactCardStyles.tabs}>
-              <span
-                aria-hidden="true"
-                className={stockTabIndicatorVariants({ market })}
-              />
               {(["domestic", "overseas"] as const).map((value) => (
                 <button
                   key={value}
@@ -68,6 +169,7 @@ export function StockImpactCard({
                       ? stockImpactCardStyles.activeTab
                       : stockImpactCardStyles.tab
                   }
+                  aria-pressed={market === value}
                   disabled={isLoading}
                   onClick={() => {
                     if (market === value) return;
@@ -81,10 +183,6 @@ export function StockImpactCard({
             </div>
             {duration && onDurationChange && (
               <div className={stockImpactCardStyles.durationTabs}>
-                <span
-                  aria-hidden="true"
-                  className={stockDurationIndicatorVariants({ duration })}
-                />
                 {durationOptions.map((option) => (
                   <button
                     key={option.value}
@@ -94,9 +192,11 @@ export function StockImpactCard({
                         ? stockImpactCardStyles.activeDurationTab
                         : stockImpactCardStyles.durationTab
                     }
+                    aria-pressed={duration === option.value}
                     disabled={isLoading}
                     onClick={() => {
                       if (duration === option.value) return;
+                      setSelectedSymbol(null);
                       onDurationChange(option.value);
                     }}
                   >
@@ -106,58 +206,8 @@ export function StockImpactCard({
               </div>
             )}
           </div>
-        ) : (
-          <button
-            aria-label="관심 종목 전체 보기"
-            className={stockImpactCardStyles.moreButton}
-          >
-            <ChevronRight size={19} />
-          </button>
         )}
-      </CardHeader>
-      <div className={stockImpactCardStyles.body}>
-        {!selectedStock && (
-          <>
-            <div
-              key={`${market ?? "watchlist"}-${duration ?? "default"}`}
-              className={stockImpactCardStyles.list}
-            >
-              {hasFavorites === false && onAddFavorite ? (
-                <button
-                  type="button"
-                  className={stockImpactCardStyles.emptyFavorite}
-                  onClick={onAddFavorite}
-                >
-                  <Plus size={17} />
-                  관심 종목을 등록하세요
-                </button>
-              ) : isLoading ? (
-                <div className={stockImpactCardStyles.loading}>
-                  <LoaderCircle
-                    size={18}
-                    className={stockImpactCardStyles.loader}
-                  />
-                  <span className={stockImpactCardStyles.loadingLabel}>
-                    주식 데이터 로딩 중
-                  </span>
-                </div>
-              ) : (
-                <>
-                  {stocks.map((stock, index) => (
-                    <div key={stock.symbol}>
-                      <StockRow
-                        stock={stock}
-                        rank={index + 1}
-                        onSelect={() => setSelectedSymbol(stock.symbol)}
-                      />
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-          </>
-        )}
-        {selectedStock && (
+        {selectedStock ? (
           <StockChart
             id={`stock-chart-${selectedStock.symbol}`}
             stock={selectedStock}
@@ -169,24 +219,70 @@ export function StockImpactCard({
             duration={duration ?? "1d"}
             onBack={() => setSelectedSymbol(null)}
           />
-        )}
-        {isLoading && (
-          <div
-            className={stockImpactCardStyles.loadingOverlay}
-            role="status"
-            aria-live="polite"
-          >
-            <LoaderCircle size={20} className={stockImpactCardStyles.loader} />
-            <span className={stockImpactCardStyles.loadingLabel}>
-              주식 데이터 로딩 중
-            </span>
+        ) : isLoading ? (
+          <StockRowsSkeleton count={8} isModal />
+        ) : isError ? (
+          <div className={stockImpactCardStyles.modalError} role="alert">
+            <Info size={18} />
+            <span>주식 데이터를 불러오지 못했습니다.</span>
+          </div>
+        ) : stocks.length === 0 ? (
+          <div className={stockImpactCardStyles.modalState}>
+            선택한 조건에 표시할 주식 데이터가 없습니다.
+          </div>
+        ) : (
+          <div className={stockImpactCardStyles.modalList}>
+            {stocks.map((stock, index) => (
+              <div key={stock.symbol}>
+                <StockRow
+                  stock={stock}
+                  rank={index + 1}
+                  onSelect={() => setSelectedSymbol(stock.symbol)}
+                />
+              </div>
+            ))}
           </div>
         )}
-      </div>
-      <p className={stockImpactCardStyles.disclaimer}>
-        <Info size={13} /> 시세 정보이며 투자 권유가 아닙니다.
-      </p>
+        <p className={stockImpactCardStyles.disclaimer}>
+          <Info size={13} /> 시세 정보이며 투자 권유가 아닙니다.
+        </p>
+      </DetailModal>
     </Card>
+  );
+}
+
+function StockRowsSkeleton({
+  count,
+  isModal = false,
+}: {
+  count: number;
+  isModal?: boolean;
+}) {
+  return (
+    <div
+      className={
+        isModal
+          ? stockImpactCardStyles.modalSkeletonList
+          : stockImpactCardStyles.skeletonList
+      }
+      role="status"
+      aria-label="주식 데이터 불러오는 중"
+    >
+      {Array.from({ length: count }, (_, index) => (
+        <div key={index} className={stockImpactCardStyles.skeletonRow}>
+          <Skeleton className={stockImpactCardStyles.rankSkeleton} />
+          <div className={stockImpactCardStyles.identitySkeleton}>
+            <Skeleton className={stockImpactCardStyles.nameSkeleton} />
+            <Skeleton className={stockImpactCardStyles.symbolSkeleton} />
+          </div>
+          <Skeleton className={stockImpactCardStyles.chartSkeleton} />
+          <div className={stockImpactCardStyles.priceSkeletonGroup}>
+            <Skeleton className={stockImpactCardStyles.priceSkeleton} />
+            <Skeleton className={stockImpactCardStyles.changeSkeleton} />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 

@@ -1,14 +1,9 @@
 "use client";
 
-import {
-  BriefcaseBusiness,
-  Expand,
-  House,
-  LoaderCircle,
-  Minimize2,
-} from "lucide-react";
+import { BriefcaseBusiness, Expand, House, Minimize2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Commute } from "@/app/(page)/(home)/type";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { KakaoMap } from "./KakaoMap";
 import { routeMapStyles } from "./styles";
 
@@ -82,7 +77,11 @@ export function RouteMap({
           role="status"
           aria-live="polite"
         >
-          <LoaderCircle size={24} className={routeMapStyles.routeLoadingIcon} />
+          <Skeleton className={routeMapStyles.routeLoadingSkeleton} />
+          <div className={routeMapStyles.routeLoadingDetails}>
+            <Skeleton className={routeMapStyles.routeLoadingTitle} />
+            <Skeleton className={routeMapStyles.routeLoadingLine} />
+          </div>
           <span className={routeMapStyles.routeLoadingLabel}>
             경로를 불러오는 중
           </span>

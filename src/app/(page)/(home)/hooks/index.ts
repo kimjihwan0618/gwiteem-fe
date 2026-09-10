@@ -130,7 +130,6 @@ export function useTopStocks(
         `/api/public/stocks?market=${market}&duration=${duration}`,
         stocksSchema,
       ),
-    placeholderData: (previousData) => previousData,
     select: (response) => response.data.slice(0, 10),
     enabled: isEnabled,
   });
