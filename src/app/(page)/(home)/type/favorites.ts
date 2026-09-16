@@ -85,3 +85,10 @@ export type FavoriteCreatePayload =
       originAddress: string;
       destinationAddress: string;
     };
+
+export type CommuteFavoriteUpdatePayload = {
+  id: number;
+  label: string;
+  originAddress: string;
+  destinationAddress: string;
+};

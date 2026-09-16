@@ -26,7 +26,7 @@ export default function Home() {
   const briefing = useDailyBriefing();
   const actions = useBriefingMutations();
   const weather = useGuestWeather(coordinates, isGuest, isLocationUnavailable);
-  const stocks = useTopStocks(stockMarket, stockDuration, isGuest);
+  const stocks = useTopStocks(stockMarket, stockDuration, isReady);
   const commute = useCommuteCheck();
   const favorites = useFavorites(isReady && Boolean(user));
 
@@ -72,9 +72,18 @@ export default function Home() {
               isLoading: favorites.query.isLoading,
               isPending: favorites.create.isPending,
               onCreate: favorites.create.mutate,
+              onUpdateCommute: favorites.updateCommute.mutate,
+              onDeleteCommute: favorites.deleteCommute.mutate,
+              isCommuteMutationPending:
+                favorites.updateCommute.isPending ||
+                favorites.deleteCommute.isPending,
               searchResults: favorites.searchStocks.data?.data ?? [],
               isSearching: favorites.searchStocks.isPending,
               onSearchStocks: favorites.searchStocks.mutate,
+              topStocks: stocks.data ?? [],
+              isTopStocksLoading: stocks.isFetching,
+              stockMarket,
+              onStockMarketChange: setStockMarket,
             }
           : null
       }

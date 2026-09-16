@@ -39,6 +39,7 @@ export function StockImpactCard({
   favoriteOptions,
   selectedFavoriteId,
   onFavoriteSelect,
+  isFavoriteList,
 }: {
   stocks: Briefing["stocks"];
   market?: StockMarket;
@@ -49,9 +50,10 @@ export function StockImpactCard({
   isError?: boolean;
   hasFavorites?: boolean;
   onAddFavorite?: () => void;
-  favoriteOptions?: Array<{ id: number; label: string }>;
-  selectedFavoriteId?: number;
-  onFavoriteSelect?: (id: number) => void;
+  favoriteOptions?: Array<{ id: string; label: string }>;
+  selectedFavoriteId?: string;
+  onFavoriteSelect?: (id: string) => void;
+  isFavoriteList?: boolean;
 }) {
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,6 +83,14 @@ export function StockImpactCard({
           >
             Top10 전체 보기
             <ChevronRight size={16} />
+          </button>
+        ) : isFavoriteList ? (
+          <button
+            type="button"
+            className={stockImpactCardStyles.headerAddButton}
+            onClick={onAddFavorite}
+          >
+            <Plus size={15} /> 종목 추가
           </button>
         ) : (
           <button
@@ -115,18 +125,21 @@ export function StockImpactCard({
             </div>
           ) : (
             <>
-              {stocks.slice(0, 3).map((stock, index) => (
-                <div key={stock.symbol}>
-                  <StockRow
-                    stock={stock}
-                    rank={index + 1}
-                    onSelect={() => {
-                      setSelectedSymbol(stock.symbol);
-                      setIsModalOpen(true);
-                    }}
-                  />
-                </div>
-              ))}
+              {stocks
+                .slice(0, isFavoriteList ? stocks.length : 3)
+                .map((stock, index) => (
+                  <div key={stock.symbol}>
+                    <StockRow
+                      stock={stock}
+                      rank={index + 1}
+                      showRank={!isFavoriteList}
+                      onSelect={() => {
+                        setSelectedSymbol(stock.symbol);
+                        setIsModalOpen(true);
+                      }}
+                    />
+                  </div>
+                ))}
             </>
           )}
         </div>
@@ -146,6 +159,15 @@ export function StockImpactCard({
               {favorite.label}
             </button>
           ))}
+          {onAddFavorite && (
+            <button
+              type="button"
+              className={stockImpactCardStyles.favoriteAddButton}
+              onClick={onAddFavorite}
+            >
+              <Plus size={13} /> 종목 추가
+            </button>
+          )}
         </div>
       )}
       <DetailModal
@@ -290,22 +312,30 @@ function StockRow({
   stock,
   rank,
   onSelect,
+  showRank = true,
 }: {
   stock: Briefing["stocks"][number];
   rank: number;
   onSelect: () => void;
+  showRank?: boolean;
 }) {
   return (
     <button
       type="button"
-      className={stockImpactCardStyles.item}
+      className={
+        showRank
+          ? stockImpactCardStyles.item
+          : stockImpactCardStyles.favoriteItem
+      }
       aria-expanded="false"
       aria-controls={`stock-chart-${stock.symbol}`}
       onClick={onSelect}
     >
-      <span className={stockImpactCardStyles.rank} aria-label={`${rank}위`}>
-        {rank}
-      </span>
+      {showRank && (
+        <span className={stockImpactCardStyles.rank} aria-label={`${rank}위`}>
+          {rank}
+        </span>
+      )}
       <div className={stockImpactCardStyles.stockSummary}>
         <div className={stockImpactCardStyles.identity}>
           <p className={stockImpactCardStyles.name}>{stock.name}</p>

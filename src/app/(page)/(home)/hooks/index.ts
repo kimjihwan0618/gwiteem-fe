@@ -13,6 +13,7 @@ import {
 } from "../type/briefing";
 import {
   favoritesSchema,
+  type CommuteFavoriteUpdatePayload,
   type FavoriteCreatePayload,
   stockSearchResultsSchema,
 } from "../type/favorites";
@@ -190,5 +191,42 @@ export function useFavorites(isEnabled = true) {
         stockSearchResultsSchema,
       ),
   });
-  return { query, create, searchStocks };
+  const updateCommute = useMutation({
+    mutationFn: (payload: CommuteFavoriteUpdatePayload) =>
+      apiClient(`/api/user/favorites/commute/${payload.id}`, z.null(), {
+        method: "PUT",
+        body: payload,
+      }),
+    onSuccess: async (response) => {
+      toast.success(response.message);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.favorites.all,
+      });
+    },
+    onError: (error: Error) =>
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "경로를 수정하지 못했습니다.",
+      ),
+  });
+  const deleteCommute = useMutation({
+    mutationFn: (favoriteId: number) =>
+      apiClient(`/api/user/favorites/commute/${favoriteId}`, z.null(), {
+        method: "DELETE",
+      }),
+    onSuccess: async (response) => {
+      toast.success(response.message);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.favorites.all,
+      });
+    },
+    onError: (error: Error) =>
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "경로를 삭제하지 못했습니다.",
+      ),
+  });
+  return { query, create, searchStocks, updateCommute, deleteCommute };
 }

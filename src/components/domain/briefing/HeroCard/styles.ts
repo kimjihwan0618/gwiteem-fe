@@ -6,7 +6,8 @@ export const commuteFavoriteChipVariants = cva(
     variants: {
       isActive: {
         true: "bg-brand-700 text-white",
-        false: "bg-surface-subtle text-muted hover:bg-brand-50 hover:text-brand-700",
+        false:
+          "bg-surface-subtle text-muted hover:bg-brand-50 hover:text-brand-700",
       },
     },
   },
@@ -52,6 +53,13 @@ export const heroCardStyles = {
   addressSearch: "shrink-0 text-muted",
   favoritePrompt:
     "focus-ring mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-brand-300 px-4 py-6 text-xs font-bold text-brand-700 hover:bg-brand-50",
-  favoriteList:
-    "mt-2 flex flex-wrap gap-1.5",
+  favoriteList: "mt-2 flex flex-wrap gap-1.5",
+  favoriteAddButton:
+    "focus-ring flex items-center gap-1 rounded-full border border-dashed border-brand-300 px-2.5 py-1 text-xs font-semibold text-brand-700 hover:bg-brand-50",
+  favoriteItem:
+    "flex items-center rounded-full border border-border-subtle bg-white pr-1",
+  favoriteAction:
+    "focus-ring grid size-6 place-items-center rounded-full text-muted hover:bg-brand-50 hover:text-brand-700",
+  favoriteDeleteAction:
+    "focus-ring grid size-6 place-items-center rounded-full text-muted hover:bg-danger-50 hover:text-danger-500",
 } as const;

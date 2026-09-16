@@ -1,4 +1,13 @@
-import { Car, Clock3, Map, Plus, RefreshCw, Search } from "lucide-react";
+import {
+  Car,
+  Clock3,
+  Map,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+} from "lucide-react";
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
 import type { UseMutationResult } from "@tanstack/react-query";
@@ -28,6 +37,8 @@ interface HeroCardProps {
   selectedFavoriteId?: number;
   isFavoriteLoading?: boolean;
   onFavoriteSelect?: (id: number) => void;
+  onEditFavorite?: (id: number) => void;
+  onDeleteFavorite?: (id: number) => void;
   onAddFavorite?: (kind: "commute") => void;
 }
 
@@ -57,6 +68,8 @@ export function HeroCard({
   selectedFavoriteId,
   isFavoriteLoading,
   onFavoriteSelect,
+  onEditFavorite,
+  onDeleteFavorite,
   onAddFavorite,
 }: HeroCardProps) {
   const [origin, setOrigin] = useState("");
@@ -251,18 +264,44 @@ export function HeroCard({
         {favoriteOptions && favoriteOptions.length > 0 && (
           <div className={heroCardStyles.favoriteList}>
             {favoriteOptions.map((favorite) => (
-              <button
-                key={favorite.id}
-                type="button"
-                className={commuteFavoriteChipVariants({
-                  isActive: favorite.id === selectedFavoriteId,
-                })}
-                aria-pressed={favorite.id === selectedFavoriteId}
-                onClick={() => onFavoriteSelect?.(favorite.id)}
-              >
-                {favorite.label}
-              </button>
+              <div key={favorite.id} className={heroCardStyles.favoriteItem}>
+                <button
+                  type="button"
+                  className={commuteFavoriteChipVariants({
+                    isActive: favorite.id === selectedFavoriteId,
+                  })}
+                  aria-pressed={favorite.id === selectedFavoriteId}
+                  onClick={() => onFavoriteSelect?.(favorite.id)}
+                >
+                  {favorite.label}
+                </button>
+                <button
+                  type="button"
+                  className={heroCardStyles.favoriteAction}
+                  aria-label={`${favorite.label} 수정`}
+                  onClick={() => onEditFavorite?.(favorite.id)}
+                >
+                  <Pencil size={12} />
+                </button>
+                <button
+                  type="button"
+                  className={heroCardStyles.favoriteDeleteAction}
+                  aria-label={`${favorite.label} 삭제`}
+                  onClick={() => onDeleteFavorite?.(favorite.id)}
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
             ))}
+            {onAddFavorite && (
+              <button
+                type="button"
+                className={heroCardStyles.favoriteAddButton}
+                onClick={() => onAddFavorite("commute")}
+              >
+                <Plus size={13} /> 경로 추가
+              </button>
+            )}
           </div>
         )}
       </div>

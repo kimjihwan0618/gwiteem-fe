@@ -1,14 +1,23 @@
 "use client";
 
-import { Search, X } from "lucide-react";
+import { MapPin, Search, X } from "lucide-react";
+import Script from "next/script";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Skeleton } from "@/components/ui/Skeleton";
 import type {
   FavoriteCreatePayload,
+  CommuteFavoriteUpdatePayload,
+  Favorites,
+  Stock,
+  StockMarket,
   StockSearchResult,
 } from "@/app/(page)/(home)/type";
-import { favoriteModalStyles } from "./favorites.styles";
+import {
+  favoriteMarketTabVariants,
+  favoriteModalStyles,
+} from "./favorites.styles";
 
 export type FavoriteModalKind = "weather" | "stock" | "commute" | null;
 
@@ -18,7 +27,13 @@ export function FavoriteAddModal({
   searchResults,
   isSearching,
   onSearchStocks,
+  topStocks,
+  isTopStocksLoading,
+  stockMarket,
+  onStockMarketChange,
   onCreate,
+  editingCommute,
+  onUpdateCommute,
   onClose,
 }: {
   kind: FavoriteModalKind;
@@ -26,13 +41,28 @@ export function FavoriteAddModal({
   searchResults: StockSearchResult[];
   isSearching: boolean;
   onSearchStocks: (query: string) => void;
+  topStocks: Stock[];
+  isTopStocksLoading: boolean;
+  stockMarket: StockMarket;
+  onStockMarketChange: (market: StockMarket) => void;
   onCreate: (payload: FavoriteCreatePayload) => void;
+  editingCommute?: Favorites["commutes"][number] | null;
+  onUpdateCommute: (payload: CommuteFavoriteUpdatePayload) => void;
   onClose: () => void;
 }) {
   const [query, setQuery] = useState("");
-  const [label, setLabel] = useState("");
-  const [originAddress, setOriginAddress] = useState("");
-  const [destinationAddress, setDestinationAddress] = useState("");
+  const [label, setLabel] = useState(editingCommute?.favorite.label ?? "");
+  const [originAddress, setOriginAddress] = useState(
+    editingCommute?.favorite.origin_address ?? "",
+  );
+  const [destinationAddress, setDestinationAddress] = useState(
+    editingCommute?.favorite.destination_address ?? "",
+  );
+  const [hasSearchedStocks, setHasSearchedStocks] = useState(false);
+  const [selectedStock, setSelectedStock] = useState<{
+    code: string;
+    name: string;
+  } | null>(null);
   if (!kind) return null;
 
   function addWeather() {
@@ -46,8 +76,25 @@ export function FavoriteAddModal({
     );
   }
 
+  function searchAddress(target: "origin" | "destination") {
+    if (!window.daum?.Postcode) return;
+    new window.daum.Postcode({
+      oncomplete: (addressData) => {
+        const address =
+          addressData.roadAddress ||
+          addressData.address ||
+          addressData.jibunAddress;
+        if (target === "origin") setOriginAddress(address);
+        else setDestinationAddress(address);
+      },
+    }).open();
+  }
+
   return (
     <div className={favoriteModalStyles.layer}>
+      {kind === "commute" && (
+        <Script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" />
+      )}
       <button
         type="button"
         className={favoriteModalStyles.backdrop}
@@ -61,7 +108,9 @@ export function FavoriteAddModal({
               ? "관심 종목 등록"
               : kind === "weather"
                 ? "날씨 즐겨찾기 등록"
-                : "출근길 즐겨찾기 등록"}
+                : editingCommute
+                  ? "즐겨찾기 경로 수정"
+                  : "경로 즐겨찾기 등록"}
           </h2>
           <button
             type="button"
@@ -78,7 +127,10 @@ export function FavoriteAddModal({
               className={favoriteModalStyles.search}
               onSubmit={(event) => {
                 event.preventDefault();
-                if (query.trim()) onSearchStocks(query.trim());
+                if (query.trim()) {
+                  setHasSearchedStocks(true);
+                  onSearchStocks(query.trim());
+                }
               }}
             >
               <Input
@@ -90,23 +142,98 @@ export function FavoriteAddModal({
                 <Search size={16} /> 검색
               </Button>
             </form>
-            <div className={favoriteModalStyles.results}>
-              {searchResults.map((stock) => (
-                <button
-                  key={`${stock.market}-${stock.code}`}
-                  type="button"
-                  className={favoriteModalStyles.result}
-                  disabled={isPending}
-                  onClick={() => onCreate({ kind: "stock", code: stock.code })}
-                >
-                  <span>
-                    <strong>{stock.name}</strong>
-                    <small>{stock.code}</small>
-                  </span>
-                  <em>{stock.market}</em>
-                </button>
-              ))}
+            <div className={favoriteModalStyles.stockSections}>
+              {searchResults.length > 0 && (
+                <StockChoices
+                  title="검색 결과"
+                  stocks={searchResults.map((stock) => ({
+                    code: stock.code,
+                    name: stock.name,
+                    market: stock.market,
+                  }))}
+                  isPending={isPending}
+                  onSelect={setSelectedStock}
+                />
+              )}
+              {hasSearchedStocks &&
+                !isSearching &&
+                searchResults.length === 0 && (
+                  <p className={favoriteModalStyles.searchEmpty}>
+                    일치하는 종목이 없습니다. 종목명이나 코드를 다시 확인해
+                    주세요.
+                  </p>
+                )}
+              <section>
+                <div className={favoriteModalStyles.sectionHeader}>
+                  <h3 className={favoriteModalStyles.sectionTitle}>
+                    인기 종목 Top10
+                  </h3>
+                  <div className={favoriteModalStyles.marketTabs}>
+                    {(["domestic", "overseas"] as const).map((market) => (
+                      <button
+                        key={market}
+                        type="button"
+                        className={favoriteMarketTabVariants({
+                          isActive: stockMarket === market,
+                        })}
+                        aria-pressed={stockMarket === market}
+                        onClick={() => onStockMarketChange(market)}
+                      >
+                        {market === "domestic" ? "국내" : "해외"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {isTopStocksLoading ? (
+                  <div className={favoriteModalStyles.results} role="status">
+                    {Array.from({ length: 5 }, (_, index) => (
+                      <Skeleton
+                        key={index}
+                        className={favoriteModalStyles.resultSkeleton}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <StockChoices
+                    stocks={topStocks.map((stock) => ({
+                      code: stock.symbol,
+                      name: stock.name,
+                      market: stockMarket,
+                    }))}
+                    isPending={isPending}
+                    onSelect={setSelectedStock}
+                  />
+                )}
+              </section>
             </div>
+            {selectedStock && (
+              <div
+                className={favoriteModalStyles.confirmation}
+                role="alertdialog"
+                aria-labelledby="stock-confirm-title"
+              >
+                <p id="stock-confirm-title">
+                  <strong>{selectedStock.name}</strong>을(를) 관심 종목으로
+                  등록하시겠습니까?
+                </p>
+                <div className={favoriteModalStyles.confirmationActions}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setSelectedStock(null)}
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    isPending={isPending}
+                    onClick={() =>
+                      onCreate({ kind: "stock", code: selectedStock.code })
+                    }
+                  >
+                    등록
+                  </Button>
+                </div>
+              </div>
+            )}
           </>
         ) : kind === "weather" ? (
           <div className={favoriteModalStyles.form}>
@@ -124,12 +251,17 @@ export function FavoriteAddModal({
             className={favoriteModalStyles.form}
             onSubmit={(event) => {
               event.preventDefault();
-              onCreate({
-                kind: "commute",
-                label: label.trim() || "출근길",
+              const commutePayload = {
+                label: label.trim() || "이동 경로",
                 originAddress: originAddress.trim(),
                 destinationAddress: destinationAddress.trim(),
-              });
+              };
+              if (editingCommute)
+                onUpdateCommute({
+                  id: editingCommute.favorite.id,
+                  ...commutePayload,
+                });
+              else onCreate({ kind: "commute", ...commutePayload });
             }}
           >
             <Input
@@ -137,24 +269,87 @@ export function FavoriteAddModal({
               onChange={(event) => setLabel(event.target.value)}
               placeholder="경로 이름"
             />
-            <Input
+            <AddressPicker
+              label="출발지"
               value={originAddress}
-              onChange={(event) => setOriginAddress(event.target.value)}
-              placeholder="출발지 주소"
-              required
+              onSearch={() => searchAddress("origin")}
             />
-            <Input
+            <AddressPicker
+              label="도착지"
               value={destinationAddress}
-              onChange={(event) => setDestinationAddress(event.target.value)}
-              placeholder="도착지 주소"
-              required
+              onSearch={() => searchAddress("destination")}
             />
-            <Button type="submit" isPending={isPending}>
-              경로 등록
+            <Button
+              type="submit"
+              disabled={!originAddress || !destinationAddress}
+              isPending={isPending}
+            >
+              {editingCommute ? "경로 수정" : "경로 등록"}
             </Button>
           </form>
         )}
       </section>
     </div>
+  );
+}
+
+function StockChoices({
+  title,
+  stocks,
+  isPending,
+  onSelect,
+}: {
+  title?: string;
+  stocks: Array<{ code: string; name: string; market: string }>;
+  isPending: boolean;
+  onSelect: (stock: { code: string; name: string }) => void;
+}) {
+  return (
+    <section>
+      {title && <h3 className={favoriteModalStyles.sectionTitle}>{title}</h3>}
+      <div className={favoriteModalStyles.results}>
+        {stocks.map((stock, index) => (
+          <button
+            key={`${stock.market}-${stock.code}`}
+            type="button"
+            className={favoriteModalStyles.result}
+            disabled={isPending}
+            onClick={() => onSelect({ code: stock.code, name: stock.name })}
+          >
+            <span className={favoriteModalStyles.resultIdentity}>
+              <b className={favoriteModalStyles.rank}>{index + 1}</b>
+              <span>
+                <strong>{stock.name}</strong>
+                <small>{stock.code}</small>
+              </span>
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AddressPicker({
+  label,
+  value,
+  onSearch,
+}: {
+  label: string;
+  value: string;
+  onSearch: () => void;
+}) {
+  return (
+    <label className={favoriteModalStyles.addressField}>
+      <span className={favoriteModalStyles.addressLabel}>{label}</span>
+      <button
+        type="button"
+        className={favoriteModalStyles.addressPicker}
+        onClick={onSearch}
+      >
+        <span>{value || `${label} 주소를 검색하세요`}</span>
+        {value ? <MapPin size={16} /> : <Search size={16} />}
+      </button>
+    </label>
   );
 }

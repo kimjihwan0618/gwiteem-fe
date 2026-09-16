@@ -42,6 +42,8 @@ export function WeatherCard({
   const hourlyRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const isFavoriteMode = Boolean(onAddFavorite);
+  const hasWeatherData = !isFavoriteMode || Boolean(guestWeather);
 
   const updateScrollState = useCallback(() => {
     const container = hourlyRef.current;
@@ -91,13 +93,17 @@ export function WeatherCard({
         ) : (
           <p className={weatherCardStyles.location}>
             <MapPin size={13} />
-            {guestWeather ? guestWeather.location : "브리핑 설정 지역"}
+            {guestWeather
+              ? guestWeather.location
+              : isFavoriteMode
+                ? "즐겨찾기 지역 없음"
+                : "브리핑 설정 지역"}
           </p>
         )}
       </CardHeader>
       {isLoading ? (
         <WeatherCardSkeleton />
-      ) : (
+      ) : hasWeatherData ? (
         <>
           <div className={weatherCardStyles.weatherBody}>
             <p className={weatherCardStyles.summary}>
@@ -138,7 +144,7 @@ export function WeatherCard({
             </div>
           )}
         </>
-      )}
+      ) : null}
       <div className={weatherCardStyles.favorites}>
         {hasFavorites === false && onAddFavorite && (
           <button

@@ -16,7 +16,8 @@ export const stockFavoriteChipVariants = cva(
     variants: {
       isActive: {
         true: "bg-brand-700 text-white",
-        false: "bg-surface-subtle text-muted hover:bg-brand-50 hover:text-brand-700",
+        false:
+          "bg-surface-subtle text-muted hover:bg-brand-50 hover:text-brand-700",
       },
     },
   },
@@ -32,6 +33,8 @@ export const stockImpactCardStyles = {
   expandButton:
     "focus-ring flex shrink-0 items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold text-brand-600 hover:bg-brand-50",
   moreButton: "focus-ring rounded-lg p-2 text-muted hover:bg-surface-subtle",
+  headerAddButton:
+    "focus-ring flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold text-brand-700 hover:bg-brand-50",
   controls: "mb-2 flex w-full min-w-0 flex-col gap-2",
   tabs: "grid w-full grid-cols-2 rounded-xl bg-surface-subtle p-1 sm:w-56",
   tab: "focus-ring rounded-lg px-3 py-1.5 text-xs font-bold text-muted transition-all duration-200 disabled:cursor-wait disabled:opacity-60",
@@ -45,6 +48,8 @@ export const stockImpactCardStyles = {
     "focus-ring rounded-lg bg-white px-2 py-1.5 text-[0.6875rem] font-bold text-brand-700 shadow-sm transition-all duration-200 disabled:cursor-wait disabled:opacity-60",
   body: "relative flex min-h-0 flex-1 flex-col overflow-hidden",
   favoriteList: "mt-2 flex flex-wrap gap-1.5",
+  favoriteAddButton:
+    "focus-ring flex items-center gap-1 rounded-full border border-dashed border-brand-300 px-2.5 py-1 text-xs font-semibold text-brand-700 hover:bg-brand-50",
   list: "animate-loading-in divide-y divide-border-subtle",
   modalList:
     "animate-loading-in max-h-[52dvh] divide-y divide-border-subtle overflow-y-auto rounded-xl border border-border-subtle px-2",
@@ -66,6 +71,8 @@ export const stockImpactCardStyles = {
   modalError:
     "flex min-h-64 items-center justify-center gap-2 rounded-xl bg-danger-50 px-4 text-center text-sm font-semibold text-danger-700",
   item: "focus-ring grid w-full grid-cols-[1.75rem_minmax(0,1fr)_auto] items-center gap-1.5 rounded-xl px-1 py-2 text-left transition-colors duration-200 hover:bg-surface-subtle sm:gap-2 sm:px-2",
+  favoriteItem:
+    "focus-ring grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl px-2 py-2.5 text-left transition-colors duration-200 hover:bg-surface-subtle",
   rank: "flex size-7 items-center justify-center rounded-full bg-brand-50 text-xs font-black text-brand-700",
   stockSummary: "min-w-0",
   identity: "flex min-w-0 items-center gap-2",

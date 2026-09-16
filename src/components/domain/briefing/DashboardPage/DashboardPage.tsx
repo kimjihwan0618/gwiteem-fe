@@ -13,6 +13,7 @@ import type { ApiResponse } from "@/lib/api/response";
 import type {
   Briefing,
   Commute,
+  CommuteFavoriteUpdatePayload,
   FavoriteCreatePayload,
   Favorites,
   FeedbackValue,
@@ -49,9 +50,16 @@ export function DashboardPage({
     isLoading: boolean;
     isPending: boolean;
     onCreate: (payload: FavoriteCreatePayload) => void;
+    onUpdateCommute: (payload: CommuteFavoriteUpdatePayload) => void;
+    onDeleteCommute: (id: number) => void;
+    isCommuteMutationPending: boolean;
     searchResults: StockSearchResult[];
     isSearching: boolean;
     onSearchStocks: (query: string) => void;
+    topStocks: Stock[];
+    isTopStocksLoading: boolean;
+    stockMarket: StockMarket;
+    onStockMarketChange: (market: StockMarket) => void;
   } | null;
 }) {
   const { data, isLoading, isError, error, refetch, isFetching } = briefing;
@@ -60,6 +68,11 @@ export function DashboardPage({
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
   const [saved, setSaved] = useState(false);
   const [favoriteModal, setFavoriteModal] = useState<FavoriteModalKind>(null);
+  const [editingCommute, setEditingCommute] = useState<
+    Favorites["commutes"][number] | null
+  >(null);
+  const [selectedWeatherId, setSelectedWeatherId] = useState<number>();
+  const [selectedCommuteId, setSelectedCommuteId] = useState<number>();
   const dateLabel = useMemo(
     () =>
       new Intl.DateTimeFormat("ko-KR", {
@@ -138,6 +151,22 @@ export function DashboardPage({
       />
     );
 
+  const effectiveWeatherId = favorites?.data?.weather.some(
+    (item) => item.favorite.id === selectedWeatherId,
+  )
+    ? selectedWeatherId
+    : favorites?.data?.weather[0]?.favorite.id;
+  const effectiveCommuteId = favorites?.data?.commutes.some(
+    (item) => item.favorite.id === selectedCommuteId,
+  )
+    ? selectedCommuteId
+    : favorites?.data?.commutes[0]?.favorite.id;
+  const selectedWeather = favorites?.data?.weather.find(
+    (item) => item.favorite.id === effectiveWeatherId,
+  );
+  const selectedCommute = favorites?.data?.commutes.find(
+    (item) => item.favorite.id === effectiveCommuteId,
+  );
   const displayedStocks = favorites?.data
     ? favorites.data.stocks.map(mapFavoriteStock)
     : guest
@@ -181,14 +210,24 @@ export function DashboardPage({
         <div className={dashboardPageStyles.featureGrid}>
           <WeatherCard
             weather={data.weather}
-            guestWeather={guest?.weather.data}
-            isLoading={guest?.weather.isPending}
+            guestWeather={
+              guest?.weather.data ??
+              (selectedWeather
+                ? mapFavoriteWeather(selectedWeather)
+                : undefined)
+            }
+            isLoading={guest?.weather.isPending || favorites?.isLoading}
             hasFavorites={
               favorites ? favorites.data?.weather.length !== 0 : undefined
             }
-            favoriteLabels={favorites?.data?.weather.map(
-              (item) => item.favorite.label,
-            )}
+            favoriteOptions={favorites?.data?.weather.map((item) => ({
+              id: item.favorite.id,
+              label: item.favorite.label,
+            }))}
+            selectedFavoriteId={effectiveWeatherId}
+            onFavoriteSelect={(id) => {
+              setSelectedWeatherId(id);
+            }}
             onAddFavorite={
               favorites ? () => setFavoriteModal("weather") : undefined
             }
@@ -196,12 +235,32 @@ export function DashboardPage({
           <HeroCard
             data={data}
             guestCommute={guest?.commute}
+            favoriteCommute={selectedCommute}
+            isFavoriteLoading={favorites?.isLoading}
             hasCommuteFavorites={
               favorites ? favorites.data?.commutes.length !== 0 : undefined
             }
-            favoriteCommuteLabels={favorites?.data?.commutes.map(
-              (item) => item.favorite.label,
-            )}
+            favoriteOptions={favorites?.data?.commutes.map((item) => ({
+              id: item.favorite.id,
+              label: item.favorite.label,
+            }))}
+            selectedFavoriteId={effectiveCommuteId}
+            onFavoriteSelect={(id) => {
+              setSelectedCommuteId(id);
+            }}
+            onEditFavorite={(id) => {
+              const target = favorites?.data?.commutes.find(
+                (item) => item.favorite.id === id,
+              );
+              if (target) {
+                setEditingCommute(target);
+                setFavoriteModal("commute");
+              }
+            }}
+            onDeleteFavorite={(id) => {
+              if (window.confirm("이 즐겨찾기 경로를 삭제하시겠습니까?"))
+                favorites?.onDeleteCommute(id);
+            }}
             onAddFavorite={setFavoriteModal}
           />
           <StockImpactCard
@@ -210,12 +269,13 @@ export function DashboardPage({
             duration={guest?.stockDuration}
             onMarketChange={guest?.onStockMarketChange}
             onDurationChange={guest?.onStockDurationChange}
-            isLoading={guest?.stocks.isFetching}
+            isLoading={guest?.stocks.isFetching || favorites?.isLoading}
             isError={guest?.stocks.isError}
             hasFavorites={
               favorites ? favorites.data?.stocks.length !== 0 : undefined
             }
             onAddFavorite={() => setFavoriteModal("stock")}
+            isFavoriteList={Boolean(favorites)}
           />
         </div>
         <div className={dashboardPageStyles.secondaryGrid}>
@@ -260,16 +320,30 @@ export function DashboardPage({
       />
       {favorites && (
         <FavoriteAddModal
+          key={favoriteModal ?? "closed"}
           kind={favoriteModal}
-          isPending={favorites.isPending}
+          isPending={favorites.isPending || favorites.isCommuteMutationPending}
+          editingCommute={editingCommute}
           searchResults={favorites.searchResults}
           isSearching={favorites.isSearching}
           onSearchStocks={favorites.onSearchStocks}
+          topStocks={favorites.topStocks}
+          isTopStocksLoading={favorites.isTopStocksLoading}
+          stockMarket={favorites.stockMarket}
+          onStockMarketChange={favorites.onStockMarketChange}
           onCreate={(payload) => {
             favorites.onCreate(payload);
             setFavoriteModal(null);
           }}
-          onClose={() => setFavoriteModal(null)}
+          onUpdateCommute={(payload) => {
+            favorites.onUpdateCommute(payload);
+            setEditingCommute(null);
+            setFavoriteModal(null);
+          }}
+          onClose={() => {
+            setEditingCommute(null);
+            setFavoriteModal(null);
+          }}
         />
       )}
     </div>
@@ -347,6 +421,19 @@ function mapFavoriteStock(
     changeDirection: item.change_direction,
     priceHistory: item.sparkline_7d,
     relatedIssues: [],
+  };
+}
+
+function mapFavoriteWeather(item: Favorites["weather"][number]): Weather {
+  return {
+    temperature: item.weather.temp_c,
+    condition: item.weather.condition,
+    location: item.favorite.label,
+    hourly: item.hourly.map((forecast) => ({
+      time: forecast.time,
+      temperature: forecast.temp_c,
+      condition: forecast.condition,
+    })),
   };
 }
 
