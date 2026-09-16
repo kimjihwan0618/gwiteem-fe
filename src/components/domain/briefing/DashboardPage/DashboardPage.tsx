@@ -7,6 +7,7 @@ import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/ToastProvider";
 import { ApiError } from "@/lib/api/response";
 import type { ApiResponse } from "@/lib/api/response";
@@ -53,6 +54,7 @@ export function DashboardPage({
     onUpdateCommute: (payload: CommuteFavoriteUpdatePayload) => void;
     onDeleteCommute: (id: number) => void;
     isCommuteMutationPending: boolean;
+    pendingFavoriteKind: FavoriteCreatePayload["kind"] | null;
     searchResults: StockSearchResult[];
     isSearching: boolean;
     onSearchStocks: (query: string) => void;
@@ -71,6 +73,9 @@ export function DashboardPage({
   const [editingCommute, setEditingCommute] = useState<
     Favorites["commutes"][number] | null
   >(null);
+  const [deletingCommuteId, setDeletingCommuteId] = useState<number | null>(
+    null,
+  );
   const [selectedWeatherId, setSelectedWeatherId] = useState<number>();
   const [selectedCommuteId, setSelectedCommuteId] = useState<number>();
   const dateLabel = useMemo(
@@ -216,7 +221,11 @@ export function DashboardPage({
                 ? mapFavoriteWeather(selectedWeather)
                 : undefined)
             }
-            isLoading={guest?.weather.isPending || favorites?.isLoading}
+            isLoading={
+              guest?.weather.isPending ||
+              favorites?.isLoading ||
+              favorites?.pendingFavoriteKind === "weather"
+            }
             hasFavorites={
               favorites ? favorites.data?.weather.length !== 0 : undefined
             }
@@ -236,7 +245,10 @@ export function DashboardPage({
             data={data}
             guestCommute={guest?.commute}
             favoriteCommute={selectedCommute}
-            isFavoriteLoading={favorites?.isLoading}
+            isFavoriteLoading={
+              favorites?.isLoading ||
+              favorites?.pendingFavoriteKind === "commute"
+            }
             hasCommuteFavorites={
               favorites ? favorites.data?.commutes.length !== 0 : undefined
             }
@@ -258,8 +270,7 @@ export function DashboardPage({
               }
             }}
             onDeleteFavorite={(id) => {
-              if (window.confirm("이 즐겨찾기 경로를 삭제하시겠습니까?"))
-                favorites?.onDeleteCommute(id);
+              setDeletingCommuteId(id);
             }}
             onAddFavorite={setFavoriteModal}
           />
@@ -268,8 +279,20 @@ export function DashboardPage({
             market={guest?.stockMarket}
             duration={guest?.stockDuration}
             onMarketChange={guest?.onStockMarketChange}
-            onDurationChange={guest?.onStockDurationChange}
-            isLoading={guest?.stocks.isFetching || favorites?.isLoading}
+            modalStocks={guest?.modalStocks.data?.map((stock) =>
+              mapGuestStock(stock, guest.modalStockMarket),
+            )}
+            modalMarket={guest?.modalStockMarket}
+            modalDuration={guest?.modalStockDuration}
+            onModalMarketChange={guest?.onModalStockMarketChange}
+            onModalDurationChange={guest?.onModalStockDurationChange}
+            isModalLoading={guest?.modalStocks.isFetching}
+            isModalError={guest?.modalStocks.isError}
+            isLoading={
+              guest?.stocks.isFetching ||
+              favorites?.isLoading ||
+              favorites?.pendingFavoriteKind === "stock"
+            }
             isError={guest?.stocks.isError}
             hasFavorites={
               favorites ? favorites.data?.stocks.length !== 0 : undefined
@@ -317,6 +340,20 @@ export function DashboardPage({
         priorities={data.priorities}
         onClose={() => setModal(null)}
         onChange={setModal}
+      />
+      <ConfirmDialog
+        isOpen={deletingCommuteId !== null}
+        title="즐겨찾기에서 삭제할까요?"
+        description="선택한 경로가 즐겨찾기에서 삭제됩니다. 필요하면 언제든 다시 등록할 수 있어요."
+        confirmLabel="삭제"
+        isPending={favorites?.isCommuteMutationPending}
+        onClose={() => setDeletingCommuteId(null)}
+        onConfirm={() => {
+          if (deletingCommuteId !== null) {
+            favorites?.onDeleteCommute(deletingCommuteId);
+            setDeletingCommuteId(null);
+          }
+        }}
       />
       {favorites && (
         <FavoriteAddModal
@@ -378,7 +415,11 @@ type GuestTopData = {
   stockMarket: StockMarket;
   stockDuration: StockDuration;
   onStockMarketChange: (market: StockMarket) => void;
-  onStockDurationChange: (duration: StockDuration) => void;
+  modalStocks: UseQueryResult<Stock[], Error>;
+  modalStockMarket: StockMarket;
+  modalStockDuration: StockDuration;
+  onModalStockMarketChange: (market: StockMarket) => void;
+  onModalStockDurationChange: (duration: StockDuration) => void;
   commute: UseMutationResult<
     ApiResponse<Commute>,
     Error,

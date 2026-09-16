@@ -21,12 +21,21 @@ export default function Home() {
   } | null>(null);
   const [isLocationUnavailable, setIsLocationUnavailable] = useState(false);
   const [stockMarket, setStockMarket] = useState<StockMarket>("domestic");
-  const [stockDuration, setStockDuration] = useState<StockDuration>("1d");
+  const stockDuration: StockDuration = "1d";
+  const [stockModalMarket, setStockModalMarket] =
+    useState<StockMarket>("domestic");
+  const [stockModalDuration, setStockModalDuration] =
+    useState<StockDuration>("1d");
   const isGuest = isReady && !user;
   const briefing = useDailyBriefing();
   const actions = useBriefingMutations();
   const weather = useGuestWeather(coordinates, isGuest, isLocationUnavailable);
   const stocks = useTopStocks(stockMarket, stockDuration, isReady);
+  const modalStocks = useTopStocks(
+    stockModalMarket,
+    stockModalDuration,
+    isGuest,
+  );
   const commute = useCommuteCheck();
   const favorites = useFavorites(isReady && Boolean(user));
 
@@ -77,6 +86,13 @@ export default function Home() {
               isCommuteMutationPending:
                 favorites.updateCommute.isPending ||
                 favorites.deleteCommute.isPending,
+              pendingFavoriteKind:
+                favorites.updateCommute.isPending ||
+                favorites.deleteCommute.isPending
+                  ? "commute"
+                  : favorites.create.isPending
+                    ? (favorites.create.variables?.kind ?? null)
+                    : null,
               searchResults: favorites.searchStocks.data?.data ?? [],
               isSearching: favorites.searchStocks.isPending,
               onSearchStocks: favorites.searchStocks.mutate,
@@ -95,7 +111,11 @@ export default function Home() {
               stockMarket,
               stockDuration,
               onStockMarketChange: setStockMarket,
-              onStockDurationChange: setStockDuration,
+              modalStocks,
+              modalStockMarket: stockModalMarket,
+              modalStockDuration: stockModalDuration,
+              onModalStockMarketChange: setStockModalMarket,
+              onModalStockDurationChange: setStockModalDuration,
               commute,
             }
           : null

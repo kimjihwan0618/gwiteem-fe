@@ -4,6 +4,7 @@ import { MapPin, Search, X } from "lucide-react";
 import Script from "next/script";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type {
@@ -206,34 +207,18 @@ export function FavoriteAddModal({
                 )}
               </section>
             </div>
-            {selectedStock && (
-              <div
-                className={favoriteModalStyles.confirmation}
-                role="alertdialog"
-                aria-labelledby="stock-confirm-title"
-              >
-                <p id="stock-confirm-title">
-                  <strong>{selectedStock.name}</strong>을(를) 관심 종목으로
-                  등록하시겠습니까?
-                </p>
-                <div className={favoriteModalStyles.confirmationActions}>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setSelectedStock(null)}
-                  >
-                    취소
-                  </Button>
-                  <Button
-                    isPending={isPending}
-                    onClick={() =>
-                      onCreate({ kind: "stock", code: selectedStock.code })
-                    }
-                  >
-                    등록
-                  </Button>
-                </div>
-              </div>
-            )}
+            <ConfirmDialog
+              isOpen={Boolean(selectedStock)}
+              title="관심 종목 등록"
+              description={`${selectedStock?.name ?? "선택한 종목"}을(를) 관심 종목으로 등록하시겠습니까?`}
+              confirmLabel="등록"
+              isPending={isPending}
+              onClose={() => setSelectedStock(null)}
+              onConfirm={() => {
+                if (selectedStock)
+                  onCreate({ kind: "stock", code: selectedStock.code });
+              }}
+            />
           </>
         ) : kind === "weather" ? (
           <div className={favoriteModalStyles.form}>

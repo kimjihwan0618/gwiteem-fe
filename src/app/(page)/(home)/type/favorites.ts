@@ -51,6 +51,9 @@ const commuteFavoriteSchema = z.object({
     delay_minutes: z.number(),
     delay_reason: z.string().nullable(),
   }),
+  route_polyline: z
+    .array(z.object({ lat: z.number(), lng: z.number() }))
+    .default([]),
 });
 
 export const favoritesSchema = z.object({

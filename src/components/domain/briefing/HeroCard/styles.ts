@@ -41,6 +41,7 @@ export const heroCardStyles = {
   originDot: "size-2.5 shrink-0 rounded-full bg-success-500",
   destinationDot: "size-2.5 shrink-0 rounded-full bg-danger-500",
   actions: "mt-3 grid grid-cols-2 gap-2 [&>button]:w-full",
+  favoriteMapAction: "mt-3 [&>button]:w-full",
   commuteForm:
     "grid min-w-0 gap-3 rounded-xl bg-surface-muted p-4 sm:grid-cols-2 sm:p-5 sm:[&>button]:col-span-2 [&>button]:w-full",
   mapModal: "h-[55dvh] min-h-[320px] [&>div]:h-full",
@@ -51,15 +52,23 @@ export const heroCardStyles = {
   addressValue: "min-w-0 truncate text-ink",
   addressPlaceholder: "min-w-0 truncate text-subtle",
   addressSearch: "shrink-0 text-muted",
-  favoritePrompt:
-    "focus-ring mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-brand-300 px-4 py-6 text-xs font-bold text-brand-700 hover:bg-brand-50",
-  favoriteList: "mt-2 flex flex-wrap gap-1.5",
+  favoriteSection: "mt-4 border-t border-border-subtle pt-3",
+  favoriteHeader: "flex items-center justify-between gap-3",
+  favoriteTitle: "text-xs font-bold text-muted",
+  favoriteList: "mt-2 flex flex-wrap gap-2",
+  favoriteEmpty:
+    "mt-2 rounded-xl bg-surface-subtle px-3 py-3 text-xs text-muted",
   favoriteAddButton:
     "focus-ring flex items-center gap-1 rounded-full border border-dashed border-brand-300 px-2.5 py-1 text-xs font-semibold text-brand-700 hover:bg-brand-50",
   favoriteItem:
-    "flex items-center rounded-full border border-border-subtle bg-white pr-1",
-  favoriteAction:
-    "focus-ring grid size-6 place-items-center rounded-full text-muted hover:bg-brand-50 hover:text-brand-700",
-  favoriteDeleteAction:
-    "focus-ring grid size-6 place-items-center rounded-full text-muted hover:bg-danger-50 hover:text-danger-500",
+    "relative flex items-center rounded-full border border-border-subtle bg-white pr-1",
+  favoriteMenu: "relative",
+  favoriteMenuTrigger:
+    "focus-ring grid size-6 place-items-center rounded-full text-muted hover:bg-surface-muted",
+  favoriteMenuItems:
+    "absolute right-0 z-20 mt-1 grid min-w-24 overflow-hidden rounded-xl border border-border bg-white p-1 shadow-lg",
+  favoriteMenuItem:
+    "focus-ring flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-ink hover:bg-surface-muted",
+  favoriteMenuDelete:
+    "focus-ring flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-danger-500 hover:bg-danger-50",
 } as const;

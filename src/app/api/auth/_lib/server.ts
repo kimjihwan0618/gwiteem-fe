@@ -3,7 +3,12 @@ import "server-only";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z, type ZodType } from "zod";
-import { authUserSchema, type AuthUser, type TokenResponse } from "@/app/(page)/type/auth";
+import {
+  accessTokenResponseSchema,
+  authUserSchema,
+  type AuthUser,
+  type TokenResponse,
+} from "@/app/(page)/type/auth";
 
 const ACCESS_TOKEN_COOKIE = "daru_access_token";
 const REFRESH_TOKEN_COOKIE = "daru_refresh_token";
@@ -31,9 +36,7 @@ export class AuthBackendError extends Error {
 }
 
 function getBackendBaseUrl() {
-  const url =
-    process.env.API_BASE_URL ??
-    process.env.NEXT_PUBLIC_API_BASE_URL;
+  const url = process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL;
 
   if (!url) {
     throw new Error("API_BASE_URL is not defined.");
@@ -158,6 +161,29 @@ export async function getStoredAuth() {
     refreshToken: cookieStore.get(REFRESH_TOKEN_COOKIE)?.value ?? null,
     user,
   };
+}
+
+export async function getAuthorizationHeaders() {
+  const { accessToken, refreshToken } = await getStoredAuth();
+  if (accessToken) return { Authorization: `Bearer ${accessToken}` };
+  if (!refreshToken) {
+    throw new AuthBackendError(
+      "로그인 세션이 만료되었습니다. 다시 로그인해 주세요.",
+      401,
+      "MISSING_AUTH_TOKEN",
+    );
+  }
+
+  const token = await requestAuthBackend(
+    "/api/v1/auth/refresh",
+    accessTokenResponseSchema,
+    {
+      method: "POST",
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    },
+  );
+  await updateAccessToken(token.access_token, token.expires_in);
+  return { Authorization: `Bearer ${token.access_token}` };
 }
 
 export async function clearAuthSession() {

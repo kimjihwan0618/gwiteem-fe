@@ -36,6 +36,12 @@ export const stockImpactCardStyles = {
   headerAddButton:
     "focus-ring flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold text-brand-700 hover:bg-brand-50",
   controls: "mb-2 flex w-full min-w-0 flex-col gap-2",
+  summaryMarketTabs:
+    "mb-2 grid w-36 grid-cols-2 rounded-lg bg-surface-subtle p-1",
+  summaryMarketTab:
+    "focus-ring rounded-md px-2 py-1 text-[0.6875rem] font-bold text-muted",
+  activeSummaryMarketTab:
+    "focus-ring rounded-md bg-white px-2 py-1 text-[0.6875rem] font-bold text-brand-700 shadow-sm",
   tabs: "grid w-full grid-cols-2 rounded-xl bg-surface-subtle p-1 sm:w-56",
   tab: "focus-ring rounded-lg px-3 py-1.5 text-xs font-bold text-muted transition-all duration-200 disabled:cursor-wait disabled:opacity-60",
   activeTab:

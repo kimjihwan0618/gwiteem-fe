@@ -31,7 +31,6 @@ export function StockImpactCard({
   market,
   duration,
   onMarketChange,
-  onDurationChange,
   isLoading,
   isError,
   hasFavorites,
@@ -40,12 +39,18 @@ export function StockImpactCard({
   selectedFavoriteId,
   onFavoriteSelect,
   isFavoriteList,
+  modalStocks,
+  modalMarket,
+  modalDuration,
+  onModalMarketChange,
+  onModalDurationChange,
+  isModalLoading,
+  isModalError,
 }: {
   stocks: Briefing["stocks"];
   market?: StockMarket;
   duration?: StockDuration;
   onMarketChange?: (market: StockMarket) => void;
-  onDurationChange?: (duration: StockDuration) => void;
   isLoading?: boolean;
   isError?: boolean;
   hasFavorites?: boolean;
@@ -54,11 +59,21 @@ export function StockImpactCard({
   selectedFavoriteId?: string;
   onFavoriteSelect?: (id: string) => void;
   isFavoriteList?: boolean;
+  modalStocks?: Briefing["stocks"];
+  modalMarket?: StockMarket;
+  modalDuration?: StockDuration;
+  onModalMarketChange?: (market: StockMarket) => void;
+  onModalDurationChange?: (duration: StockDuration) => void;
+  isModalLoading?: boolean;
+  isModalError?: boolean;
 }) {
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const effectiveModalStocks = modalStocks ?? stocks;
   const selectedStock =
-    stocks.find(({ symbol }) => symbol === selectedSymbol) ?? null;
+    [...stocks, ...effectiveModalStocks].find(
+      ({ symbol }) => symbol === selectedSymbol,
+    ) ?? null;
 
   return (
     <Card id="stocks" className={stockImpactCardStyles.root}>
@@ -101,6 +116,29 @@ export function StockImpactCard({
           </button>
         )}
       </CardHeader>
+      {market && onMarketChange && (
+        <div
+          className={stockImpactCardStyles.summaryMarketTabs}
+          aria-label="시장 요약 국가 선택"
+        >
+          {(["domestic", "overseas"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              className={
+                market === value
+                  ? stockImpactCardStyles.activeSummaryMarketTab
+                  : stockImpactCardStyles.summaryMarketTab
+              }
+              aria-pressed={market === value}
+              disabled={isLoading}
+              onClick={() => onMarketChange(value)}
+            >
+              {value === "domestic" ? "국내" : "해외"}
+            </button>
+          ))}
+        </div>
+      )}
       <div className={stockImpactCardStyles.body}>
         <div className={stockImpactCardStyles.list}>
           {hasFavorites === false && onAddFavorite ? (
@@ -179,7 +217,7 @@ export function StockImpactCard({
           setIsModalOpen(false);
         }}
       >
-        {market && onMarketChange && (
+        {modalMarket && onModalMarketChange && (
           <div className={stockImpactCardStyles.controls}>
             <div className={stockImpactCardStyles.tabs}>
               {(["domestic", "overseas"] as const).map((value) => (
@@ -187,39 +225,39 @@ export function StockImpactCard({
                   key={value}
                   type="button"
                   className={
-                    market === value
+                    modalMarket === value
                       ? stockImpactCardStyles.activeTab
                       : stockImpactCardStyles.tab
                   }
-                  aria-pressed={market === value}
-                  disabled={isLoading}
+                  aria-pressed={modalMarket === value}
+                  disabled={isModalLoading}
                   onClick={() => {
-                    if (market === value) return;
+                    if (modalMarket === value) return;
                     setSelectedSymbol(null);
-                    onMarketChange(value);
+                    onModalMarketChange(value);
                   }}
                 >
                   {value === "domestic" ? "국내" : "해외"}
                 </button>
               ))}
             </div>
-            {duration && onDurationChange && (
+            {modalDuration && onModalDurationChange && (
               <div className={stockImpactCardStyles.durationTabs}>
                 {durationOptions.map((option) => (
                   <button
                     key={option.value}
                     type="button"
                     className={
-                      duration === option.value
+                      modalDuration === option.value
                         ? stockImpactCardStyles.activeDurationTab
                         : stockImpactCardStyles.durationTab
                     }
-                    aria-pressed={duration === option.value}
-                    disabled={isLoading}
+                    aria-pressed={modalDuration === option.value}
+                    disabled={isModalLoading}
                     onClick={() => {
-                      if (duration === option.value) return;
+                      if (modalDuration === option.value) return;
                       setSelectedSymbol(null);
-                      onDurationChange(option.value);
+                      onModalDurationChange(option.value);
                     }}
                   >
                     {option.label}
@@ -234,27 +272,27 @@ export function StockImpactCard({
             id={`stock-chart-${selectedStock.symbol}`}
             stock={selectedStock}
             rank={
-              stocks.findIndex(
+              effectiveModalStocks.findIndex(
                 ({ symbol }) => symbol === selectedStock.symbol,
               ) + 1
             }
-            duration={duration ?? "1d"}
+            duration={modalDuration ?? duration ?? "1d"}
             onBack={() => setSelectedSymbol(null)}
           />
-        ) : isLoading ? (
+        ) : (isModalLoading ?? isLoading) ? (
           <StockRowsSkeleton count={8} isModal />
-        ) : isError ? (
+        ) : (isModalError ?? isError) ? (
           <div className={stockImpactCardStyles.modalError} role="alert">
             <Info size={18} />
             <span>주식 데이터를 불러오지 못했습니다.</span>
           </div>
-        ) : stocks.length === 0 ? (
+        ) : effectiveModalStocks.length === 0 ? (
           <div className={stockImpactCardStyles.modalState}>
             선택한 조건에 표시할 주식 데이터가 없습니다.
           </div>
         ) : (
           <div className={stockImpactCardStyles.modalList}>
-            {stocks.map((stock, index) => (
+            {effectiveModalStocks.map((stock, index) => (
               <div key={stock.symbol}>
                 <StockRow
                   stock={stock}

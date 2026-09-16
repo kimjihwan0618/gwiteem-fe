@@ -2,6 +2,7 @@ import {
   Car,
   Clock3,
   Map,
+  MoreHorizontal,
   Pencil,
   Plus,
   RefreshCw,
@@ -75,6 +76,9 @@ export function HeroCard({
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [modal, setModal] = useState<"route" | "map" | null>(null);
+  const [openFavoriteMenuId, setOpenFavoriteMenuId] = useState<number | null>(
+    null,
+  );
   const [isRestoringRoute, setIsRestoringRoute] = useState(
     Boolean(guestCommute),
   );
@@ -106,6 +110,26 @@ export function HeroCard({
     favoriteCommute?.favorite.destination_address ||
     destination ||
     (guestCommute ? "도착지" : data.commute.destination);
+  const mapOrigin =
+    guestCommuteData?.origin ??
+    (favoriteCommute
+      ? {
+          label: favoriteCommute.favorite.origin_address,
+          lat: favoriteCommute.favorite.origin_lat,
+          lng: favoriteCommute.favorite.origin_lng,
+        }
+      : undefined);
+  const mapDestination =
+    guestCommuteData?.destination ??
+    (favoriteCommute
+      ? {
+          label: favoriteCommute.favorite.destination_address,
+          lat: favoriteCommute.favorite.destination_lat,
+          lng: favoriteCommute.favorite.destination_lng,
+        }
+      : undefined);
+  const mapRoutePolyline =
+    guestCommuteData?.routePolyline ?? favoriteCommute?.route_polyline;
 
   useEffect(() => {
     if (!guestCommute || hasRestoredCommute.current) return;
@@ -158,6 +182,28 @@ export function HeroCard({
       return () => window.clearTimeout(restoreTimer);
     }
   }, [guestCommute]);
+
+  useEffect(() => {
+    if (openFavoriteMenuId === null) return;
+    const closeMenu = (event: PointerEvent) => {
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        target.closest("[data-favorite-menu-root]")
+      )
+        return;
+      setOpenFavoriteMenuId(null);
+    };
+    const closeMenuOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenFavoriteMenuId(null);
+    };
+    document.addEventListener("pointerdown", closeMenu);
+    document.addEventListener("keydown", closeMenuOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeMenu);
+      document.removeEventListener("keydown", closeMenuOnEscape);
+    };
+  }, [openFavoriteMenuId]);
 
   function saveRoute(nextOrigin: string, nextDestination: string) {
     localStorage.setItem(
@@ -252,48 +298,22 @@ export function HeroCard({
             </Button>
           </div>
         )}
-        {hasCommuteFavorites === false && onAddFavorite && (
-          <button
-            type="button"
-            className={heroCardStyles.favoritePrompt}
-            onClick={() => onAddFavorite("commute")}
-          >
-            <Plus size={15} /> 즐겨찾기 경로를 등록하세요
-          </button>
+        {!guestCommute && favoriteCommute && (
+          <div className={heroCardStyles.favoriteMapAction}>
+            <Button
+              size="sm"
+              variant="secondary"
+              aria-haspopup="dialog"
+              onClick={() => setModal("map")}
+            >
+              <Map size={15} /> 선택한 경로 지도 보기
+            </Button>
+          </div>
         )}
-        {favoriteOptions && favoriteOptions.length > 0 && (
-          <div className={heroCardStyles.favoriteList}>
-            {favoriteOptions.map((favorite) => (
-              <div key={favorite.id} className={heroCardStyles.favoriteItem}>
-                <button
-                  type="button"
-                  className={commuteFavoriteChipVariants({
-                    isActive: favorite.id === selectedFavoriteId,
-                  })}
-                  aria-pressed={favorite.id === selectedFavoriteId}
-                  onClick={() => onFavoriteSelect?.(favorite.id)}
-                >
-                  {favorite.label}
-                </button>
-                <button
-                  type="button"
-                  className={heroCardStyles.favoriteAction}
-                  aria-label={`${favorite.label} 수정`}
-                  onClick={() => onEditFavorite?.(favorite.id)}
-                >
-                  <Pencil size={12} />
-                </button>
-                <button
-                  type="button"
-                  className={heroCardStyles.favoriteDeleteAction}
-                  aria-label={`${favorite.label} 삭제`}
-                  onClick={() => onDeleteFavorite?.(favorite.id)}
-                >
-                  <Trash2 size={12} />
-                </button>
-              </div>
-            ))}
-            {onAddFavorite && (
+        {onAddFavorite && (
+          <section className={heroCardStyles.favoriteSection}>
+            <div className={heroCardStyles.favoriteHeader}>
+              <p className={heroCardStyles.favoriteTitle}>즐겨찾기 경로</p>
               <button
                 type="button"
                 className={heroCardStyles.favoriteAddButton}
@@ -301,8 +321,81 @@ export function HeroCard({
               >
                 <Plus size={13} /> 경로 추가
               </button>
-            )}
-          </div>
+            </div>
+            {favoriteOptions && favoriteOptions.length > 0 ? (
+              <div className={heroCardStyles.favoriteList}>
+                {favoriteOptions.map((favorite) => (
+                  <div
+                    key={favorite.id}
+                    className={heroCardStyles.favoriteItem}
+                  >
+                    <button
+                      type="button"
+                      className={commuteFavoriteChipVariants({
+                        isActive: favorite.id === selectedFavoriteId,
+                      })}
+                      aria-pressed={favorite.id === selectedFavoriteId}
+                      onClick={() => onFavoriteSelect?.(favorite.id)}
+                    >
+                      {favorite.label}
+                    </button>
+                    <div
+                      className={heroCardStyles.favoriteMenu}
+                      data-favorite-menu-root
+                    >
+                      <button
+                        type="button"
+                        className={heroCardStyles.favoriteMenuTrigger}
+                        aria-label={`${favorite.label} 관리 메뉴`}
+                        aria-haspopup="menu"
+                        aria-expanded={openFavoriteMenuId === favorite.id}
+                        onClick={() =>
+                          setOpenFavoriteMenuId((current) =>
+                            current === favorite.id ? null : favorite.id,
+                          )
+                        }
+                      >
+                        <MoreHorizontal size={14} />
+                      </button>
+                      {openFavoriteMenuId === favorite.id && (
+                        <div
+                          className={heroCardStyles.favoriteMenuItems}
+                          role="menu"
+                        >
+                          <button
+                            type="button"
+                            role="menuitem"
+                            className={heroCardStyles.favoriteMenuItem}
+                            onClick={() => {
+                              setOpenFavoriteMenuId(null);
+                              onEditFavorite?.(favorite.id);
+                            }}
+                          >
+                            <Pencil size={13} /> 수정
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            className={heroCardStyles.favoriteMenuDelete}
+                            onClick={() => {
+                              setOpenFavoriteMenuId(null);
+                              onDeleteFavorite?.(favorite.id);
+                            }}
+                          >
+                            <Trash2 size={13} /> 삭제
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : hasCommuteFavorites === false ? (
+              <p className={heroCardStyles.favoriteEmpty}>
+                등록된 즐겨찾기 경로가 없습니다.
+              </p>
+            ) : null}
+          </section>
         )}
       </div>
       {guestCommute && (
@@ -346,19 +439,19 @@ export function HeroCard({
         </DetailModal>
       )}
       <DetailModal
-        title="출근 경로 지도"
+        title="경로 지도"
         icon={<Map size={19} />}
         isOpen={modal === "map"}
         onClose={() => setModal(null)}
       >
         <div className={heroCardStyles.mapModal}>
           <RouteMap
-            origin={guestCommuteData?.origin}
-            destination={guestCommuteData?.destination}
-            routePolyline={guestCommuteData?.routePolyline}
-            originLabel={origin || undefined}
-            destinationLabel={destination || undefined}
-            isLoading={guestCommute?.isPending}
+            origin={mapOrigin}
+            destination={mapDestination}
+            routePolyline={mapRoutePolyline}
+            originLabel={originLabel}
+            destinationLabel={destinationLabel}
+            isLoading={guestCommute?.isPending || isFavoriteLoading}
           />
         </div>
       </DetailModal>

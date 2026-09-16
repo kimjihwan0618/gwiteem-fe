@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
   authErrorResponse,
-  getStoredAuth,
+  getAuthorizationHeaders,
   requestAuthBackend,
 } from "@/app/api/auth/_lib/server";
 import { favoritesSchema } from "@/app/(page)/(home)/type/favorites";
@@ -36,15 +36,9 @@ const commuteCheckSchema = z.object({
   }),
 });
 
-async function getAuthorization() {
-  const { accessToken } = await getStoredAuth();
-  if (!accessToken) throw new Error("로그인이 필요합니다.");
-  return { Authorization: `Bearer ${accessToken}` };
-}
-
 export async function GET() {
   try {
-    const headers = await getAuthorization();
+    const headers = await getAuthorizationHeaders();
     const [weather, stocks, commutes] = await Promise.all([
       requestAuthBackend(
         "/api/v1/users/me/weather-favorites/weather",
@@ -79,7 +73,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const payload = createFavoriteSchema.parse(await request.json());
-    const headers = await getAuthorization();
+    const headers = await getAuthorizationHeaders();
 
     if (payload.kind === "stock") {
       await requestAuthBackend(

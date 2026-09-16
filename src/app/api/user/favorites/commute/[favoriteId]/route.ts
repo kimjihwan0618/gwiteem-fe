@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
   authErrorResponse,
-  getStoredAuth,
+  getAuthorizationHeaders,
   requestAuthBackend,
 } from "@/app/api/auth/_lib/server";
 
@@ -25,12 +25,6 @@ const commuteCheckSchema = z.object({
   }),
 });
 
-async function authorization() {
-  const { accessToken } = await getStoredAuth();
-  if (!accessToken) throw new Error("로그인이 필요합니다.");
-  return { Authorization: `Bearer ${accessToken}` };
-}
-
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ favoriteId: string }> },
@@ -38,7 +32,7 @@ export async function PUT(
   try {
     const payload = updateSchema.parse(await request.json());
     const { favoriteId } = await params;
-    const headers = await authorization();
+    const headers = await getAuthorizationHeaders();
     const commute = await requestAuthBackend(
       "/api/v1/commute/check",
       commuteCheckSchema,
@@ -84,7 +78,7 @@ export async function DELETE(
 ) {
   try {
     const { favoriteId } = await params;
-    const headers = await authorization();
+    const headers = await getAuthorizationHeaders();
     await requestAuthBackend(
       `/api/v1/users/me/commute-favorites/${favoriteId}`,
       z.null(),

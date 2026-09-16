@@ -49,9 +49,6 @@ export const favoriteModalStyles = {
   addressLabel: "text-xs font-semibold text-muted",
   addressPicker:
     "focus-ring flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-border bg-white px-3 text-left text-sm text-ink hover:bg-surface-muted",
-  confirmation:
-    "mt-4 rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm text-ink",
-  confirmationActions: "mt-3 flex justify-end gap-2",
 } as const;
 
 export const favoriteMarketTabVariants = cva(
