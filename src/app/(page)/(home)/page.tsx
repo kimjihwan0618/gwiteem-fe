@@ -29,7 +29,11 @@ export default function Home() {
   const isGuest = isReady && !user;
   const briefing = useDailyBriefing();
   const actions = useBriefingMutations();
-  const weather = useGuestWeather(coordinates, isGuest, isLocationUnavailable);
+  const weather = useGuestWeather(
+    coordinates,
+    isReady,
+    isLocationUnavailable,
+  );
   const stocks = useTopStocks(stockMarket, stockDuration, isReady);
   const modalStocks = useTopStocks(
     stockModalMarket,
@@ -40,7 +44,7 @@ export default function Home() {
   const favorites = useFavorites(isReady && Boolean(user));
 
   useEffect(() => {
-    if (!isGuest) return;
+    if (!isReady) return;
     if (!navigator.geolocation) {
       const unavailableTimer = window.setTimeout(
         () => setIsLocationUnavailable(true),
@@ -68,12 +72,13 @@ export default function Home() {
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 },
     );
     return () => window.clearTimeout(locationFallbackTimer);
-  }, [isGuest]);
+  }, [isReady]);
 
   return (
     <DashboardPage
       briefing={briefing}
       actions={actions}
+      weather={weather}
       favorites={
         user
           ? {
@@ -106,7 +111,6 @@ export default function Home() {
       guest={
         isGuest
           ? {
-              weather,
               stocks,
               stockMarket,
               stockDuration,

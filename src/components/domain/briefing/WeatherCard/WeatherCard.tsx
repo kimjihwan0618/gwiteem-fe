@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   MapPin,
-  Plus,
   Snowflake,
   Sun,
 } from "lucide-react";
@@ -16,36 +15,22 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import type { Weather } from "@/app/(page)/(home)/type";
 import type { Briefing } from "@/app/(page)/(home)/type/briefing";
 import { weatherCardStyles } from "./styles";
-import { weatherFavoriteChipVariants } from "./styles";
 
 interface WeatherCardProps {
   weather: Briefing["weather"];
   guestWeather?: Weather;
   isLoading?: boolean;
-  hasFavorites?: boolean;
-  favoriteOptions?: Array<{ id: number; label: string }>;
-  selectedFavoriteId?: number;
-  onFavoriteSelect?: (id: number) => void;
-  onAddFavorite?: () => void;
-  isGuestMode?: boolean;
 }
 
 export function WeatherCard({
   weather,
   guestWeather,
   isLoading,
-  hasFavorites,
-  favoriteOptions,
-  selectedFavoriteId,
-  onFavoriteSelect,
-  onAddFavorite,
-  isGuestMode = false,
 }: WeatherCardProps) {
   const hourlyRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const isFavoriteMode = Boolean(onAddFavorite);
-  const hasWeatherData = !isFavoriteMode || Boolean(guestWeather);
+  const hasWeatherData = Boolean(guestWeather) || Boolean(weather);
 
   const updateScrollState = useCallback(() => {
     const container = hourlyRef.current;
@@ -95,24 +80,14 @@ export function WeatherCard({
         ) : (
           <p className={weatherCardStyles.location}>
             <MapPin size={13} />
-            {guestWeather
-              ? guestWeather.location
-              : isFavoriteMode
-                ? "즐겨찾기 지역 없음"
-                : "브리핑 설정 지역"}
+            {guestWeather ? guestWeather.location : "브리핑 설정 지역"}
           </p>
         )}
       </CardHeader>
       {isLoading ? (
         <WeatherCardSkeleton />
       ) : hasWeatherData ? (
-        <div
-          className={
-            isGuestMode
-              ? weatherCardStyles.guestContent
-              : weatherCardStyles.content
-          }
-        >
+        <div className={weatherCardStyles.content}>
           <div className={weatherCardStyles.weatherBody}>
             <p className={weatherCardStyles.summary}>
               {guestWeather?.temperature ?? weather.temperature}°C
@@ -153,36 +128,6 @@ export function WeatherCard({
           )}
         </div>
       ) : null}
-      {(onAddFavorite || (favoriteOptions && favoriteOptions.length > 0)) && (
-        <div className={weatherCardStyles.favorites}>
-          {hasFavorites === false && onAddFavorite && (
-            <button
-              type="button"
-              className={weatherCardStyles.favoritePrompt}
-              onClick={onAddFavorite}
-            >
-              <Plus size={15} /> 즐겨찾기 날씨 지역을 등록하세요
-            </button>
-          )}
-          {favoriteOptions && favoriteOptions.length > 0 && (
-            <div className={weatherCardStyles.favoriteList}>
-              {favoriteOptions.map((favorite) => (
-                <button
-                  key={favorite.id}
-                  type="button"
-                  className={weatherFavoriteChipVariants({
-                    isActive: favorite.id === selectedFavoriteId,
-                  })}
-                  aria-pressed={favorite.id === selectedFavoriteId}
-                  onClick={() => onFavoriteSelect?.(favorite.id)}
-                >
-                  {favorite.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
     </Card>
   );
 }

@@ -1,27 +1,5 @@
 import { z } from "zod";
 
-const weatherFavoriteSchema = z.object({
-  favorite: z.object({
-    id: z.number(),
-    label: z.string(),
-    latitude: z.number(),
-    longitude: z.number(),
-  }),
-  weather: z.object({
-    temp_c: z.number(),
-    condition: z.string(),
-  }),
-  hourly: z
-    .array(
-      z.object({
-        time: z.string(),
-        temp_c: z.number(),
-        condition: z.string(),
-      }),
-    )
-    .default([]),
-});
-
 const stockFavoriteSchema = z.object({
   stock: z.object({
     code: z.string(),
@@ -69,7 +47,6 @@ const commuteFavoriteSchema = z.object({
 });
 
 export const favoritesSchema = z.object({
-  weather: z.array(weatherFavoriteSchema),
   stocks: z.array(stockFavoriteSchema),
   commutes: z.array(commuteFavoriteSchema),
 });
@@ -88,12 +65,6 @@ export type StockSearchResult = z.infer<
 >[number];
 export type FavoriteCreatePayload =
   | { kind: "stock"; code: string }
-  | {
-      kind: "weather";
-      label: string;
-      latitude: number;
-      longitude: number;
-    }
   | {
       kind: "commute";
       label: string;

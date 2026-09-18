@@ -1,28 +1,5 @@
 import { cva } from "class-variance-authority";
 
-export const favoritesCardStyles = {
-  root: "mt-5 p-5 sm:p-7",
-  limit: "text-xs text-subtle",
-  grid: "grid gap-4 lg:grid-cols-3",
-  section: "rounded-2xl border border-border-subtle bg-surface-muted p-4",
-  sectionHeader: "mb-3 flex items-center justify-between",
-  sectionTitle: "flex items-center gap-2 font-bold text-ink",
-  addButton:
-    "focus-ring grid size-8 place-items-center rounded-full border border-border bg-white text-brand-700 transition hover:bg-brand-50",
-  list: "space-y-2",
-  item: "flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2.5 text-sm",
-  routeItem:
-    "grid grid-cols-[1fr_auto] gap-1 rounded-xl bg-white px-3 py-2.5 text-sm",
-  form: "animate-fade-up grid gap-2 rounded-xl bg-white p-3",
-  empty:
-    "focus-ring flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong px-3 py-6 text-sm font-semibold text-muted hover:bg-white",
-  skeletonList: "space-y-2",
-  skeletonItem:
-    "flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2.5",
-  skeletonLabel: "h-4 w-24",
-  skeletonValue: "h-4 w-16",
-} as const;
-
 export const favoriteModalStyles = {
   layer: "fixed inset-0 z-[70] grid place-items-center p-4",
   backdrop: "absolute inset-0 bg-brand-900/45 backdrop-blur-sm",

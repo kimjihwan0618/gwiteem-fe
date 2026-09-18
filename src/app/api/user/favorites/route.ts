@@ -10,12 +10,6 @@ import { favoritesSchema } from "@/app/(page)/(home)/type/favorites";
 const createFavoriteSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("stock"), code: z.string().min(1) }),
   z.object({
-    kind: z.literal("weather"),
-    label: z.string().min(1),
-    latitude: z.number(),
-    longitude: z.number(),
-  }),
-  z.object({
     kind: z.literal("commute"),
     label: z.string().min(1),
     originAddress: z.string().min(1),
@@ -39,12 +33,7 @@ const commuteCheckSchema = z.object({
 export async function GET() {
   try {
     const headers = await getAuthorizationHeaders();
-    const [weather, stocks, commutes] = await Promise.all([
-      requestAuthBackend(
-        "/api/v1/users/me/weather-favorites/weather",
-        favoritesSchema.shape.weather,
-        { headers },
-      ),
+    const [stocks, commutes] = await Promise.all([
       requestAuthBackend(
         "/api/v1/users/me/watchlist/market-impact",
         favoritesSchema.shape.stocks,
@@ -59,7 +48,6 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: {
-        weather: weather.slice(0, 5),
         stocks: stocks.slice(0, 5),
         commutes: commutes.slice(0, 5),
       },
@@ -83,20 +71,6 @@ export async function POST(request: Request) {
           method: "POST",
           headers,
           body: JSON.stringify({ type: "STOCK", value: payload.code }),
-        },
-      );
-    } else if (payload.kind === "weather") {
-      await requestAuthBackend(
-        "/api/v1/users/me/weather-favorites",
-        z.unknown(),
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            label: payload.label,
-            latitude: payload.latitude,
-            longitude: payload.longitude,
-          }),
         },
       );
     } else {

@@ -40,11 +40,13 @@ import { dashboardPageStyles } from "./styles";
 export function DashboardPage({
   briefing,
   actions,
+  weather,
   guest,
   favorites,
 }: {
   briefing: UseQueryResult<Briefing, Error>;
   actions: BriefingActions;
+  weather: UseQueryResult<Weather, Error>;
   guest: GuestTopData | null;
   favorites: {
     data?: Favorites;
@@ -76,7 +78,6 @@ export function DashboardPage({
   const [deletingCommuteId, setDeletingCommuteId] = useState<number | null>(
     null,
   );
-  const [selectedWeatherId, setSelectedWeatherId] = useState<number>();
   const [selectedCommuteId, setSelectedCommuteId] = useState<number>();
   const dateLabel = useMemo(
     () =>
@@ -156,19 +157,11 @@ export function DashboardPage({
       />
     );
 
-  const effectiveWeatherId = favorites?.data?.weather.some(
-    (item) => item.favorite.id === selectedWeatherId,
-  )
-    ? selectedWeatherId
-    : favorites?.data?.weather[0]?.favorite.id;
   const effectiveCommuteId = favorites?.data?.commutes.some(
     (item) => item.favorite.id === selectedCommuteId,
   )
     ? selectedCommuteId
     : favorites?.data?.commutes[0]?.favorite.id;
-  const selectedWeather = favorites?.data?.weather.find(
-    (item) => item.favorite.id === effectiveWeatherId,
-  );
   const selectedCommute = favorites?.data?.commutes.find(
     (item) => item.favorite.id === effectiveCommuteId,
   );
@@ -215,32 +208,8 @@ export function DashboardPage({
         <div className={dashboardPageStyles.featureGrid}>
           <WeatherCard
             weather={data.weather}
-            guestWeather={
-              guest?.weather.data ??
-              (selectedWeather
-                ? mapFavoriteWeather(selectedWeather)
-                : undefined)
-            }
-            isLoading={
-              guest?.weather.isPending ||
-              favorites?.isLoading ||
-              favorites?.pendingFavoriteKind === "weather"
-            }
-            hasFavorites={
-              favorites ? favorites.data?.weather.length !== 0 : undefined
-            }
-            favoriteOptions={favorites?.data?.weather.map((item) => ({
-              id: item.favorite.id,
-              label: item.favorite.label,
-            }))}
-            selectedFavoriteId={effectiveWeatherId}
-            onFavoriteSelect={(id) => {
-              setSelectedWeatherId(id);
-            }}
-            onAddFavorite={
-              favorites ? () => setFavoriteModal("weather") : undefined
-            }
-            isGuestMode={Boolean(guest)}
+            guestWeather={weather.data}
+            isLoading={weather.isPending}
           />
           <HeroCard
             data={data}
@@ -411,7 +380,6 @@ type BriefingActions = {
 };
 
 type GuestTopData = {
-  weather: UseQueryResult<Weather, Error>;
   stocks: UseQueryResult<Stock[], Error>;
   stockMarket: StockMarket;
   stockDuration: StockDuration;
@@ -464,19 +432,6 @@ function mapFavoriteStock(
     priceHistory: item.sparkline_7d,
     priceChart: item.price_chart,
     relatedIssues: [],
-  };
-}
-
-function mapFavoriteWeather(item: Favorites["weather"][number]): Weather {
-  return {
-    temperature: item.weather.temp_c,
-    condition: item.weather.condition,
-    location: item.favorite.label,
-    hourly: item.hourly.map((forecast) => ({
-      time: forecast.time,
-      temperature: forecast.temp_c,
-      condition: forecast.condition,
-    })),
   };
 }
 

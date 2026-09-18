@@ -20,7 +20,7 @@ import {
   favoriteModalStyles,
 } from "./favorites.styles";
 
-export type FavoriteModalKind = "weather" | "stock" | "commute" | null;
+export type FavoriteModalKind = "stock" | "commute" | null;
 
 export function FavoriteAddModal({
   kind,
@@ -66,17 +66,6 @@ export function FavoriteAddModal({
   } | null>(null);
   if (!kind) return null;
 
-  function addWeather() {
-    navigator.geolocation.getCurrentPosition(({ coords }) =>
-      onCreate({
-        kind: "weather",
-        label: label.trim() || "현재 위치",
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-      }),
-    );
-  }
-
   function searchAddress(target: "origin" | "destination") {
     if (!window.daum?.Postcode) return;
     new window.daum.Postcode({
@@ -107,11 +96,9 @@ export function FavoriteAddModal({
           <h2 className={favoriteModalStyles.title}>
             {kind === "stock"
               ? "관심 종목 등록"
-              : kind === "weather"
-                ? "날씨 즐겨찾기 등록"
-                : editingCommute
-                  ? "즐겨찾기 경로 수정"
-                  : "경로 즐겨찾기 등록"}
+              : editingCommute
+                ? "즐겨찾기 경로 수정"
+                : "경로 즐겨찾기 등록"}
           </h2>
           <button
             type="button"
@@ -220,17 +207,6 @@ export function FavoriteAddModal({
               }}
             />
           </>
-        ) : kind === "weather" ? (
-          <div className={favoriteModalStyles.form}>
-            <Input
-              value={label}
-              onChange={(event) => setLabel(event.target.value)}
-              placeholder="즐겨찾기 이름 (예: 집)"
-            />
-            <Button isPending={isPending} onClick={addWeather}>
-              현재 위치 등록
-            </Button>
-          </div>
         ) : (
           <form
             className={favoriteModalStyles.form}
