@@ -24,6 +24,7 @@ export const heroCardStyles = {
     "flex shrink-0 items-center gap-1.5 text-[0.6875rem] font-semibold text-muted",
   liveDot: "size-2.5 rounded-full bg-success-500",
   content: "flex min-w-0 flex-1 flex-col",
+  guestContent: "flex min-w-0 flex-1 flex-col justify-center py-1 sm:py-2",
   durationSummary:
     "flex flex-wrap items-center gap-2 text-brand-800 [&>strong]:text-3xl [&>strong]:font-extrabold [&>span]:text-xs [&>span]:font-semibold [&>span]:text-muted [&_b]:rounded-md [&_b]:bg-danger-50 [&_b]:px-1.5 [&_b]:py-0.5 [&_b]:text-danger-500",
   routePoints:
@@ -40,7 +41,8 @@ export const heroCardStyles = {
     "flex min-h-[4.75rem] items-center rounded-xl bg-surface-subtle px-4 text-sm font-semibold leading-relaxed text-muted",
   originDot: "size-2.5 shrink-0 rounded-full bg-success-500",
   destinationDot: "size-2.5 shrink-0 rounded-full bg-danger-500",
-  actions: "mt-3 grid grid-cols-2 gap-2 [&>button]:w-full",
+  actions: "mt-auto grid grid-cols-2 gap-2 pt-3 [&>button]:w-full",
+  guestActions: "mt-4 grid grid-cols-2 gap-2 [&>button]:w-full",
   favoriteMapAction: "mt-3 [&>button]:w-full",
   commuteForm:
     "grid min-w-0 gap-3 rounded-xl bg-surface-muted p-4 sm:grid-cols-2 sm:p-5 sm:[&>button]:col-span-2 [&>button]:w-full",
@@ -52,7 +54,7 @@ export const heroCardStyles = {
   addressValue: "min-w-0 truncate text-ink",
   addressPlaceholder: "min-w-0 truncate text-subtle",
   addressSearch: "shrink-0 text-muted",
-  favoriteSection: "mt-4 border-t border-border-subtle pt-3",
+  favoriteSection: "mt-auto border-t border-border-subtle pt-3",
   favoriteHeader: "flex items-center justify-between gap-3",
   favoriteTitle: "text-xs font-bold text-muted",
   favoriteList: "mt-2 flex flex-wrap gap-2",

@@ -35,6 +35,7 @@ export const stockImpactCardStyles = {
   moreButton: "focus-ring rounded-lg p-2 text-muted hover:bg-surface-subtle",
   headerAddButton:
     "focus-ring flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold text-brand-700 hover:bg-brand-50",
+  headerActions: "flex shrink-0 items-center gap-1",
   controls: "mb-2 flex w-full min-w-0 flex-col gap-2",
   summaryMarketTabs:
     "mb-2 grid w-36 grid-cols-2 rounded-lg bg-surface-subtle p-1",

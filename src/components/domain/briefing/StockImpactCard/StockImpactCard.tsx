@@ -83,7 +83,7 @@ export function StockImpactCard({
             <ChartNoAxesCombined size={19} />
           </span>
           <CardTitle className={stockImpactCardStyles.title}>
-            {market ? "시장 요약" : "관심 종목 영향"}
+            {market ? "시장 요약" : "관심 종목"}
           </CardTitle>
         </div>
         {market ? (
@@ -100,13 +100,28 @@ export function StockImpactCard({
             <ChevronRight size={16} />
           </button>
         ) : isFavoriteList ? (
-          <button
-            type="button"
-            className={stockImpactCardStyles.headerAddButton}
-            onClick={onAddFavorite}
-          >
-            <Plus size={15} /> 종목 추가
-          </button>
+          <div className={stockImpactCardStyles.headerActions}>
+            {stocks.length > 3 && (
+              <button
+                type="button"
+                className={stockImpactCardStyles.expandButton}
+                aria-haspopup="dialog"
+                onClick={() => {
+                  setSelectedSymbol(null);
+                  setIsModalOpen(true);
+                }}
+              >
+                전체 보기 <ChevronRight size={15} />
+              </button>
+            )}
+            <button
+              type="button"
+              className={stockImpactCardStyles.headerAddButton}
+              onClick={onAddFavorite}
+            >
+              <Plus size={15} /> 종목 추가
+            </button>
+          </div>
         ) : (
           <button
             aria-label="관심 종목 전체 보기"
@@ -163,21 +178,19 @@ export function StockImpactCard({
             </div>
           ) : (
             <>
-              {stocks
-                .slice(0, isFavoriteList ? stocks.length : 3)
-                .map((stock, index) => (
-                  <div key={stock.symbol}>
-                    <StockRow
-                      stock={stock}
-                      rank={index + 1}
-                      showRank={!isFavoriteList}
-                      onSelect={() => {
-                        setSelectedSymbol(stock.symbol);
-                        setIsModalOpen(true);
-                      }}
-                    />
-                  </div>
-                ))}
+              {stocks.slice(0, 3).map((stock, index) => (
+                <div key={stock.symbol}>
+                  <StockRow
+                    stock={stock}
+                    rank={index + 1}
+                    showRank={!isFavoriteList}
+                    onSelect={() => {
+                      setSelectedSymbol(stock.symbol);
+                      setIsModalOpen(true);
+                    }}
+                  />
+                </div>
+              ))}
             </>
           )}
         </div>
@@ -209,7 +222,7 @@ export function StockImpactCard({
         </div>
       )}
       <DetailModal
-        title="주식 종목 Top10"
+        title={isFavoriteList ? "관심 종목 전체 보기" : "주식 종목 Top10"}
         icon={<ChartNoAxesCombined size={19} />}
         isOpen={isModalOpen}
         onClose={() => {
@@ -277,6 +290,7 @@ export function StockImpactCard({
               ) + 1
             }
             duration={modalDuration ?? duration ?? "1d"}
+            showRank={!isFavoriteList}
             onBack={() => setSelectedSymbol(null)}
           />
         ) : (isModalLoading ?? isLoading) ? (
@@ -297,6 +311,7 @@ export function StockImpactCard({
                 <StockRow
                   stock={stock}
                   rank={index + 1}
+                  showRank={!isFavoriteList}
                   onSelect={() => setSelectedSymbol(stock.symbol)}
                 />
               </div>
@@ -420,12 +435,14 @@ function StockChart({
   stock,
   rank,
   duration,
+  showRank = true,
   onBack,
 }: {
   id: string;
   stock: Briefing["stocks"][number];
   rank: number;
   duration: StockDuration;
+  showRank?: boolean;
   onBack: () => void;
 }) {
   const chart = stock.priceChart ?? [];
@@ -448,7 +465,9 @@ function StockChart({
       <div className={stockImpactCardStyles.chartHeader}>
         <div>
           <div className={stockImpactCardStyles.chartIdentity}>
-            <span className={stockImpactCardStyles.chartRank}>{rank}</span>
+            {showRank && (
+              <span className={stockImpactCardStyles.chartRank}>{rank}</span>
+            )}
             <p className={stockImpactCardStyles.chartTitle}>{stock.name}</p>
             <span className={stockImpactCardStyles.symbol}>{stock.symbol}</span>
           </div>

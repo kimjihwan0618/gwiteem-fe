@@ -27,6 +27,7 @@ interface WeatherCardProps {
   selectedFavoriteId?: number;
   onFavoriteSelect?: (id: number) => void;
   onAddFavorite?: () => void;
+  isGuestMode?: boolean;
 }
 
 export function WeatherCard({
@@ -38,6 +39,7 @@ export function WeatherCard({
   selectedFavoriteId,
   onFavoriteSelect,
   onAddFavorite,
+  isGuestMode = false,
 }: WeatherCardProps) {
   const hourlyRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -104,7 +106,13 @@ export function WeatherCard({
       {isLoading ? (
         <WeatherCardSkeleton />
       ) : hasWeatherData ? (
-        <>
+        <div
+          className={
+            isGuestMode
+              ? weatherCardStyles.guestContent
+              : weatherCardStyles.content
+          }
+        >
           <div className={weatherCardStyles.weatherBody}>
             <p className={weatherCardStyles.summary}>
               {guestWeather?.temperature ?? weather.temperature}°C
@@ -143,36 +151,38 @@ export function WeatherCard({
               </button>
             </div>
           )}
-        </>
+        </div>
       ) : null}
-      <div className={weatherCardStyles.favorites}>
-        {hasFavorites === false && onAddFavorite && (
-          <button
-            type="button"
-            className={weatherCardStyles.favoritePrompt}
-            onClick={onAddFavorite}
-          >
-            <Plus size={15} /> 즐겨찾기 날씨 지역을 등록하세요
-          </button>
-        )}
-        {favoriteOptions && favoriteOptions.length > 0 && (
-          <div className={weatherCardStyles.favoriteList}>
-            {favoriteOptions.map((favorite) => (
-              <button
-                key={favorite.id}
-                type="button"
-                className={weatherFavoriteChipVariants({
-                  isActive: favorite.id === selectedFavoriteId,
-                })}
-                aria-pressed={favorite.id === selectedFavoriteId}
-                onClick={() => onFavoriteSelect?.(favorite.id)}
-              >
-                {favorite.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {(onAddFavorite || (favoriteOptions && favoriteOptions.length > 0)) && (
+        <div className={weatherCardStyles.favorites}>
+          {hasFavorites === false && onAddFavorite && (
+            <button
+              type="button"
+              className={weatherCardStyles.favoritePrompt}
+              onClick={onAddFavorite}
+            >
+              <Plus size={15} /> 즐겨찾기 날씨 지역을 등록하세요
+            </button>
+          )}
+          {favoriteOptions && favoriteOptions.length > 0 && (
+            <div className={weatherCardStyles.favoriteList}>
+              {favoriteOptions.map((favorite) => (
+                <button
+                  key={favorite.id}
+                  type="button"
+                  className={weatherFavoriteChipVariants({
+                    isActive: favorite.id === selectedFavoriteId,
+                  })}
+                  aria-pressed={favorite.id === selectedFavoriteId}
+                  onClick={() => onFavoriteSelect?.(favorite.id)}
+                >
+                  {favorite.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </Card>
   );
 }

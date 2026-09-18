@@ -246,7 +246,11 @@ export function HeroCard({
           <span className={heroCardStyles.liveDot} /> 실시간 교통 반영
         </span>
       </CardHeader>
-      <div className={heroCardStyles.content}>
+      <div
+        className={
+          guestCommute ? heroCardStyles.guestContent : heroCardStyles.content
+        }
+      >
         {isCommuteLoading ? (
           <CommuteCardSkeleton />
         ) : hasCommuteData ? (
@@ -279,7 +283,7 @@ export function HeroCard({
           </div>
         )}
         {guestCommute && (
-          <div className={heroCardStyles.actions}>
+          <div className={heroCardStyles.guestActions}>
             <Button
               size="sm"
               variant="secondary"

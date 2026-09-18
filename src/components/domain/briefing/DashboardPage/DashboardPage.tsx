@@ -240,6 +240,7 @@ export function DashboardPage({
             onAddFavorite={
               favorites ? () => setFavoriteModal("weather") : undefined
             }
+            isGuestMode={Boolean(guest)}
           />
           <HeroCard
             data={data}
@@ -272,7 +273,7 @@ export function DashboardPage({
             onDeleteFavorite={(id) => {
               setDeletingCommuteId(id);
             }}
-            onAddFavorite={setFavoriteModal}
+            onAddFavorite={favorites ? setFavoriteModal : undefined}
           />
           <StockImpactCard
             stocks={displayedStocks}
@@ -461,6 +462,7 @@ function mapFavoriteStock(
     issue: item.related_issue_summary ?? "",
     changeDirection: item.change_direction,
     priceHistory: item.sparkline_7d,
+    priceChart: item.price_chart,
     relatedIssues: [],
   };
 }

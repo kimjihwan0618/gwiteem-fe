@@ -33,6 +33,18 @@ const stockFavoriteSchema = z.object({
   change_rate: z.number(),
   change_direction: z.enum(["UP", "DOWN", "FLAT"]),
   sparkline_7d: z.array(z.number()),
+  price_chart: z
+    .array(
+      z.object({
+        timestamp: z.string(),
+        open: z.number(),
+        high: z.number(),
+        low: z.number(),
+        close: z.number(),
+        volume: z.number(),
+      }),
+    )
+    .default([]),
 });
 
 const commuteFavoriteSchema = z.object({

@@ -6,19 +6,22 @@ export const weatherFavoriteChipVariants = cva(
     variants: {
       isActive: {
         true: "bg-brand-700 text-white",
-        false: "bg-surface-subtle text-muted hover:bg-brand-50 hover:text-brand-700",
+        false:
+          "bg-surface-subtle text-muted hover:bg-brand-50 hover:text-brand-700",
       },
     },
   },
 );
 
 export const weatherCardStyles = {
-  root: "flex min-w-0 flex-col p-4 sm:p-5",
+  root: "flex h-full min-w-0 flex-col p-4 sm:p-5",
   header: "mb-3 min-w-0",
   titleGroup: "flex min-w-0 items-center gap-2.5",
   titleIcon:
     "grid size-8 shrink-0 place-items-center rounded-full bg-brand-50 sm:size-9",
   title: "text-lg sm:text-xl",
+  content: "min-w-0",
+  guestContent: "flex min-w-0 flex-1 flex-col justify-center py-2",
   weatherBody: "flex min-w-0 items-center justify-between gap-3",
   summary:
     "flex flex-wrap items-baseline gap-2 text-2xl font-extrabold tracking-[-0.04em] text-brand-800 sm:text-3xl [&>span]:text-xs [&>span]:font-semibold [&>span]:tracking-normal [&>span]:text-muted",
@@ -26,7 +29,7 @@ export const weatherCardStyles = {
     "flex min-w-0 items-center gap-1.5 truncate text-[0.6875rem] text-subtle",
   locationSkeleton: "h-3.5 w-28 shrink-0 rounded-full",
   hourlyFrame:
-    "relative mt-3 min-w-0 overflow-hidden border-t border-border-subtle pt-3",
+    "relative mt-4 min-w-0 overflow-hidden border-t border-border-subtle pt-4",
   skeleton: "min-w-0",
   skeletonSummary: "flex items-center gap-2",
   temperatureSkeleton: "h-8 w-24",
@@ -52,9 +55,8 @@ export const weatherCardStyles = {
   iconCloud: "text-subtle",
   iconRain: "text-brand-500",
   iconSnow: "text-brand-400",
-  favorites: "mt-2 min-w-0",
+  favorites: "mt-auto min-w-0 pt-3",
   favoritePrompt:
     "focus-ring flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-brand-300 px-4 py-6 text-xs font-bold text-brand-700 hover:bg-brand-50",
-  favoriteList:
-    "flex flex-wrap gap-1.5",
+  favoriteList: "flex flex-wrap gap-1.5",
 } as const;
