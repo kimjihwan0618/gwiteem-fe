@@ -1,6 +1,6 @@
 export interface NotificationItem {
   id: string;
-  type: "briefing" | "market" | "commute";
+  type: "weather" | "market" | "commute";
   title: string;
   description: string;
   createdAt: string;
@@ -10,9 +10,9 @@ export interface NotificationItem {
 export const dummyNotifications: NotificationItem[] = [
   {
     id: "notice-1",
-    type: "briefing",
-    title: "오늘의 3분 브리핑이 준비됐어요",
-    description: "관심 이슈 3개와 출근길 변화를 확인해 보세요.",
+    type: "weather",
+    title: "기온 변화가 있어요",
+    description: "외출 전 시간대별 날씨를 확인해 보세요.",
     createdAt: "방금 전",
     isRead: false,
   },
@@ -27,8 +27,8 @@ export const dummyNotifications: NotificationItem[] = [
   {
     id: "notice-3",
     type: "market",
-    title: "관심 종목 관련 주요 이슈",
-    description: "HBM 공급계약 관련 뉴스 18건을 하나로 정리했어요.",
+    title: "관심 종목 가격이 변동했어요",
+    description: "등록한 종목의 현재가와 차트를 확인해 보세요.",
     createdAt: "1시간 전",
     isRead: true,
   },

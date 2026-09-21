@@ -1,9 +1,4 @@
 export const queryKeys = {
-  briefing: {
-    all: ["briefing"] as const,
-    daily: (date: string) =>
-      [...queryKeys.briefing.all, "daily", date] as const,
-  },
   auth: {
     all: ["auth"] as const,
     session: () => [...queryKeys.auth.all, "session"] as const,
@@ -19,5 +14,13 @@ export const queryKeys = {
   favorites: {
     all: ["favorites"] as const,
     lists: () => [...queryKeys.favorites.all, "lists"] as const,
+  },
+  choices: {
+    all: ["choices"] as const,
+    list: (category: string, sort: string) =>
+      [...queryKeys.choices.all, "list", category, sort] as const,
+    detail: (questionId: number | null) =>
+      [...queryKeys.choices.all, "detail", questionId] as const,
+    mine: () => [...queryKeys.choices.all, "mine"] as const,
   },
 };

@@ -2,12 +2,14 @@ import {
   Car,
   Clock3,
   Map,
+  Navigation,
   MoreHorizontal,
   Pencil,
   Plus,
   RefreshCw,
   Search,
   Trash2,
+  WalletCards,
 } from "lucide-react";
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
@@ -18,14 +20,12 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import type { ApiResponse } from "@/lib/api/response";
 import type { Commute } from "@/app/(page)/(home)/type";
 import type { Favorites } from "@/app/(page)/(home)/type";
-import type { Briefing } from "@/app/(page)/(home)/type/briefing";
 import { DetailModal } from "../DetailModal";
 import { RouteMap } from "../RouteMap";
 import { heroCardStyles } from "./styles";
 import { commuteFavoriteChipVariants } from "./styles";
 
 interface HeroCardProps {
-  data: Briefing;
   guestCommute?: UseMutationResult<
     ApiResponse<Commute>,
     Error,
@@ -61,7 +61,6 @@ declare global {
 const COMMUTE_ROUTE_STORAGE_KEY = "daru:guest-commute-route";
 
 export function HeroCard({
-  data,
   guestCommute,
   hasCommuteFavorites,
   favoriteCommute,
@@ -86,10 +85,26 @@ export function HeroCard({
   const guestCommuteData = guestCommute?.data?.data;
   const durationMinutes = guestCommute
     ? guestCommuteData?.durationMinutes
-    : (favoriteCommute?.commute.estimated_minutes ?? data.commute.etaMinutes);
+    : favoriteCommute?.commute.estimated_minutes;
   const delayMinutes = guestCommute
     ? guestCommuteData?.delayMinutes
-    : (favoriteCommute?.commute.delay_minutes ?? data.commute.delayMinutes);
+    : favoriteCommute?.commute.delay_minutes;
+  const distanceMeters = guestCommute
+    ? guestCommuteData?.distanceMeters
+    : favoriteCommute?.commute.distance_meters;
+  const taxiFare = guestCommute
+    ? guestCommuteData?.taxiFare
+    : favoriteCommute?.commute.taxi_fare;
+  const tollFare = guestCommute
+    ? guestCommuteData?.tollFare
+    : favoriteCommute?.commute.toll_fare;
+  const routeSteps = guestCommute
+    ? guestCommuteData?.routeSteps
+    : favoriteCommute?.route_steps.map((step) => ({
+        instruction: step.instruction,
+        distanceMeters: step.distance_meters,
+        durationSeconds: step.duration_seconds,
+      }));
   const isCommuteLoading =
     Boolean(isFavoriteLoading) ||
     (Boolean(guestCommute) &&
@@ -109,7 +124,7 @@ export function HeroCard({
     guestCommuteData?.destination?.label ||
     favoriteCommute?.favorite.destination_address ||
     destination ||
-    (guestCommute ? "도착지" : data.commute.destination);
+    "도착지";
   const mapOrigin =
     guestCommuteData?.origin ??
     (favoriteCommute
@@ -443,24 +458,60 @@ export function HeroCard({
         </DetailModal>
       )}
       <DetailModal
-        title="경로 지도"
+        title="자동차 경로 상세"
         icon={<Map size={19} />}
         isOpen={modal === "map"}
         onClose={() => setModal(null)}
       >
-        <div className={heroCardStyles.mapModal}>
-          <RouteMap
-            origin={mapOrigin}
-            destination={mapDestination}
-            routePolyline={mapRoutePolyline}
-            originLabel={originLabel}
-            destinationLabel={destinationLabel}
-            isLoading={guestCommute?.isPending || isFavoriteLoading}
-          />
+        <div className={heroCardStyles.routeDetail}>
+          <div className={heroCardStyles.routeMetrics}>
+            <div>
+              <Navigation size={16} />
+              <span>거리</span>
+              <strong>{formatDistance(distanceMeters)}</strong>
+            </div>
+            <div>
+              <WalletCards size={16} />
+              <span>예상 비용</span>
+              <strong>{formatRouteCost(taxiFare, tollFare)}</strong>
+            </div>
+          </div>
+          <div className={heroCardStyles.mapModal}>
+            <RouteMap
+              origin={mapOrigin}
+              destination={mapDestination}
+              routePolyline={mapRoutePolyline}
+              originLabel={originLabel}
+              destinationLabel={destinationLabel}
+              isLoading={guestCommute?.isPending || isFavoriteLoading}
+            />
+          </div>
+          {routeSteps && routeSteps.length > 0 && (
+            <ol className={heroCardStyles.routeSteps}>
+              {routeSteps.slice(0, 8).map((step, index) => (
+                <li key={`${step.instruction}-${index}`}>
+                  <span>{index + 1}</span>
+                  <p>{step.instruction}</p>
+                  <small>{formatDistance(step.distanceMeters)}</small>
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
       </DetailModal>
     </Card>
   );
+}
+
+function formatDistance(distanceMeters?: number) {
+  if (!distanceMeters) return "정보 없음";
+  if (distanceMeters < 1000) return `${distanceMeters.toLocaleString()}m`;
+  return `${(distanceMeters / 1000).toFixed(1)}km`;
+}
+
+function formatRouteCost(taxiFare?: number, tollFare?: number) {
+  const total = (taxiFare ?? 0) + (tollFare ?? 0);
+  return total > 0 ? `약 ${total.toLocaleString()}원` : "통행료 없음";
 }
 
 function CommuteCardSkeleton() {

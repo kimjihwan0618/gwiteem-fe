@@ -6,7 +6,6 @@ const stockFavoriteSchema = z.object({
     name: z.string(),
     market: z.string(),
   }),
-  related_issue_summary: z.string().nullable(),
   current_price: z.number(),
   change_rate: z.number(),
   change_direction: z.enum(["UP", "DOWN", "FLAT"]),
@@ -40,7 +39,19 @@ const commuteFavoriteSchema = z.object({
     estimated_minutes: z.number(),
     delay_minutes: z.number(),
     delay_reason: z.string().nullable(),
+    distance_meters: z.number().default(0),
+    taxi_fare: z.number().default(0),
+    toll_fare: z.number().default(0),
   }),
+  route_steps: z
+    .array(
+      z.object({
+        instruction: z.string(),
+        distance_meters: z.number(),
+        duration_seconds: z.number(),
+      }),
+    )
+    .default([]),
   route_polyline: z
     .array(z.object({ lat: z.number(), lng: z.number() }))
     .default([]),

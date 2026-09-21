@@ -2,6 +2,7 @@
 
 import { ChevronDown, LogOut, Settings2, UserRound } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useAuth } from "@/components/domain/auth/AuthProvider";
@@ -43,11 +44,11 @@ export function ProfileMenu() {
             </div>
           </div>
           <div className={profileMenuStyles.actions}>
+            <Link href="/#my" className={profileMenuStyles.action}>
+              <UserRound size={17} /> 내 선택
+            </Link>
             <button className={profileMenuStyles.action}>
-              <UserRound size={17} /> 내 프로필
-            </button>
-            <button className={profileMenuStyles.action}>
-              <Settings2 size={17} /> 관심 설정
+              <Settings2 size={17} /> 계정 설정
             </button>
           </div>
           <button

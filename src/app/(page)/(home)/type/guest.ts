@@ -93,14 +93,6 @@ export const stockSchema = z
     change_direction: z.enum(["UP", "DOWN", "FLAT"]).optional(),
     price_history_7d: z.array(numericValue).default([]),
     price_chart: z.array(stockChartPointSchema).default([]),
-    related_issues: z
-      .array(
-        z.object({
-          id: z.number(),
-          title: z.string(),
-        }),
-      )
-      .default([]),
   })
   .transform((value) => {
     const changeRate = value.change_rate ?? value.change_percent ?? 0;
@@ -114,7 +106,6 @@ export const stockSchema = z
         (changeRate > 0 ? "UP" : changeRate < 0 ? "DOWN" : "FLAT"),
       priceHistory: value.price_history_7d,
       priceChart: value.price_chart,
-      relatedIssues: value.related_issues,
     };
   });
 
@@ -144,6 +135,18 @@ export const commuteSchema = z
     delay: numericValue.optional(),
     delay_reason: z.string().nullable().optional(),
     recommended_departure_time: z.string().nullable().optional(),
+    distance_meters: numericValue.default(0),
+    taxi_fare: numericValue.default(0),
+    toll_fare: numericValue.default(0),
+    route_steps: z
+      .array(
+        z.object({
+          instruction: z.string(),
+          distance_meters: numericValue,
+          duration_seconds: numericValue,
+        }),
+      )
+      .default([]),
     route_polyline: z
       .array(
         z.object({
@@ -165,6 +168,14 @@ export const commuteSchema = z
     delayMinutes: value.delay_minutes ?? value.delay ?? null,
     delayReason: value.delay_reason ?? null,
     recommendedDepartureTime: value.recommended_departure_time ?? null,
+    distanceMeters: value.distance_meters,
+    taxiFare: value.taxi_fare,
+    tollFare: value.toll_fare,
+    routeSteps: value.route_steps.map((step) => ({
+      instruction: step.instruction,
+      distanceMeters: step.distance_meters,
+      durationSeconds: step.duration_seconds,
+    })),
     message: value.message ?? null,
     origin: value.origin,
     destination: value.destination,

@@ -13,24 +13,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type { Weather } from "@/app/(page)/(home)/type";
-import type { Briefing } from "@/app/(page)/(home)/type/briefing";
 import { weatherCardStyles } from "./styles";
 
 interface WeatherCardProps {
-  weather: Briefing["weather"];
   guestWeather?: Weather;
   isLoading?: boolean;
 }
 
-export function WeatherCard({
-  weather,
-  guestWeather,
-  isLoading,
-}: WeatherCardProps) {
+export function WeatherCard({ guestWeather, isLoading }: WeatherCardProps) {
   const hourlyRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const hasWeatherData = Boolean(guestWeather) || Boolean(weather);
+  const hasWeatherData = Boolean(guestWeather);
 
   const updateScrollState = useCallback(() => {
     const container = hourlyRef.current;
@@ -67,7 +61,7 @@ export function WeatherCard({
         <div className={weatherCardStyles.titleGroup}>
           <span className={weatherCardStyles.titleIcon} aria-hidden="true">
             <WeatherIcon
-              condition={guestWeather?.condition ?? weather.condition}
+              condition={guestWeather?.condition ?? "날씨"}
               size={19}
             />
           </span>
@@ -90,8 +84,8 @@ export function WeatherCard({
         <div className={weatherCardStyles.content}>
           <div className={weatherCardStyles.weatherBody}>
             <p className={weatherCardStyles.summary}>
-              {guestWeather?.temperature ?? weather.temperature}°C
-              <span>{guestWeather?.condition ?? weather.condition}</span>
+              {guestWeather?.temperature}°C
+              <span>{guestWeather?.condition}</span>
             </p>
           </div>
           {guestWeather && guestWeather.hourly.length > 0 && (

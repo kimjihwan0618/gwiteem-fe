@@ -46,7 +46,12 @@ export const heroCardStyles = {
   favoriteMapAction: "mt-3 [&>button]:w-full",
   commuteForm:
     "grid min-w-0 gap-3 rounded-xl bg-surface-muted p-4 sm:grid-cols-2 sm:p-5 sm:[&>button]:col-span-2 [&>button]:w-full",
-  mapModal: "h-[55dvh] min-h-[320px] [&>div]:h-full",
+  routeDetail: "grid gap-4",
+  routeMetrics:
+    "grid grid-cols-2 gap-2 [&>div]:grid [&>div]:grid-cols-[auto_1fr] [&>div]:items-center [&>div]:gap-x-2 [&>div]:rounded-xl [&>div]:bg-surface-muted [&>div]:p-3 [&_svg]:row-span-2 [&_svg]:text-brand-600 [&_span]:text-xs [&_span]:text-muted [&_strong]:text-sm [&_strong]:text-ink",
+  mapModal: "h-[44dvh] min-h-[280px] [&>div]:h-full",
+  routeSteps:
+    "grid max-h-52 gap-1 overflow-y-auto rounded-xl border border-border-subtle p-2 [&_li]:grid [&_li]:grid-cols-[1.5rem_1fr_auto] [&_li]:items-center [&_li]:gap-2 [&_li]:rounded-lg [&_li]:px-2 [&_li]:py-2 [&_li>span]:grid [&_li>span]:size-6 [&_li>span]:place-items-center [&_li>span]:rounded-full [&_li>span]:bg-brand-50 [&_li>span]:text-xs [&_li>span]:font-bold [&_li>span]:text-brand-700 [&_p]:text-sm [&_p]:font-medium [&_small]:text-xs [&_small]:text-muted",
   addressField: "min-w-0",
   addressLabel: "mb-1.5 block text-xs font-bold text-muted",
   addressPicker:

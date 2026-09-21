@@ -10,7 +10,7 @@ import {
 import { useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
-import type { Briefing } from "@/app/(page)/(home)/type/briefing";
+import type { StockCardItem } from "@/app/(page)/(home)/type/briefing";
 import type { StockDuration, StockMarket } from "@/app/(page)/(home)/type";
 import { DetailModal } from "../DetailModal";
 import {
@@ -47,7 +47,7 @@ export function StockImpactCard({
   isModalLoading,
   isModalError,
 }: {
-  stocks: Briefing["stocks"];
+  stocks: StockCardItem[];
   market?: StockMarket;
   duration?: StockDuration;
   onMarketChange?: (market: StockMarket) => void;
@@ -59,7 +59,7 @@ export function StockImpactCard({
   selectedFavoriteId?: string;
   onFavoriteSelect?: (id: string) => void;
   isFavoriteList?: boolean;
-  modalStocks?: Briefing["stocks"];
+  modalStocks?: StockCardItem[];
   modalMarket?: StockMarket;
   modalDuration?: StockDuration;
   onModalMarketChange?: (market: StockMarket) => void;
@@ -367,7 +367,7 @@ function StockRow({
   onSelect,
   showRank = true,
 }: {
-  stock: Briefing["stocks"][number];
+  stock: StockCardItem;
   rank: number;
   onSelect: () => void;
   showRank?: boolean;
@@ -394,14 +394,6 @@ function StockRow({
           <p className={stockImpactCardStyles.name}>{stock.name}</p>
           <span className={stockImpactCardStyles.symbol}>{stock.symbol}</span>
         </div>
-        {stock.issue && (
-          <p className={stockImpactCardStyles.issue}>
-            {stock.issue}
-            {stock.relatedIssues && stock.relatedIssues.length > 1
-              ? ` 외 ${stock.relatedIssues.length - 1}건`
-              : ""}
-          </p>
-        )}
       </div>
       <div className={stockImpactCardStyles.metrics}>
         {stock.priceHistory && stock.priceHistory.length > 1 && (
@@ -439,7 +431,7 @@ function StockChart({
   onBack,
 }: {
   id: string;
-  stock: Briefing["stocks"][number];
+  stock: StockCardItem;
   rank: number;
   duration: StockDuration;
   showRank?: boolean;
@@ -459,6 +451,7 @@ function StockChart({
   const labelIndexes = hasChart ? getAxisLabelIndexes(chart.length) : [];
   const ma5 = calculateMovingAverage(closeValues, 5);
   const ma20 = calculateMovingAverage(closeValues, 20);
+  const latest = chart.at(-1);
 
   return (
     <div id={id} className={stockImpactCardStyles.chartOverlay}>
@@ -485,180 +478,220 @@ function StockChart({
         </button>
       </div>
       {hasChart ? (
-        <svg
-          viewBox="0 0 360 236"
-          className={stockImpactCardStyles.chart}
-          role="img"
-          aria-label={`${stock.name} ${getChartPeriodLabel(duration)} 캔들 차트`}
-        >
-          <rect
-            x="0"
-            y="0"
-            width="52"
-            height="200"
-            className={stockImpactCardStyles.chartAxisGutter}
-          />
-          <rect
-            x="52"
-            y="200"
-            width="296"
-            height="36"
-            className={stockImpactCardStyles.chartAxisGutter}
-          />
-          <line
-            x1="52"
-            y1="0"
-            x2="52"
-            y2="200"
-            className={stockImpactCardStyles.chartSectionDivider}
-          />
-          <line
-            x1="52"
-            y1="160"
-            x2="348"
-            y2="160"
-            className={stockImpactCardStyles.chartSectionDivider}
-          />
-          <line
-            x1="52"
-            y1="200"
-            x2="348"
-            y2="200"
-            className={stockImpactCardStyles.chartSectionDivider}
-          />
-          {[max, middle, min].map((price, index) => {
-            const y = 20 + index * 65;
-            return (
-              <g key={`${price}-${index}`}>
-                <line
-                  x1="54"
-                  y1={y}
-                  x2="346"
-                  y2={y}
-                  className={stockImpactCardStyles.chartGuide}
-                />
+        <>
+          {latest && (
+            <dl className={stockImpactCardStyles.ohlcSummary}>
+              <div>
+                <dt>시가</dt>
+                <dd>{formatChartValue(latest.open)}</dd>
+              </div>
+              <div>
+                <dt>고가</dt>
+                <dd>{formatChartValue(latest.high)}</dd>
+              </div>
+              <div>
+                <dt>저가</dt>
+                <dd>{formatChartValue(latest.low)}</dd>
+              </div>
+              <div>
+                <dt>종가</dt>
+                <dd>{formatChartValue(latest.close)}</dd>
+              </div>
+              <div>
+                <dt>거래량</dt>
+                <dd>{formatAxisPrice(latest.volume)}</dd>
+              </div>
+            </dl>
+          )}
+          <svg
+            viewBox="0 0 360 236"
+            className={stockImpactCardStyles.chart}
+            role="img"
+            aria-label={`${stock.name} ${getChartPeriodLabel(duration)} 캔들 차트`}
+          >
+            <rect
+              x="0"
+              y="0"
+              width="52"
+              height="200"
+              className={stockImpactCardStyles.chartAxisGutter}
+            />
+            <rect
+              x="52"
+              y="200"
+              width="296"
+              height="36"
+              className={stockImpactCardStyles.chartAxisGutter}
+            />
+            <line
+              x1="52"
+              y1="0"
+              x2="52"
+              y2="200"
+              className={stockImpactCardStyles.chartSectionDivider}
+            />
+            <line
+              x1="52"
+              y1="160"
+              x2="348"
+              y2="160"
+              className={stockImpactCardStyles.chartSectionDivider}
+            />
+            <line
+              x1="52"
+              y1="200"
+              x2="348"
+              y2="200"
+              className={stockImpactCardStyles.chartSectionDivider}
+            />
+            {[max, middle, min].map((price, index) => {
+              const y = 20 + index * 65;
+              return (
+                <g key={`${price}-${index}`}>
+                  <line
+                    x1="54"
+                    y1={y}
+                    x2="346"
+                    y2={y}
+                    className={stockImpactCardStyles.chartGuide}
+                  />
+                  <text
+                    x="48"
+                    y={y + 3}
+                    textAnchor="end"
+                    className={stockImpactCardStyles.chartAxisText}
+                  >
+                    {formatAxisPrice(price)}
+                  </text>
+                </g>
+              );
+            })}
+            {labelIndexes.map((index) => {
+              const timestamp = chart[index].timestamp;
+              const x = 54 + (index / (chart.length - 1)) * 292;
+              return (
                 <text
-                  x="48"
-                  y={y + 3}
-                  textAnchor="end"
+                  key={timestamp}
+                  x={x}
+                  y="214"
+                  textAnchor="middle"
                   className={stockImpactCardStyles.chartAxisText}
                 >
-                  {formatAxisPrice(price)}
+                  {formatAxisTime(timestamp, duration)}
                 </text>
-              </g>
-            );
-          })}
-          {labelIndexes.map((index) => {
-            const timestamp = chart[index].timestamp;
-            const x = 54 + (index / (chart.length - 1)) * 292;
-            return (
-              <text
-                key={timestamp}
-                x={x}
-                y="214"
-                textAnchor="middle"
-                className={stockImpactCardStyles.chartAxisText}
-              >
-                {formatAxisTime(timestamp, duration)}
-              </text>
-            );
-          })}
-          <text x="12" y="13" className={stockImpactCardStyles.chartAxisTitle}>
-            가격
-          </text>
-          <text
-            x="200"
-            y="232"
-            textAnchor="middle"
-            className={stockImpactCardStyles.chartTimeTitle}
-          >
-            시간
-          </text>
-          {chart.map((candle, index) => {
-            const x = 54 + (index / (chart.length - 1)) * 292;
-            const highY = getPriceY(candle.high, min, max);
-            const lowY = getPriceY(candle.low, min, max);
-            const openY = getPriceY(candle.open, min, max);
-            const closeY = getPriceY(candle.close, min, max);
-            const isUp = candle.close >= candle.open;
-            const bodyY = Math.min(openY, closeY);
-            const bodyHeight = Math.max(1.5, Math.abs(closeY - openY));
-            const volumeHeight = (candle.volume / maxVolume) * 32;
+              );
+            })}
+            <text
+              x="12"
+              y="13"
+              className={stockImpactCardStyles.chartAxisTitle}
+            >
+              가격
+            </text>
+            <text
+              x="200"
+              y="232"
+              textAnchor="middle"
+              className={stockImpactCardStyles.chartTimeTitle}
+            >
+              시간
+            </text>
+            {chart.map((candle, index) => {
+              const x = 54 + (index / (chart.length - 1)) * 292;
+              const highY = getPriceY(candle.high, min, max);
+              const lowY = getPriceY(candle.low, min, max);
+              const openY = getPriceY(candle.open, min, max);
+              const closeY = getPriceY(candle.close, min, max);
+              const isUp = candle.close >= candle.open;
+              const bodyY = Math.min(openY, closeY);
+              const bodyHeight = Math.max(1.5, Math.abs(closeY - openY));
+              const volumeHeight = (candle.volume / maxVolume) * 32;
 
-            return (
-              <g key={candle.timestamp}>
-                <line
-                  x1={x}
-                  y1={highY}
-                  x2={x}
-                  y2={lowY}
-                  className={
-                    isUp
-                      ? stockImpactCardStyles.candleUp
-                      : stockImpactCardStyles.candleDown
-                  }
-                />
-                <rect
-                  x={x - candleWidth / 2}
-                  y={bodyY}
-                  width={candleWidth}
-                  height={bodyHeight}
-                  className={
-                    isUp
-                      ? stockImpactCardStyles.candleUp
-                      : stockImpactCardStyles.candleDown
-                  }
-                />
-                <rect
-                  x={x - candleWidth / 2}
-                  y={198 - volumeHeight}
-                  width={candleWidth}
-                  height={volumeHeight}
-                  className={
-                    isUp
-                      ? stockImpactCardStyles.volumeUp
-                      : stockImpactCardStyles.volumeDown
-                  }
-                />
-              </g>
-            );
-          })}
-          <polyline
-            points={getMovingAveragePoints(ma5, min, max)}
-            fill="none"
-            className={stockImpactCardStyles.movingAverage5}
-            strokeWidth="1.5"
-          />
-          <polyline
-            points={getMovingAveragePoints(ma20, min, max)}
-            fill="none"
-            className={stockImpactCardStyles.movingAverage20}
-            strokeWidth="1.5"
-          />
-          <text
-            x="58"
-            y="158"
-            className={stockImpactCardStyles.movingAverage5Label}
-          >
-            MA5
-          </text>
-          <text
-            x="86"
-            y="158"
-            className={stockImpactCardStyles.movingAverage20Label}
-          >
-            MA20
-          </text>
-          <text x="12" y="178" className={stockImpactCardStyles.chartAxisTitle}>
-            거래량
-          </text>
-        </svg>
+              return (
+                <g key={candle.timestamp}>
+                  <line
+                    x1={x}
+                    y1={highY}
+                    x2={x}
+                    y2={lowY}
+                    className={
+                      isUp
+                        ? stockImpactCardStyles.candleUp
+                        : stockImpactCardStyles.candleDown
+                    }
+                  />
+                  <rect
+                    x={x - candleWidth / 2}
+                    y={bodyY}
+                    width={candleWidth}
+                    height={bodyHeight}
+                    className={
+                      isUp
+                        ? stockImpactCardStyles.candleUp
+                        : stockImpactCardStyles.candleDown
+                    }
+                  />
+                  <rect
+                    x={x - candleWidth / 2}
+                    y={198 - volumeHeight}
+                    width={candleWidth}
+                    height={volumeHeight}
+                    className={
+                      isUp
+                        ? stockImpactCardStyles.volumeUp
+                        : stockImpactCardStyles.volumeDown
+                    }
+                  />
+                </g>
+              );
+            })}
+            <polyline
+              points={getMovingAveragePoints(ma5, min, max)}
+              fill="none"
+              className={stockImpactCardStyles.movingAverage5}
+              strokeWidth="1.5"
+            />
+            <polyline
+              points={getMovingAveragePoints(ma20, min, max)}
+              fill="none"
+              className={stockImpactCardStyles.movingAverage20}
+              strokeWidth="1.5"
+            />
+            <text
+              x="58"
+              y="158"
+              className={stockImpactCardStyles.movingAverage5Label}
+            >
+              MA5
+            </text>
+            <text
+              x="86"
+              y="158"
+              className={stockImpactCardStyles.movingAverage20Label}
+            >
+              MA20
+            </text>
+            <text
+              x="12"
+              y="178"
+              className={stockImpactCardStyles.chartAxisTitle}
+            >
+              거래량
+            </text>
+          </svg>
+        </>
       ) : (
         <div className={stockImpactCardStyles.chartEmpty}>
           차트 데이터를 불러올 수 없습니다.
         </div>
       )}
     </div>
+  );
+}
+
+function formatChartValue(value: number) {
+  return new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 2 }).format(
+    value,
   );
 }
 

@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 
 export const desktopNavItemVariants = cva(
-  "focus-ring relative z-10 flex h-full w-28 items-center justify-center text-[0.9375rem] font-semibold transition-colors duration-300",
+  "focus-ring relative z-10 flex h-full w-20 items-center justify-center text-[0.9375rem] font-semibold transition-colors duration-300",
   {
     variants: {
       active: {
@@ -13,14 +13,15 @@ export const desktopNavItemVariants = cva(
 );
 
 export const desktopActiveIndicatorVariants = cva(
-  "active-motion absolute bottom-0 h-0.5 w-20 rounded-full bg-brand-700 transition-[left] duration-500 ease-in-out",
+  "active-motion absolute bottom-0 h-0.5 w-14 rounded-full bg-brand-700 transition-[left] duration-500 ease-in-out",
   {
     variants: {
       position: {
-        0: "left-[1rem]",
-        1: "left-[8rem]",
-        2: "left-[15rem]",
-        3: "left-[22rem]",
+        0: "left-[0.75rem]",
+        1: "left-[5.75rem]",
+        2: "left-[10.75rem]",
+        3: "left-[15.75rem]",
+        4: "left-[20.75rem]",
       },
     },
     defaultVariants: { position: 0 },
@@ -52,6 +53,8 @@ export const appHeaderStyles = {
     "focus-ring inline-flex min-h-10 items-center gap-2 rounded-full border border-border px-4 text-sm font-semibold text-ink-soft hover:bg-surface-muted",
   signUpLink:
     "focus-ring inline-flex min-h-10 items-center gap-2 rounded-full bg-brand-700 px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-brand-800",
+  myChoicesLink:
+    "focus-ring rounded-full px-4 py-2 text-sm font-bold text-brand-700 hover:bg-brand-50",
   mobileLayer: "fixed inset-0 z-50 lg:hidden",
   mobileBackdrop: "animate-fade-up absolute inset-0 bg-brand-900/40",
   mobilePanel:

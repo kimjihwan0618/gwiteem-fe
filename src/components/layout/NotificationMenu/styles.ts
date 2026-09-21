@@ -10,7 +10,7 @@ export const notificationTypeVariants = cva(
   {
     variants: {
       type: {
-        briefing: "bg-brand-100 text-brand-600",
+        weather: "bg-brand-100 text-brand-600",
         market: "bg-violet-50 text-violet-600",
         commute: "bg-success-50 text-success-700",
       },

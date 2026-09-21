@@ -1,5 +1,5 @@
 export interface HomePageState {
-  activeSection: "briefing" | "issues" | "stocks" | "settings";
+  activeSection: "dashboard" | "stocks";
 }
 
 export type HomePageAction = {
@@ -9,3 +9,4 @@ export type HomePageAction = {
 export * from "./briefing";
 export * from "./favorites";
 export * from "./guest";
+export * from "./choices";

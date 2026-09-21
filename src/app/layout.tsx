@@ -5,9 +5,8 @@ import { AuthProvider } from "@/components/domain/auth/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Gwiteem | 오늘의 3분 브리핑",
-  description:
-    "출근길, 관심 산업과 종목에 영향을 주는 변화만 골라 전하는 개인화 아침 브리핑",
+  title: "Gwiteem | 오늘, 당신의 선택은?",
+  description: "가볍게 선택하고 사람들의 생각을 확인하는 일상 선택 서비스",
 };
 
 export default function RootLayout({

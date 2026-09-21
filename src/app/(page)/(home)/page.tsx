@@ -1,129 +1,118 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuth } from "@/components/domain/auth/AuthProvider";
-import { DashboardPage } from "@/components/domain/briefing/DashboardPage";
+import { useEffect, useRef, useState } from "react";
 import {
-  useBriefingMutations,
-  useCommuteCheck,
-  useDailyBriefing,
-  useFavorites,
-  useGuestWeather,
-  useTopStocks,
+  useChoiceQuestion,
+  useChoiceQuestions,
+  useMigrateGuestVotes,
+  useMyChoices,
+  useVoteQuestion,
 } from "./hooks";
-import type { StockDuration, StockMarket } from "./type";
+import type { ChoiceCategory, ChoiceOption } from "./type";
+import { useAuth } from "@/components/domain/auth/AuthProvider";
+import { ChoiceHub } from "@/components/domain/choices/ChoiceHub";
+import { useToast } from "@/components/ui/ToastProvider";
+import { ApiError } from "@/lib/api/response";
+
+const categoryHashes = new Set([
+  "all",
+  "work",
+  "spending",
+  "relationship",
+  "daily",
+]);
 
 export default function Home() {
   const { user, isReady } = useAuth();
-  const [coordinates, setCoordinates] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [isLocationUnavailable, setIsLocationUnavailable] = useState(false);
-  const [stockMarket, setStockMarket] = useState<StockMarket>("domestic");
-  const stockDuration: StockDuration = "1d";
-  const [stockModalMarket, setStockModalMarket] =
-    useState<StockMarket>("domestic");
-  const [stockModalDuration, setStockModalDuration] =
-    useState<StockDuration>("1d");
-  const isGuest = isReady && !user;
-  const briefing = useDailyBriefing();
-  const actions = useBriefingMutations();
-  const weather = useGuestWeather(
-    coordinates,
-    isReady,
-    isLocationUnavailable,
+  const toast = useToast();
+  const [activeCategory, setActiveCategory] = useState<ChoiceCategory | "all">(
+    "all",
   );
-  const stocks = useTopStocks(stockMarket, stockDuration, isReady);
-  const modalStocks = useTopStocks(
-    stockModalMarket,
-    stockModalDuration,
-    isGuest,
+  const [activeView, setActiveView] = useState<"questions" | "mine">(
+    "questions",
   );
-  const commute = useCommuteCheck();
-  const favorites = useFavorites(isReady && Boolean(user));
+  const [sort, setSort] = useState<"popular" | "latest">("popular");
+  const [selectedQuestionId, setSelectedQuestionId] = useState<number | null>(
+    null,
+  );
+  const hasMigrated = useRef(false);
+  const questions = useChoiceQuestions(activeCategory, sort);
+  const detail = useChoiceQuestion(selectedQuestionId);
+  const myChoices = useMyChoices(isReady && Boolean(user));
+  const vote = useVoteQuestion();
+  const migrate = useMigrateGuestVotes();
 
   useEffect(() => {
-    if (!isReady) return;
-    if (!navigator.geolocation) {
-      const unavailableTimer = window.setTimeout(
-        () => setIsLocationUnavailable(true),
-        0,
-      );
-      return () => window.clearTimeout(unavailableTimer);
-    }
-    const locationFallbackTimer = window.setTimeout(
-      () => setIsLocationUnavailable(true),
-      8500,
-    );
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        window.clearTimeout(locationFallbackTimer);
-        setCoordinates({
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-        });
-        setIsLocationUnavailable(false);
+    const syncHash = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (hash === "my") {
+        setActiveView("mine");
+        return;
+      }
+      setActiveView("questions");
+      if (categoryHashes.has(hash)) {
+        setActiveCategory(hash as ChoiceCategory | "all");
+      }
+    };
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, []);
+
+  useEffect(() => {
+    if (!isReady || !user || hasMigrated.current) return;
+    hasMigrated.current = true;
+    migrate.mutate();
+  }, [isReady, migrate, user]);
+
+  function changeCategory(category: ChoiceCategory | "all") {
+    window.location.hash = category;
+    setActiveCategory(category);
+    setActiveView("questions");
+  }
+
+  function handleVote(
+    questionId: number,
+    selectedOption: ChoiceOption,
+    reasonId: number | null,
+  ) {
+    vote.mutate(
+      { questionId, selectedOption, reasonId },
+      {
+        onSuccess: () => toast.success("선택이 반영되었습니다."),
+        onError: (error) =>
+          toast.error(
+            error instanceof ApiError
+              ? error.message
+              : "선택을 반영하지 못했습니다.",
+          ),
       },
-      () => {
-        window.clearTimeout(locationFallbackTimer);
-        setIsLocationUnavailable(true);
-      },
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 },
     );
-    return () => window.clearTimeout(locationFallbackTimer);
-  }, [isReady]);
+  }
 
   return (
-    <DashboardPage
-      briefing={briefing}
-      actions={actions}
-      weather={weather}
-      favorites={
-        user
-          ? {
-              data: favorites.query.data,
-              isLoading: favorites.query.isLoading,
-              isPending: favorites.create.isPending,
-              onCreate: favorites.create.mutate,
-              onUpdateCommute: favorites.updateCommute.mutate,
-              onDeleteCommute: favorites.deleteCommute.mutate,
-              isCommuteMutationPending:
-                favorites.updateCommute.isPending ||
-                favorites.deleteCommute.isPending,
-              pendingFavoriteKind:
-                favorites.updateCommute.isPending ||
-                favorites.deleteCommute.isPending
-                  ? "commute"
-                  : favorites.create.isPending
-                    ? (favorites.create.variables?.kind ?? null)
-                    : null,
-              searchResults: favorites.searchStocks.data?.data ?? [],
-              isSearching: favorites.searchStocks.isPending,
-              onSearchStocks: favorites.searchStocks.mutate,
-              topStocks: stocks.data ?? [],
-              isTopStocksLoading: stocks.isFetching,
-              stockMarket,
-              onStockMarketChange: setStockMarket,
-            }
-          : null
+    <ChoiceHub
+      activeCategory={activeCategory}
+      activeView={activeView}
+      sort={sort}
+      questions={questions.data}
+      detail={detail.data}
+      myChoices={myChoices.data}
+      selectedQuestionId={selectedQuestionId}
+      isLoading={
+        !isReady ||
+        (activeView === "questions" ? questions.isPending : myChoices.isPending)
       }
-      guest={
-        isGuest
-          ? {
-              stocks,
-              stockMarket,
-              stockDuration,
-              onStockMarketChange: setStockMarket,
-              modalStocks,
-              modalStockMarket: stockModalMarket,
-              modalStockDuration: stockModalDuration,
-              onModalStockMarketChange: setStockModalMarket,
-              onModalStockDurationChange: setStockModalDuration,
-              commute,
-            }
-          : null
-      }
+      isError={questions.isError}
+      isDetailLoading={detail.isPending}
+      isVoting={vote.isPending}
+      isLoggedIn={Boolean(user)}
+      onCategoryChange={changeCategory}
+      onSortChange={setSort}
+      onOpenQuestion={setSelectedQuestionId}
+      onCloseQuestion={() => setSelectedQuestionId(null)}
+      onVote={handleVote}
+      onRetry={() => void questions.refetch()}
     />
   );
 }

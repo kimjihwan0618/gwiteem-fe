@@ -5,7 +5,7 @@ import {
   BellRing,
   CarFront,
   CheckCheck,
-  Sparkles,
+  CloudSun,
   TrendingUp,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -16,7 +16,7 @@ import {
   notificationTypeVariants,
 } from "./styles";
 
-const typeIcons = { briefing: Sparkles, market: TrendingUp, commute: CarFront };
+const typeIcons = { weather: CloudSun, market: TrendingUp, commute: CarFront };
 
 export function NotificationMenu() {
   const [open, setOpen] = useState(false);

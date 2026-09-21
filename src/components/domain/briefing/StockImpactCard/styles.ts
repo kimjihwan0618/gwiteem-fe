@@ -105,6 +105,8 @@ export const stockImpactCardStyles = {
     "flex size-6 items-center justify-center rounded-full bg-brand-50 text-[0.6875rem] font-black text-brand-700",
   chartTitle: "text-sm font-bold text-ink",
   chartPeriod: "mt-0.5 text-[0.6875rem] text-subtle",
+  ohlcSummary:
+    "mb-2 grid grid-cols-2 gap-1.5 rounded-xl bg-surface-muted p-2 sm:grid-cols-5 [&>div]:min-w-0 [&_dt]:text-[0.625rem] [&_dt]:font-semibold [&_dt]:text-muted [&_dd]:truncate [&_dd]:text-xs [&_dd]:font-bold [&_dd]:text-ink",
   backButton:
     "focus-ring flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold text-brand-700 hover:bg-brand-50",
   chart: "min-h-0 w-full flex-1 overflow-visible",

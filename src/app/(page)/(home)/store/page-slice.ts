@@ -1,7 +1,7 @@
 import type { HomePageAction, HomePageState } from "../type";
 
 export const homePageInitialState: HomePageState = {
-  activeSection: "briefing",
+  activeSection: "dashboard",
 };
 
 export function homePageReducer(
