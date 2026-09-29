@@ -30,7 +30,13 @@ export async function POST(request: Request) {
     const token = await requestAuthBackend(
       `/api/v1/auth/${parsed.data.provider}/callback`,
       tokenResponseSchema,
-      { method: "POST", body: JSON.stringify({ code: parsed.data.code }) },
+      {
+        method: "POST",
+        body: JSON.stringify({
+          code: parsed.data.code,
+          state: parsed.data.state,
+        }),
+      },
     );
     const user = mapAuthUser(token.user);
     await persistAuthSession(token, user, parsed.data.remember);

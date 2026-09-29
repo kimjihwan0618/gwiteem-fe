@@ -3,7 +3,10 @@ import {
   loginUrlResponseSchema,
   socialProviderSchema,
 } from "@/app/(page)/type/auth";
-import { authErrorResponse, requestAuthBackend } from "@/app/api/auth/_lib/server";
+import {
+  authErrorResponse,
+  requestAuthBackend,
+} from "@/app/api/auth/_lib/server";
 
 export async function GET(request: Request) {
   const provider = socialProviderSchema.safeParse(

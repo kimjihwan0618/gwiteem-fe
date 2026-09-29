@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   useChoiceQuestion,
   useChoiceQuestions,
@@ -23,18 +24,32 @@ const categoryHashes = new Set([
 ]);
 
 export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isReady } = useAuth();
   const toast = useToast();
-  const [activeCategory, setActiveCategory] = useState<ChoiceCategory | "all">(
-    "all",
-  );
-  const [activeView, setActiveView] = useState<"questions" | "mine">(
-    "questions",
-  );
+  const categoryParam = searchParams.get("category") ?? "all";
+  const activeCategory = categoryHashes.has(categoryParam)
+    ? (categoryParam as ChoiceCategory | "all")
+    : "all";
+  const activeView = searchParams.get("view") === "my" ? "mine" : "questions";
   const [sort, setSort] = useState<"popular" | "latest">("popular");
-  const [selectedQuestionId, setSelectedQuestionId] = useState<number | null>(
-    null,
-  );
+  const questionParam = searchParams.get("question");
+  const parsedQuestionId = questionParam ? Number(questionParam) : null;
+  const selectedQuestionId =
+    parsedQuestionId &&
+    Number.isInteger(parsedQuestionId) &&
+    parsedQuestionId > 0
+      ? parsedQuestionId
+      : null;
   const hasMigrated = useRef(false);
   const questions = useChoiceQuestions(activeCategory, sort);
   const detail = useChoiceQuestion(selectedQuestionId);
@@ -43,38 +58,38 @@ export default function Home() {
   const migrate = useMigrateGuestVotes();
 
   useEffect(() => {
-    const syncHash = () => {
-      const hash = window.location.hash.replace("#", "");
-      if (hash === "my") {
-        setActiveView("mine");
-        return;
-      }
-      setActiveView("questions");
-      if (categoryHashes.has(hash)) {
-        setActiveCategory(hash as ChoiceCategory | "all");
-      }
-    };
-    syncHash();
-    window.addEventListener("hashchange", syncHash);
-    return () => window.removeEventListener("hashchange", syncHash);
-  }, []);
-
-  useEffect(() => {
     if (!isReady || !user || hasMigrated.current) return;
     hasMigrated.current = true;
     migrate.mutate();
   }, [isReady, migrate, user]);
 
   function changeCategory(category: ChoiceCategory | "all") {
-    window.location.hash = category;
-    setActiveCategory(category);
-    setActiveView("questions");
+    if (activeView === "mine") {
+      router.push(
+        category === "all" ? "/?view=my" : `/?view=my&category=${category}`,
+      );
+      return;
+    }
+    router.push(category === "all" ? "/" : `/?category=${category}`);
+  }
+
+  function openQuestion(questionId: number) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("question", String(questionId));
+    router.push(`/?${params.toString()}`, { scroll: false });
+  }
+
+  function closeQuestion() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("question");
+    const query = params.toString();
+    router.push(query ? `/?${query}` : "/", { scroll: false });
   }
 
   function handleVote(
     questionId: number,
     selectedOption: ChoiceOption,
-    reasonId: number | null,
+    reasonId: number,
   ) {
     vote.mutate(
       { questionId, selectedOption, reasonId },
@@ -105,12 +120,13 @@ export default function Home() {
       }
       isError={questions.isError}
       isDetailLoading={detail.isPending}
+      isDetailError={detail.isError}
       isVoting={vote.isPending}
       isLoggedIn={Boolean(user)}
       onCategoryChange={changeCategory}
       onSortChange={setSort}
-      onOpenQuestion={setSelectedQuestionId}
-      onCloseQuestion={() => setSelectedQuestionId(null)}
+      onOpenQuestion={openQuestion}
+      onCloseQuestion={closeQuestion}
       onVote={handleVote}
       onRetry={() => void questions.refetch()}
     />

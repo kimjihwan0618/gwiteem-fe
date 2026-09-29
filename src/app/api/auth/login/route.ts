@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { loginRequestSchema, tokenResponseSchema } from "@/app/(page)/type/auth";
+import {
+  loginRequestSchema,
+  tokenResponseSchema,
+} from "@/app/(page)/type/auth";
 import {
   authErrorResponse,
   mapAuthUser,

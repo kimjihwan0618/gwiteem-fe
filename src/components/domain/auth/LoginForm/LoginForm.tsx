@@ -1,18 +1,18 @@
 "use client";
 
-import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import type { UseMutationResult } from "@tanstack/react-query";
-import { SocialButton } from "@/components/domain/auth/SocialButton";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import type { ApiResponse } from "@/lib/api/response";
 import type {
   AuthUser,
   LoginRequest,
   SocialProvider,
 } from "@/app/(page)/type/auth";
+import { SocialButton } from "@/components/domain/auth/SocialButton";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import type { ApiResponse } from "@/lib/api/response";
+import type { UseMutationResult } from "@tanstack/react-query";
+import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { loginFormStyles } from "./styles";
 
 export function LoginForm({
@@ -48,9 +48,9 @@ export function LoginForm({
     <div className={loginFormStyles.root}>
       <div className={loginFormStyles.intro}>
         <h1 className={loginFormStyles.title}>로그인</h1>
-        <p className={loginFormStyles.description}>
+        {/* <p className={loginFormStyles.description}>
           Gwiteem 계정으로 나만의 브리핑을 이어보세요.
-        </p>
+        </p> */}
       </div>
 
       <form onSubmit={submit} className={loginFormStyles.form}>
@@ -139,9 +139,6 @@ export function LoginForm({
           회원가입
         </Link>
       </p>
-      <Link href="/" className={loginFormStyles.guestLink}>
-        로그인 없이 오늘 브리핑 보기
-      </Link>
     </div>
   );
 }

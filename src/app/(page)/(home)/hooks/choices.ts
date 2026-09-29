@@ -53,7 +53,7 @@ export function useVoteQuestion() {
     }: {
       questionId: number;
       selectedOption: ChoiceOption;
-      reasonId: number | null;
+      reasonId: number;
     }) =>
       apiClient(
         `/api/choices/questions/${questionId}/votes`,

@@ -1,17 +1,46 @@
 "use client";
 
-import { ChevronDown, LogOut, Settings2, UserRound } from "lucide-react";
+import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useAuth } from "@/components/domain/auth/AuthProvider";
 import { profileMenuStyles } from "./styles";
 
 export function ProfileMenu() {
   const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
   const { user, logout } = useAuth();
   const toast = useToast();
+
+  useEffect(() => {
+    if (!open) return;
+
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !rootRef.current?.contains(event.target)
+      ) {
+        setOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setOpen(false);
+      triggerRef.current?.focus();
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
   if (!user) return null;
 
   async function handleLogout() {
@@ -21,10 +50,13 @@ export function ProfileMenu() {
   }
 
   return (
-    <div className={profileMenuStyles.root}>
+    <div ref={rootRef} className={profileMenuStyles.root}>
       <button
+        ref={triggerRef}
         aria-label="프로필 메뉴"
+        aria-haspopup="dialog"
         aria-expanded={open}
+        aria-controls={open ? panelId : undefined}
         onClick={() => setOpen(!open)}
         className={profileMenuStyles.trigger}
       >
@@ -33,7 +65,12 @@ export function ProfileMenu() {
         <ChevronDown size={15} className={profileMenuStyles.chevron} />
       </button>
       {open && (
-        <div className={profileMenuStyles.panel}>
+        <div
+          id={panelId}
+          role="dialog"
+          aria-label="프로필 메뉴"
+          className={profileMenuStyles.panel}
+        >
           <div className={profileMenuStyles.identity}>
             <Avatar name={user.name} avatarUrl={user.avatarUrl} />
             <div className={profileMenuStyles.identityText}>
@@ -44,12 +81,13 @@ export function ProfileMenu() {
             </div>
           </div>
           <div className={profileMenuStyles.actions}>
-            <Link href="/#my" className={profileMenuStyles.action}>
+            <Link
+              href="/?view=my"
+              onClick={() => setOpen(false)}
+              className={profileMenuStyles.action}
+            >
               <UserRound size={17} /> 내 선택
             </Link>
-            <button className={profileMenuStyles.action}>
-              <Settings2 size={17} /> 계정 설정
-            </button>
           </div>
           <button
             onClick={() => void handleLogout()}

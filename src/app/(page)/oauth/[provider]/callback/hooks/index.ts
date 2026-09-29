@@ -33,7 +33,9 @@ export function useSocialCallbackMutation() {
       toast.success(response.message);
       router.replace("/");
     },
-    onError: (error) =>
-      toast.error(getErrorMessage(error, "소셜 로그인을 완료하지 못했습니다.")),
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "소셜 로그인을 완료하지 못했습니다."));
+      router.replace("/login");
+    },
   });
 }

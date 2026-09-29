@@ -15,11 +15,13 @@ import { oauthCallbackStyles } from "./styles";
 export function OAuthCallback({
   provider,
   code,
+  state,
   error,
   callback,
 }: {
   provider: SocialProvider | null;
   code?: string;
+  state?: string;
   error?: string;
   callback: UseMutationResult<
     ApiResponse<{ user: AuthUser }>,
@@ -31,12 +33,20 @@ export function OAuthCallback({
   const requested = useRef(false);
 
   useEffect(() => {
-    if (requested.current || !provider || !code || error) return;
+    if (
+      requested.current ||
+      !provider ||
+      !code ||
+      (provider === "naver" && !state) ||
+      error
+    )
+      return;
     requested.current = true;
-    callback.mutate({ provider, code, remember: true });
-  }, [callback, code, error, provider]);
+    callback.mutate({ provider, code, state, remember: true });
+  }, [callback, code, error, provider, state]);
 
-  const invalid = !provider || !code || Boolean(error);
+  const invalid =
+    !provider || !code || (provider === "naver" && !state) || Boolean(error);
 
   return (
     <main className={oauthCallbackStyles.root}>

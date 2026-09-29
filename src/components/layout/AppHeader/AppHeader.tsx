@@ -11,7 +11,8 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useAuth } from "@/components/domain/auth/AuthProvider";
 import { ProfileMenu } from "../ProfileMenu";
 import {
@@ -22,34 +23,44 @@ import {
 } from "./styles";
 
 const navItems = [
-  { label: "전체", href: "/#all", icon: Grid2X2 },
-  { label: "직장", href: "/#work", icon: BriefcaseBusiness },
-  { label: "소비", href: "/#spending", icon: WalletCards },
-  { label: "관계", href: "/#relationship", icon: UsersRound },
-  { label: "일상", href: "/#daily", icon: Coffee },
+  { label: "전체", href: "/", category: "all", icon: Grid2X2 },
+  {
+    label: "직장",
+    href: "/?category=work",
+    category: "work",
+    icon: BriefcaseBusiness,
+  },
+  {
+    label: "소비",
+    href: "/?category=spending",
+    category: "spending",
+    icon: WalletCards,
+  },
+  {
+    label: "관계",
+    href: "/?category=relationship",
+    category: "relationship",
+    icon: UsersRound,
+  },
+  {
+    label: "일상",
+    href: "/?category=daily",
+    category: "daily",
+    icon: Coffee,
+  },
 ];
 
 export function AppHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeHref, setActiveHref] = useState("/#all");
+  const searchParams = useSearchParams();
   const { user, isReady } = useAuth();
+  const activeCategory = searchParams.get("category") ?? "all";
+  const isMyView = searchParams.get("view") === "my";
   const activeNavIndex = Math.max(
-    navItems.findIndex(({ href }) => href === activeHref),
+    navItems.findIndex(({ category }) => category === activeCategory),
     0,
   );
   const activeNavPosition = activeNavIndex as 0 | 1 | 2 | 3 | 4;
-
-  useEffect(() => {
-    const syncActiveHref = () =>
-      setActiveHref(
-        window.location.hash && window.location.hash !== "#my"
-          ? `/${window.location.hash}`
-          : "/#all",
-      );
-    syncActiveHref();
-    window.addEventListener("hashchange", syncActiveHref);
-    return () => window.removeEventListener("hashchange", syncActiveHref);
-  }, []);
 
   return (
     <>
@@ -72,14 +83,19 @@ export function AppHeader() {
                 position: activeNavPosition,
               })}
             />
-            {navItems.map(({ label, href }) => (
+            {navItems.map(({ label, href, category }) => (
               <Link
                 key={label}
-                href={href}
-                onClick={() => setActiveHref(href)}
-                aria-current={activeHref === href ? "page" : undefined}
+                href={
+                  isMyView
+                    ? category === "all"
+                      ? "/?view=my"
+                      : `/?view=my&category=${category}`
+                    : href
+                }
+                aria-current={activeCategory === category ? "page" : undefined}
                 className={desktopNavItemVariants({
-                  active: activeHref === href,
+                  active: activeCategory === category,
                 })}
               >
                 {label}
@@ -92,14 +108,7 @@ export function AppHeader() {
                 <LogIn size={16} /> 로그인
               </Link>
             )}
-            {isReady && user && (
-              <>
-                <Link href="/#my" className={appHeaderStyles.myChoicesLink}>
-                  내 선택
-                </Link>
-                <ProfileMenu />
-              </>
-            )}
+            {isReady && user && <ProfileMenu />}
           </div>
         </div>
       </header>
@@ -124,17 +133,24 @@ export function AppHeader() {
               </button>
             </div>
             <nav className={appHeaderStyles.mobileNav}>
-              {navItems.map(({ label, href, icon: Icon }) => (
+              {navItems.map(({ label, href, category, icon: Icon }) => (
                 <Link
                   key={label}
-                  href={href}
+                  href={
+                    isMyView
+                      ? category === "all"
+                        ? "/?view=my"
+                        : `/?view=my&category=${category}`
+                      : href
+                  }
                   onClick={() => {
-                    setActiveHref(href);
                     setMenuOpen(false);
                   }}
-                  aria-current={activeHref === href ? "page" : undefined}
+                  aria-current={
+                    activeCategory === category ? "page" : undefined
+                  }
                   className={mobileNavItemVariants({
-                    active: activeHref === href,
+                    active: activeCategory === category,
                   })}
                 >
                   <Icon size={19} /> {label}
@@ -150,15 +166,6 @@ export function AppHeader() {
                     <LogIn size={19} /> 로그인
                   </Link>
                 </div>
-              )}
-              {user && (
-                <Link
-                  href="/#my"
-                  onClick={() => setMenuOpen(false)}
-                  className={appHeaderStyles.mobileLogin}
-                >
-                  내 선택
-                </Link>
               )}
             </nav>
           </aside>

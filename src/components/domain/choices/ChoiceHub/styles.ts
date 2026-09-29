@@ -19,10 +19,40 @@ export const optionButtonVariants = cva(
       tone: {
         a: "border-brand-200 bg-brand-50/70 hover:border-brand-500",
         b: "border-danger-200 bg-danger-50/70 hover:border-danger-500",
+        c: "border-success-200 bg-success-50/70 hover:border-success-500",
+        d: "border-violet-600/30 bg-violet-50 hover:border-violet-600",
       },
       selected: {
         true: "ring-2 ring-brand-500 ring-offset-2",
         false: "",
+      },
+    },
+  },
+);
+
+export const optionLabelVariants = cva(
+  "grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-black text-white",
+  {
+    variants: {
+      tone: {
+        a: "bg-brand-700",
+        b: "bg-danger-500",
+        c: "bg-success-500",
+        d: "bg-violet-600",
+      },
+    },
+  },
+);
+
+export const resultSegmentVariants = cva(
+  "flex items-center justify-center overflow-hidden px-2 transition-[width] duration-500",
+  {
+    variants: {
+      tone: {
+        a: "bg-brand-500",
+        b: "bg-danger-500",
+        c: "bg-success-500",
+        d: "bg-violet-600",
       },
     },
   },
@@ -46,17 +76,13 @@ export const choiceHubStyles = {
   badgeRow: "mb-4 flex flex-wrap items-center gap-2",
   featuredTitle:
     "max-w-3xl text-2xl font-black tracking-[-0.04em] text-ink sm:text-3xl",
-  featuredOptions:
-    "mt-6 grid items-center gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]",
+  featuredMeta: "flex flex-wrap items-center gap-x-4 gap-y-1",
+  featuredOptions: "mt-6 grid gap-3 sm:grid-cols-2",
   featuredOption:
     "flex min-h-16 items-center gap-3 rounded-xl border border-border bg-surface-muted px-4 py-3 font-bold text-ink-soft",
-  featuredOptionLabel:
-    "grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-700 text-sm font-black text-white",
-  featuredOptionLabelB:
-    "grid h-9 w-9 shrink-0 place-items-center rounded-full bg-danger-500 text-sm font-black text-white",
-  versus: "text-center text-sm font-black italic text-faint",
   featuredAction: "flex min-w-48 flex-col items-stretch gap-2",
-  participant: "text-center text-xs font-medium text-subtle",
+  participantMeta:
+    "mt-1 inline-flex items-center gap-1 text-xs font-semibold text-subtle",
   sectionHeader:
     "mt-9 mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
   sectionTitle: "text-xl font-black tracking-[-0.03em] text-ink sm:text-2xl",
@@ -72,12 +98,12 @@ export const choiceHubStyles = {
   tension:
     "rounded-full bg-danger-50 px-2.5 py-1 text-[0.6875rem] font-bold text-danger-700",
   cardTitle:
-    "mt-4 min-h-14 text-lg font-extrabold leading-snug tracking-[-0.025em] text-ink",
+    "mt-4 text-lg font-extrabold leading-snug tracking-[-0.025em] text-ink",
+  questionByline: "mt-1 block text-xs font-medium text-subtle",
   cardOptions: "mt-4 grid grid-cols-2 gap-2",
   cardOption:
     "truncate rounded-lg bg-surface-muted px-3 py-2.5 text-xs font-bold text-ink-soft",
-  cardOptionA: "mr-1 font-black text-brand-600",
-  cardOptionB: "mr-1 font-black text-danger-500",
+  cardOptionKey: "mr-1 font-black text-brand-600",
   cardFooter:
     "mt-auto flex items-center justify-between border-t border-border-subtle pt-4 text-xs font-semibold text-subtle",
   voted: "inline-flex items-center gap-1 text-success-700",
@@ -99,6 +125,9 @@ export const choiceHubStyles = {
   modalHeader:
     "sticky top-0 z-10 flex items-center justify-between border-b border-border bg-white/95 px-5 py-4 backdrop-blur sm:px-7",
   modalHeading: "font-black text-ink",
+  modalHeaderActions: "flex items-center gap-1",
+  shareIconButton:
+    "focus-ring rounded-lg p-2 text-brand-600 hover:bg-brand-50 hover:text-brand-800",
   closeButton:
     "focus-ring rounded-lg p-2 text-muted hover:bg-surface-muted hover:text-ink",
   modalBody: "p-5 sm:p-7",
@@ -109,36 +138,29 @@ export const choiceHubStyles = {
     "mt-3 text-2xl font-black leading-tight tracking-[-0.04em] text-ink sm:text-3xl",
   modalHint: "mt-2 text-sm text-muted",
   optionGrid: "mt-6 grid gap-3 sm:grid-cols-2",
-  optionLetter:
-    "grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-700 font-black text-white",
-  optionLetterB:
-    "grid h-10 w-10 shrink-0 place-items-center rounded-full bg-danger-500 font-black text-white",
   optionText: "font-extrabold text-ink",
   reasonPanel:
     "animate-fade-up mt-6 rounded-xl border border-border bg-surface-muted p-4 sm:p-5",
   reasonLabel: "mb-2 block text-sm font-bold text-ink-soft",
-  optionalLabel: "text-subtle",
+  requiredLabel: "text-danger-700",
   select:
     "focus-ring min-h-12 w-full rounded-xl border border-border-strong bg-white px-4 text-sm font-semibold text-ink",
   submitRow: "mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-  resultHeading: "mt-6 text-lg font-black text-ink",
+  resultHeader:
+    "mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
+  resultHeading: "text-lg font-black text-ink",
+  resultCount:
+    "inline-flex items-center gap-1 text-xs font-semibold text-subtle",
   resultBar:
     "mt-4 flex h-12 overflow-hidden rounded-xl bg-surface-subtle text-sm font-black text-white",
-  resultA:
-    "flex items-center justify-start overflow-hidden bg-brand-500 px-4 transition-[width] duration-500",
-  resultB:
-    "flex items-center justify-end overflow-hidden bg-danger-500 px-4 transition-[width] duration-500",
-  resultLabels: "mt-3 grid grid-cols-2 gap-4 text-sm font-bold",
-  resultLabelB: "text-right",
+  resultLabels: "mt-3 grid grid-cols-2 gap-3 text-sm font-bold",
   reasonResults: "mt-6 space-y-3",
   reasonResult: "grid grid-cols-[minmax(0,1fr)_3rem] items-center gap-3",
   reasonText: "text-sm font-semibold text-ink-soft",
   reasonTrack: "mt-1 h-2 overflow-hidden rounded-full bg-border-subtle",
   reasonFill: "h-full rounded-full bg-brand-500",
   reasonPercent: "text-right text-xs font-bold text-muted",
-  resultActions: "mt-7 grid gap-2 sm:grid-cols-2",
-  saved:
-    "flex items-center justify-center gap-2 rounded-xl bg-success-50 px-4 py-3 text-sm font-bold text-success-700",
+  resultActions: "mt-7 grid gap-2",
   loginNote: "mt-3 text-center text-xs leading-relaxed text-subtle",
   loginLink: "mt-4",
   mineHeader: "mb-5 flex items-center justify-between",

@@ -53,8 +53,6 @@ export const appHeaderStyles = {
     "focus-ring inline-flex min-h-10 items-center gap-2 rounded-full border border-border px-4 text-sm font-semibold text-ink-soft hover:bg-surface-muted",
   signUpLink:
     "focus-ring inline-flex min-h-10 items-center gap-2 rounded-full bg-brand-700 px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-brand-800",
-  myChoicesLink:
-    "focus-ring rounded-full px-4 py-2 text-sm font-bold text-brand-700 hover:bg-brand-50",
   mobileLayer: "fixed inset-0 z-50 lg:hidden",
   mobileBackdrop: "animate-fade-up absolute inset-0 bg-brand-900/40",
   mobilePanel:

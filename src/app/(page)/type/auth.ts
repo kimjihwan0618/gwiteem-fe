@@ -46,6 +46,7 @@ export const socialProviderSchema = z.enum(["kakao", "naver", "google"]);
 export const oauthCallbackRequestSchema = z.object({
   provider: socialProviderSchema,
   code: z.string().min(1),
+  state: z.string().min(1).optional(),
   remember: z.boolean().default(true),
 });
 

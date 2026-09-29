@@ -15,6 +15,7 @@ export default function OAuthCallbackPage() {
     <OAuthCallback
       provider={parsedProvider.success ? parsedProvider.data : null}
       code={searchParams.get("code") ?? undefined}
+      state={searchParams.get("state") ?? undefined}
       error={searchParams.get("error") ?? undefined}
       callback={callback}
     />
