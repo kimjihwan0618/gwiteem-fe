@@ -10,22 +10,22 @@ import { choiceHubStyles } from "./styles";
 
 interface MyChoicesViewProps {
   items?: MyChoice[];
-  activeCategory: ChoiceCategory | "all";
+  activeCategories: ChoiceCategory[];
   isLoggedIn: boolean;
   isLoading: boolean;
   searchQuery: string;
-  onCategoryChange: (category: ChoiceCategory | "all") => void;
+  onCategoriesChange: (categories: ChoiceCategory[]) => void;
   onOpenQuestion: (id: number) => void;
   onSearchQueryChange: (query: string) => void;
 }
 
 export function MyChoicesView({
   items,
-  activeCategory,
+  activeCategories,
   isLoggedIn,
   isLoading,
   searchQuery,
-  onCategoryChange,
+  onCategoriesChange,
   onOpenQuestion,
   onSearchQueryChange,
 }: MyChoicesViewProps) {
@@ -62,9 +62,9 @@ export function MyChoicesView({
         <Badge variant="outline">{items?.length ?? 0}개의 선택</Badge>
       </div>
       <QuestionFilterBar
-        activeCategory={activeCategory}
+        activeCategories={activeCategories}
         searchQuery={searchQuery}
-        onCategoryChange={onCategoryChange}
+        onCategoriesChange={onCategoriesChange}
         onSearchQueryChange={onSearchQueryChange}
       />
       {!items?.length ? (
@@ -73,7 +73,7 @@ export function MyChoicesView({
             <p className={choiceHubStyles.stateTitle}>
               {searchQuery.trim()
                 ? "검색 결과가 없어요."
-                : activeCategory === "all"
+                : activeCategories.length === 0
                   ? "저장된 선택이 없어요."
                   : "이 카테고리에 저장된 선택이 없어요."}
             </p>

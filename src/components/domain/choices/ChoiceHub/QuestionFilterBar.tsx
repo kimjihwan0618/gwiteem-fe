@@ -8,29 +8,58 @@ import { categories } from "./choice-utils";
 import { choiceHubStyles, filterCategoryVariants } from "./styles";
 
 interface QuestionFilterBarProps {
-  activeCategory: ChoiceCategory | "all";
+  activeCategories: ChoiceCategory[];
   searchQuery: string;
   sort?: "popular" | "latest";
-  onCategoryChange: (category: ChoiceCategory | "all") => void;
+  onCategoriesChange: (categories: ChoiceCategory[]) => void;
   onSearchQueryChange: (query: string) => void;
   onSortChange?: (sort: "popular" | "latest") => void;
 }
 
 export function QuestionFilterBar({
-  activeCategory,
+  activeCategories,
   searchQuery,
   sort,
-  onCategoryChange,
+  onCategoriesChange,
   onSearchQueryChange,
   onSortChange,
 }: QuestionFilterBarProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isStuck, setIsStuck] = useState(false);
+  const [draftCategories, setDraftCategories] = useState<ChoiceCategory[]>([]);
+  const [draftSort, setDraftSort] = useState<"popular" | "latest">(
+    sort ?? "popular",
+  );
   const filterRef = useRef<HTMLDivElement>(null);
   const stickySentinelRef = useRef<HTMLDivElement>(null);
   const activeFilterCount =
-    Number(activeCategory !== "all") +
-    Number(Boolean(sort && sort !== "popular"));
+    activeCategories.length + Number(Boolean(sort && sort !== "popular"));
+
+  function toggleFilter() {
+    if (!isFilterOpen) {
+      setDraftCategories(activeCategories);
+      setDraftSort(sort ?? "popular");
+    }
+    setIsFilterOpen((isOpen) => !isOpen);
+  }
+
+  function toggleCategory(category: ChoiceCategory | "all") {
+    if (category === "all") {
+      setDraftCategories([]);
+      return;
+    }
+    setDraftCategories((selected) =>
+      selected.includes(category)
+        ? selected.filter((item) => item !== category)
+        : [...selected, category],
+    );
+  }
+
+  function applyFilter() {
+    onCategoriesChange(draftCategories);
+    if (sort && onSortChange) onSortChange(draftSort);
+    setIsFilterOpen(false);
+  }
 
   useEffect(() => {
     if (!isFilterOpen) return;
@@ -116,7 +145,7 @@ export function QuestionFilterBar({
                 choiceHubStyles.filterTrigger,
                 isFilterOpen && choiceHubStyles.filterTriggerOpen,
               )}
-              onClick={() => setIsFilterOpen((isOpen) => !isOpen)}
+              onClick={toggleFilter}
             >
               <SlidersHorizontal size={19} />
               {activeFilterCount > 0 && (
@@ -135,14 +164,17 @@ export function QuestionFilterBar({
                   <p className={choiceHubStyles.filterSectionTitle}>카테고리</p>
                   <div className={choiceHubStyles.filterCategories}>
                     {categories.map((category) => {
-                      const isActive = activeCategory === category.value;
+                      const isActive =
+                        category.value === "all"
+                          ? draftCategories.length === 0
+                          : draftCategories.includes(category.value);
                       return (
                         <button
                           key={category.value}
                           className={filterCategoryVariants({
                             active: isActive,
                           })}
-                          onClick={() => onCategoryChange(category.value)}
+                          onClick={() => toggleCategory(category.value)}
                         >
                           {category.label}
                           {isActive && <Check size={14} />}
@@ -164,10 +196,10 @@ export function QuestionFilterBar({
                         <button
                           key={sortOption}
                           type="button"
-                          onClick={() => onSortChange(sortOption)}
+                          onClick={() => setDraftSort(sortOption)}
                           className={cn(
                             choiceHubStyles.sortButton,
-                            sort === sortOption &&
+                            draftSort === sortOption &&
                               choiceHubStyles.sortButtonActive,
                           )}
                         >
@@ -177,6 +209,15 @@ export function QuestionFilterBar({
                     </div>
                   </div>
                 )}
+                <div className={choiceHubStyles.filterActions}>
+                  <button
+                    type="button"
+                    className={choiceHubStyles.filterApplyButton}
+                    onClick={applyFilter}
+                  >
+                    적용
+                  </button>
+                </div>
               </div>
             )}
           </div>

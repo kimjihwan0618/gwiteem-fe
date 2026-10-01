@@ -20,7 +20,7 @@ import { QuestionFilterBar } from "./QuestionFilterBar";
 import { choiceHubStyles } from "./styles";
 
 interface ChoiceHubProps {
-  activeCategory: ChoiceCategory | "all";
+  activeCategories: ChoiceCategory[];
   activeView: "questions" | "mine";
   sort: "popular" | "latest";
   questions?: ChoiceQuestion[];
@@ -33,7 +33,7 @@ interface ChoiceHubProps {
   isDetailError: boolean;
   isVoting: boolean;
   isLoggedIn: boolean;
-  onCategoryChange: (category: ChoiceCategory | "all") => void;
+  onCategoriesChange: (categories: ChoiceCategory[]) => void;
   onSortChange: (sort: "popular" | "latest") => void;
   onOpenQuestion: (questionId: number) => void;
   onCloseQuestion: () => void;
@@ -44,24 +44,28 @@ interface ChoiceHubProps {
 export function ChoiceHub(props: ChoiceHubProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase("ko-KR");
-  const filteredQuestions = normalizedSearchQuery
+  const categoryQuestions = props.activeCategories.length
     ? props.questions?.filter((item) =>
-        item.title.toLocaleLowerCase("ko-KR").includes(normalizedSearchQuery),
+        props.activeCategories.includes(item.category),
       )
     : props.questions;
+  const filteredQuestions = normalizedSearchQuery
+    ? categoryQuestions?.filter((item) =>
+        item.title.toLocaleLowerCase("ko-KR").includes(normalizedSearchQuery),
+      )
+    : categoryQuestions;
   const dailyQuestion =
-    props.activeCategory === "all"
+    props.activeCategories.length === 0
       ? filteredQuestions?.find((item) => item.is_daily)
       : undefined;
   const gridQuestions = dailyQuestion
     ? filteredQuestions?.filter((item) => item.id !== dailyQuestion.id)
     : filteredQuestions;
-  const categoryMyChoices =
-    props.activeCategory === "all"
-      ? props.myChoices
-      : props.myChoices?.filter(
-          (item) => item.question.category === props.activeCategory,
-        );
+  const categoryMyChoices = props.activeCategories.length
+    ? props.myChoices?.filter((item) =>
+        props.activeCategories.includes(item.question.category),
+      )
+    : props.myChoices;
   const filteredMyChoices = normalizedSearchQuery
     ? categoryMyChoices?.filter((item) =>
         item.question.title
@@ -86,11 +90,11 @@ export function ChoiceHub(props: ChoiceHubProps) {
         {props.activeView === "mine" ? (
           <MyChoicesView
             items={filteredMyChoices}
-            activeCategory={props.activeCategory}
+            activeCategories={props.activeCategories}
             isLoggedIn={props.isLoggedIn}
             isLoading={props.isLoading}
             searchQuery={searchQuery}
-            onCategoryChange={props.onCategoryChange}
+            onCategoriesChange={props.onCategoriesChange}
             onOpenQuestion={props.onOpenQuestion}
             onSearchQueryChange={setSearchQuery}
           />
@@ -106,10 +110,10 @@ export function ChoiceHub(props: ChoiceHubProps) {
               </div>
             </section>
             <QuestionFilterBar
-              activeCategory={props.activeCategory}
+              activeCategories={props.activeCategories}
               searchQuery={searchQuery}
               sort={props.sort}
-              onCategoryChange={props.onCategoryChange}
+              onCategoriesChange={props.onCategoriesChange}
               onSearchQueryChange={setSearchQuery}
               onSortChange={props.onSortChange}
             />

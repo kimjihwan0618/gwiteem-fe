@@ -68,9 +68,8 @@ export const choiceHubStyles = {
   date: "text-sm font-semibold text-subtle",
   stickySentinel: "h-px",
   filterBar:
-    "sticky top-[74px] z-30 mx-auto mb-7 w-[min(100%,56rem)] border-y border-border bg-white/95 p-2 shadow-sm backdrop-blur-xl transition-[width,margin-left,border-radius,padding] duration-300 ease-out sm:rounded-2xl sm:border sm:p-3",
-  filterBarStuck:
-    "ml-[calc(50%-50dvw)] w-[100dvw] rounded-none border-x-0 px-4 shadow-md sm:rounded-none sm:border-x-0 sm:px-7 lg:px-10",
+    "sticky top-[74px] z-30 mx-auto mb-7 w-[min(100%,56rem)] max-w-full border-y border-border bg-white/95 p-2 shadow-sm backdrop-blur-xl transition-[width,border-radius,padding] duration-300 ease-out sm:rounded-2xl sm:border sm:p-3",
+  filterBarStuck: "w-full max-w-full px-3 shadow-md sm:px-4",
   searchField:
     "focus-within:ring-brand-500/20 relative mx-auto flex min-h-11 w-full min-w-0 items-center rounded-xl border border-border-strong bg-white transition-[max-width,border-color,box-shadow] duration-300 ease-out focus-within:border-brand-500 focus-within:ring-4",
   searchFieldStuck: "shadow-sm",
@@ -114,6 +113,9 @@ export const choiceHubStyles = {
   sortButton:
     "focus-ring rounded-lg px-4 py-2.5 text-xs font-bold text-muted transition-colors",
   sortButtonActive: "bg-white text-brand-700 shadow-sm",
+  filterActions: "mt-4 border-t border-border-subtle pt-4",
+  filterApplyButton:
+    "focus-ring min-h-11 w-full rounded-xl bg-brand-700 px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-brand-800",
   grid: "grid gap-4 md:grid-cols-2 xl:grid-cols-3",
   questionCard:
     "group flex min-h-52 flex-col rounded-card border border-border bg-white p-5 text-left shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg",

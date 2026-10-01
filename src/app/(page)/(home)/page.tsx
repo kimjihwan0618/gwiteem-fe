@@ -15,8 +15,7 @@ import { ChoiceHub } from "@/components/domain/choices/ChoiceHub";
 import { useToast } from "@/components/ui/ToastProvider";
 import { ApiError } from "@/lib/api/response";
 
-const categoryHashes = new Set([
-  "all",
+const categoryHashes = new Set<ChoiceCategory>([
   "work",
   "spending",
   "relationship",
@@ -36,10 +35,15 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const { user, isReady } = useAuth();
   const toast = useToast();
-  const categoryParam = searchParams.get("category") ?? "all";
-  const activeCategory = categoryHashes.has(categoryParam)
-    ? (categoryParam as ChoiceCategory | "all")
-    : "all";
+  const activeCategories = Array.from(
+    new Set(
+      (searchParams.get("category") ?? "")
+        .split(",")
+        .filter((category): category is ChoiceCategory =>
+          categoryHashes.has(category as ChoiceCategory),
+        ),
+    ),
+  );
   const activeView = searchParams.get("view") === "my" ? "mine" : "questions";
   const [sort, setSort] = useState<"popular" | "latest">("popular");
   const questionParam = searchParams.get("question");
@@ -51,7 +55,7 @@ function HomeContent() {
       ? parsedQuestionId
       : null;
   const hasMigrated = useRef(false);
-  const questions = useChoiceQuestions(activeCategory, sort);
+  const questions = useChoiceQuestions("all", sort);
   const detail = useChoiceQuestion(selectedQuestionId);
   const myChoices = useMyChoices(isReady && Boolean(user));
   const vote = useVoteQuestion();
@@ -63,14 +67,16 @@ function HomeContent() {
     migrate.mutate();
   }, [isReady, migrate, user]);
 
-  function changeCategory(category: ChoiceCategory | "all") {
-    if (activeView === "mine") {
-      router.push(
-        category === "all" ? "/?view=my" : `/?view=my&category=${category}`,
-      );
-      return;
+  function changeCategories(categories: ChoiceCategory[]) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("question");
+    if (categories.length) {
+      params.set("category", categories.join(","));
+    } else {
+      params.delete("category");
     }
-    router.push(category === "all" ? "/" : `/?category=${category}`);
+    const query = params.toString();
+    router.push(query ? `/?${query}` : "/", { scroll: false });
   }
 
   function openQuestion(questionId: number) {
@@ -107,7 +113,7 @@ function HomeContent() {
 
   return (
     <ChoiceHub
-      activeCategory={activeCategory}
+      activeCategories={activeCategories}
       activeView={activeView}
       sort={sort}
       questions={questions.data}
@@ -123,7 +129,7 @@ function HomeContent() {
       isDetailError={detail.isError}
       isVoting={vote.isPending}
       isLoggedIn={Boolean(user)}
-      onCategoryChange={changeCategory}
+      onCategoriesChange={changeCategories}
       onSortChange={setSort}
       onOpenQuestion={openQuestion}
       onCloseQuestion={closeQuestion}
