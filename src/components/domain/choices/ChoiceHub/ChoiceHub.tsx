@@ -10,14 +10,13 @@ import type {
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/cn";
-import { useMemo } from "react";
-import { CategoryTabs } from "./CategoryTabs";
+import { useMemo, useState } from "react";
 import { ChoiceSkeleton } from "./ChoiceSkeleton";
 import { FeaturedQuestion } from "./FeaturedQuestion";
 import { MyChoicesView } from "./MyChoicesView";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionDialog } from "./QuestionDialog";
+import { QuestionFilterBar } from "./QuestionFilterBar";
 import { choiceHubStyles } from "./styles";
 
 interface ChoiceHubProps {
@@ -43,19 +42,33 @@ interface ChoiceHubProps {
 }
 
 export function ChoiceHub(props: ChoiceHubProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase("ko-KR");
+  const filteredQuestions = normalizedSearchQuery
+    ? props.questions?.filter((item) =>
+        item.title.toLocaleLowerCase("ko-KR").includes(normalizedSearchQuery),
+      )
+    : props.questions;
   const dailyQuestion =
     props.activeCategory === "all"
-      ? props.questions?.find((item) => item.is_daily)
+      ? filteredQuestions?.find((item) => item.is_daily)
       : undefined;
   const gridQuestions = dailyQuestion
-    ? props.questions?.filter((item) => item.id !== dailyQuestion.id)
-    : props.questions;
-  const filteredMyChoices =
+    ? filteredQuestions?.filter((item) => item.id !== dailyQuestion.id)
+    : filteredQuestions;
+  const categoryMyChoices =
     props.activeCategory === "all"
       ? props.myChoices
       : props.myChoices?.filter(
           (item) => item.question.category === props.activeCategory,
         );
+  const filteredMyChoices = normalizedSearchQuery
+    ? categoryMyChoices?.filter((item) =>
+        item.question.title
+          .toLocaleLowerCase("ko-KR")
+          .includes(normalizedSearchQuery),
+      )
+    : categoryMyChoices;
   const dateLabel = useMemo(
     () =>
       new Intl.DateTimeFormat("ko-KR", {
@@ -76,8 +89,10 @@ export function ChoiceHub(props: ChoiceHubProps) {
             activeCategory={props.activeCategory}
             isLoggedIn={props.isLoggedIn}
             isLoading={props.isLoading}
+            searchQuery={searchQuery}
             onCategoryChange={props.onCategoryChange}
             onOpenQuestion={props.onOpenQuestion}
+            onSearchQueryChange={setSearchQuery}
           />
         ) : (
           <>
@@ -90,9 +105,13 @@ export function ChoiceHub(props: ChoiceHubProps) {
                 </p>
               </div>
             </section>
-            <CategoryTabs
+            <QuestionFilterBar
               activeCategory={props.activeCategory}
+              searchQuery={searchQuery}
+              sort={props.sort}
               onCategoryChange={props.onCategoryChange}
+              onSearchQueryChange={setSearchQuery}
+              onSortChange={props.onSortChange}
             />
             {props.isLoading ? (
               <ChoiceSkeleton />
@@ -124,6 +143,17 @@ export function ChoiceHub(props: ChoiceHubProps) {
                   </p>
                 </div>
               </div>
+            ) : !filteredQuestions?.length ? (
+              <div className={choiceHubStyles.state}>
+                <div>
+                  <p className={choiceHubStyles.stateTitle}>
+                    검색 결과가 없어요.
+                  </p>
+                  <p className={choiceHubStyles.stateDescription}>
+                    다른 검색어나 카테고리로 찾아보세요.
+                  </p>
+                </div>
+              </div>
             ) : (
               <>
                 {dailyQuestion && (
@@ -132,38 +162,27 @@ export function ChoiceHub(props: ChoiceHubProps) {
                     onOpen={props.onOpenQuestion}
                   />
                 )}
-                <section>
-                  <div className={choiceHubStyles.sectionHeader}>
-                    <h2 className={choiceHubStyles.sectionTitle}>
-                      지금 많이 고민하는 질문
-                    </h2>
-                    <div className={choiceHubStyles.sortGroup}>
-                      {(["popular", "latest"] as const).map((sort) => (
-                        <button
-                          key={sort}
-                          onClick={() => props.onSortChange(sort)}
-                          className={cn(
-                            choiceHubStyles.sortButton,
-                            props.sort === sort &&
-                              choiceHubStyles.sortButtonActive,
-                          )}
-                        >
-                          {sort === "popular" ? "인기순" : "최신순"}
-                        </button>
+                {Boolean(gridQuestions?.length) && (
+                  <section>
+                    <div className={choiceHubStyles.sectionHeader}>
+                      <h2 className={choiceHubStyles.sectionTitle}>
+                        지금 많이 고민하는 질문
+                      </h2>
+                    </div>
+                    <div className={choiceHubStyles.grid}>
+                      {gridQuestions?.map((question, index) => (
+                        <QuestionCard
+                          key={question.id}
+                          question={question}
+                          isTight={
+                            index === 0 && question.participant_count > 0
+                          }
+                          onOpen={props.onOpenQuestion}
+                        />
                       ))}
                     </div>
-                  </div>
-                  <div className={choiceHubStyles.grid}>
-                    {gridQuestions?.map((question, index) => (
-                      <QuestionCard
-                        key={question.id}
-                        question={question}
-                        isTight={index === 0 && question.participant_count > 0}
-                        onOpen={props.onOpenQuestion}
-                      />
-                    ))}
-                  </div>
-                </section>
+                  </section>
+                )}
               </>
             )}
           </>

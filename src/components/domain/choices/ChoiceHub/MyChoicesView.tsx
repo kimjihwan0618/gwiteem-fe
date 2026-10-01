@@ -4,8 +4,8 @@ import { buttonVariants } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 import Link from "next/link";
 import { categoryLabels, getSelectedOptionLabel } from "./choice-utils";
-import { CategoryTabs } from "./CategoryTabs";
 import { ChoiceSkeleton } from "./ChoiceSkeleton";
+import { QuestionFilterBar } from "./QuestionFilterBar";
 import { choiceHubStyles } from "./styles";
 
 interface MyChoicesViewProps {
@@ -13,8 +13,10 @@ interface MyChoicesViewProps {
   activeCategory: ChoiceCategory | "all";
   isLoggedIn: boolean;
   isLoading: boolean;
+  searchQuery: string;
   onCategoryChange: (category: ChoiceCategory | "all") => void;
   onOpenQuestion: (id: number) => void;
+  onSearchQueryChange: (query: string) => void;
 }
 
 export function MyChoicesView({
@@ -22,8 +24,10 @@ export function MyChoicesView({
   activeCategory,
   isLoggedIn,
   isLoading,
+  searchQuery,
   onCategoryChange,
   onOpenQuestion,
+  onSearchQueryChange,
 }: MyChoicesViewProps) {
   if (!isLoggedIn) {
     return (
@@ -57,20 +61,26 @@ export function MyChoicesView({
         </div>
         <Badge variant="outline">{items?.length ?? 0}개의 선택</Badge>
       </div>
-      <CategoryTabs
+      <QuestionFilterBar
         activeCategory={activeCategory}
+        searchQuery={searchQuery}
         onCategoryChange={onCategoryChange}
+        onSearchQueryChange={onSearchQueryChange}
       />
       {!items?.length ? (
         <div className={choiceHubStyles.state}>
           <div>
             <p className={choiceHubStyles.stateTitle}>
-              {activeCategory === "all"
-                ? "저장된 선택이 없어요."
-                : "이 카테고리에 저장된 선택이 없어요."}
+              {searchQuery.trim()
+                ? "검색 결과가 없어요."
+                : activeCategory === "all"
+                  ? "저장된 선택이 없어요."
+                  : "이 카테고리에 저장된 선택이 없어요."}
             </p>
             <p className={choiceHubStyles.stateDescription}>
-              오늘의 질문에 답하면 여기에 기록됩니다.
+              {searchQuery.trim()
+                ? "다른 검색어나 카테고리로 찾아보세요."
+                : "오늘의 질문에 답하면 여기에 기록됩니다."}
             </p>
           </div>
         </div>

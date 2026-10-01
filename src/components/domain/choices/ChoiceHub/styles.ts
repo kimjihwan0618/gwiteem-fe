@@ -1,12 +1,12 @@
 import { cva } from "class-variance-authority";
 
-export const categoryTabVariants = cva(
-  "focus-ring rounded-full px-4 py-2 text-sm font-bold transition-colors",
+export const filterCategoryVariants = cva(
+  "focus-ring flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 text-sm font-bold transition-colors",
   {
     variants: {
       active: {
-        true: "bg-brand-700 text-white shadow-sm",
-        false: "bg-white text-muted hover:bg-brand-50 hover:text-brand-700",
+        true: "bg-brand-50 text-brand-700",
+        false: "text-muted hover:bg-surface-muted hover:text-ink-soft",
       },
     },
   },
@@ -66,7 +66,28 @@ export const choiceHubStyles = {
   title: "text-3xl font-black tracking-[-0.045em] text-ink sm:text-4xl",
   subtitle: "mt-2 text-sm text-muted sm:text-base",
   date: "text-sm font-semibold text-subtle",
-  mobileCategories: "-mx-1 mb-5 flex gap-2 overflow-x-auto px-1 pb-1 lg:hidden",
+  filterBar:
+    "sticky top-[74px] z-30 -mx-2 mb-7 flex items-center gap-2 border-y border-border bg-white/95 p-2 shadow-sm backdrop-blur-xl sm:mx-0 sm:gap-3 sm:rounded-2xl sm:border sm:p-3",
+  searchField:
+    "focus-within:ring-brand-500/20 relative flex min-h-11 min-w-0 flex-1 items-center rounded-xl border border-border-strong bg-white focus-within:border-brand-500 focus-within:ring-4",
+  searchIcon: "pointer-events-none ml-3 shrink-0 text-subtle",
+  searchInput:
+    "min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm font-medium text-ink outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden",
+  searchClearButton:
+    "focus-ring mr-2 rounded-lg p-1.5 text-subtle hover:bg-surface-muted hover:text-ink",
+  filterMenuRoot: "relative shrink-0",
+  filterTrigger:
+    "focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border-strong bg-white px-3 text-sm font-bold text-ink-soft transition-colors hover:bg-surface-muted",
+  filterTriggerOpen: "border-brand-500 bg-brand-50 text-brand-700",
+  filterTriggerLabel: "hidden sm:inline",
+  filterCount:
+    "grid h-5 min-w-5 place-items-center rounded-full bg-brand-700 px-1 text-[0.6875rem] font-black text-white",
+  filterPopover:
+    "animate-state-in absolute top-[calc(100%+0.625rem)] right-0 z-40 w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-border bg-white p-4 shadow-2xl",
+  filterSection: "",
+  filterSortSection: "mt-4 border-t border-border-subtle pt-4",
+  filterSectionTitle: "mb-2 text-xs font-bold text-subtle",
+  filterCategories: "grid grid-cols-2 gap-1 sm:grid-cols-3",
   featured:
     "relative overflow-hidden rounded-card border border-brand-200 bg-white p-5 shadow-card sm:p-7 lg:p-8",
   featuredGlow:
@@ -83,12 +104,12 @@ export const choiceHubStyles = {
   featuredAction: "flex min-w-48 flex-col items-stretch gap-2",
   participantMeta:
     "mt-1 inline-flex items-center gap-1 text-xs font-semibold text-subtle",
-  sectionHeader:
-    "mt-9 mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+  sectionHeader: "mt-9 mb-4",
   sectionTitle: "text-xl font-black tracking-[-0.03em] text-ink sm:text-2xl",
-  sortGroup: "flex w-fit rounded-xl border border-border bg-surface-subtle p-1",
+  sortGroup:
+    "grid grid-cols-2 rounded-xl border border-border bg-surface-subtle p-1",
   sortButton:
-    "focus-ring rounded-lg px-4 py-2 text-xs font-bold text-muted transition-colors",
+    "focus-ring rounded-lg px-4 py-2.5 text-xs font-bold text-muted transition-colors",
   sortButtonActive: "bg-white text-brand-700 shadow-sm",
   grid: "grid gap-4 md:grid-cols-2 xl:grid-cols-3",
   questionCard:
