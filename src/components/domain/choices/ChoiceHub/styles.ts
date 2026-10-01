@@ -66,20 +66,23 @@ export const choiceHubStyles = {
   title: "text-3xl font-black tracking-[-0.045em] text-ink sm:text-4xl",
   subtitle: "mt-2 text-sm text-muted sm:text-base",
   date: "text-sm font-semibold text-subtle",
+  stickySentinel: "h-px",
   filterBar:
-    "sticky top-[74px] z-30 -mx-2 mb-7 flex items-center gap-2 border-y border-border bg-white/95 p-2 shadow-sm backdrop-blur-xl sm:mx-0 sm:gap-3 sm:rounded-2xl sm:border sm:p-3",
+    "sticky top-[74px] z-30 mx-auto mb-7 w-[min(100%,56rem)] border-y border-border bg-white/95 p-2 shadow-sm backdrop-blur-xl transition-[width,margin-left,border-radius,padding] duration-300 ease-out sm:rounded-2xl sm:border sm:p-3",
+  filterBarStuck:
+    "ml-[calc(50%-50dvw)] w-[100dvw] rounded-none border-x-0 px-4 shadow-md sm:rounded-none sm:border-x-0 sm:px-7 lg:px-10",
   searchField:
-    "focus-within:ring-brand-500/20 relative flex min-h-11 min-w-0 flex-1 items-center rounded-xl border border-border-strong bg-white focus-within:border-brand-500 focus-within:ring-4",
+    "focus-within:ring-brand-500/20 relative mx-auto flex min-h-11 w-full min-w-0 items-center rounded-xl border border-border-strong bg-white transition-[max-width,border-color,box-shadow] duration-300 ease-out focus-within:border-brand-500 focus-within:ring-4",
+  searchFieldStuck: "shadow-sm",
   searchIcon: "pointer-events-none ml-3 shrink-0 text-subtle",
   searchInput:
     "min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm font-medium text-ink outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden",
   searchClearButton:
     "focus-ring mr-2 rounded-lg p-1.5 text-subtle hover:bg-surface-muted hover:text-ink",
-  filterMenuRoot: "relative shrink-0",
+  filterMenuRoot: "relative h-11 shrink-0 self-stretch",
   filterTrigger:
-    "focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border-strong bg-white px-3 text-sm font-bold text-ink-soft transition-colors hover:bg-surface-muted",
+    "focus-ring inline-flex h-full items-center justify-center gap-2 rounded-r-xl border-l border-border-strong bg-white px-3 text-sm font-bold text-ink-soft transition-colors hover:bg-surface-muted",
   filterTriggerOpen: "border-brand-500 bg-brand-50 text-brand-700",
-  filterTriggerLabel: "hidden sm:inline",
   filterCount:
     "grid h-5 min-w-5 place-items-center rounded-full bg-brand-700 px-1 text-[0.6875rem] font-black text-white",
   filterPopover:
