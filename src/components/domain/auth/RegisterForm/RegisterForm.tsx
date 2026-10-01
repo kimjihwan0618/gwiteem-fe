@@ -32,6 +32,7 @@ import { registerFormStyles } from "./styles";
 
 export function RegisterForm({
   registerMutation,
+  nicknameAvailabilityMutation,
   sendCodeMutation,
   confirmCodeMutation,
 }: {
@@ -39,6 +40,12 @@ export function RegisterForm({
     ApiResponse<{ user: AuthUser }>,
     Error,
     RegisterRequest,
+    unknown
+  >;
+  nicknameAvailabilityMutation: UseMutationResult<
+    ApiResponse<{ isAvailable: boolean }>,
+    Error,
+    string,
     unknown
   >;
   sendCodeMutation: UseMutationResult<
@@ -57,6 +64,7 @@ export function RegisterForm({
   const verificationTimer = useVerificationTimer();
   const [showPassword, setShowPassword] = useState(false);
   const [nickname, setNickname] = useState("");
+  const [verifiedNickname, setVerifiedNickname] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
@@ -65,8 +73,12 @@ export function RegisterForm({
 
   const isEmailValid = emailCodeSendRequestSchema.safeParse({ email }).success;
   const isEmailVerified = verifiedEmail === email;
+  const normalizedNickname = nickname.trim();
+  const isNicknameValid =
+    normalizedNickname.length > 0 && normalizedNickname.length <= 50;
+  const isNicknameVerified = verifiedNickname === normalizedNickname;
   const canRegister =
-    nickname.trim().length > 0 &&
+    isNicknameVerified &&
     isEmailVerified &&
     isPasswordValid(password) &&
     !registerMutation.isPending;
@@ -78,6 +90,23 @@ export function RegisterForm({
     setVerificationCode("");
     setVerifiedEmail(null);
     verificationTimer.stop();
+  }
+
+  function changeNickname(nextNickname: string) {
+    setNickname(nextNickname);
+    setVerifiedNickname(null);
+    nicknameAvailabilityMutation.reset();
+  }
+
+  function checkNicknameAvailability() {
+    if (!isNicknameValid) return;
+    nicknameAvailabilityMutation.mutate(normalizedNickname, {
+      onSuccess: (response) => {
+        setVerifiedNickname(
+          response.data.isAvailable ? normalizedNickname : null,
+        );
+      },
+    });
   }
 
   function sendVerificationCode() {
@@ -129,21 +158,47 @@ export function RegisterForm({
         </p>
       </div>
       <form onSubmit={submit} className={registerFormStyles.form}>
-        <label className={registerFormStyles.field}>
+        <div className={registerFormStyles.field}>
           <span className={registerFormStyles.label}>닉네임</span>
-          <div className={registerFormStyles.fieldControl}>
-            <UserRound className={registerFormStyles.fieldIcon} size={18} />
-            <Input
-              name="nickname"
-              value={nickname}
-              onChange={(event) => setNickname(event.target.value)}
-              required
-              autoComplete="nickname"
-              placeholder="브리핑에서 사용할 이름"
-              className={registerFormStyles.input}
-            />
+          <div className={registerFormStyles.inputActionRow}>
+            <div className={registerFormStyles.fieldControl}>
+              <UserRound className={registerFormStyles.fieldIcon} size={18} />
+              <Input
+                name="nickname"
+                value={nickname}
+                onChange={(event) => changeNickname(event.target.value)}
+                required
+                maxLength={50}
+                autoComplete="nickname"
+                placeholder="브리핑에서 사용할 이름"
+                className={registerFormStyles.input}
+              />
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              className={registerFormStyles.actionButton}
+              disabled={!isNicknameValid || isNicknameVerified}
+              isPending={nicknameAvailabilityMutation.isPending}
+              loadingText="확인 중"
+              onClick={checkNicknameAvailability}
+            >
+              중복 확인
+            </Button>
           </div>
-        </label>
+          {isNicknameVerified && (
+            <p className={registerFormStyles.nicknameAvailableMessage}>
+              <CheckCircle2 size={15} /> 사용할 수 있는 닉네임입니다.
+            </p>
+          )}
+          {nicknameAvailabilityMutation.data &&
+            nicknameAvailabilityMutation.variables === normalizedNickname &&
+            !nicknameAvailabilityMutation.data.data.isAvailable && (
+              <p className={registerFormStyles.nicknameUnavailableMessage}>
+                이미 사용 중인 닉네임입니다.
+              </p>
+            )}
+        </div>
         <label className={registerFormStyles.field}>
           <span className={registerFormStyles.label}>이메일</span>
           <div className={registerFormStyles.inputActionRow}>
@@ -262,9 +317,10 @@ export function RegisterForm({
         >
           회원가입
         </Button>
-        {!isEmailVerified && (
+        {(!isEmailVerified || !isNicknameVerified) && (
           <p className={registerFormStyles.submitHint}>
-            이메일 인증을 완료하면 회원가입 버튼이 활성화됩니다.
+            이메일 인증과 닉네임 중복확인을 완료하면 회원가입 버튼이
+            활성화됩니다.
           </p>
         )}
       </form>

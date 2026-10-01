@@ -9,6 +9,7 @@ import { apiClient } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/response";
 import {
   loginResultSchema,
+  nicknameAvailabilitySchema,
   type EmailCodeConfirmRequest,
   type EmailCodeSendRequest,
   type RegisterRequest,
@@ -19,6 +20,13 @@ function register(payload: RegisterRequest) {
     method: "POST",
     body: payload,
   });
+}
+
+function checkNicknameAvailability(nickname: string) {
+  return apiClient(
+    `/api/auth/nickname-availability?nickname=${encodeURIComponent(nickname)}`,
+    nicknameAvailabilitySchema,
+  );
 }
 
 function sendEmailVerificationCode(payload: EmailCodeSendRequest) {
@@ -52,6 +60,15 @@ export function useRegisterMutation() {
     },
     onError: (error) =>
       toast.error(getErrorMessage(error, "회원가입 중 오류가 발생했습니다.")),
+  });
+}
+
+export function useNicknameAvailabilityMutation() {
+  const toast = useToast();
+  return useMutation({
+    mutationFn: checkNicknameAvailability,
+    onError: (error) =>
+      toast.error(getErrorMessage(error, "닉네임을 확인하지 못했습니다.")),
   });
 }
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { RegisterForm } from "@/components/domain/auth/RegisterForm";
 import {
   useConfirmEmailVerificationCodeMutation,
+  useNicknameAvailabilityMutation,
   useRegisterMutation,
   useSendEmailVerificationCodeMutation,
 } from "./hooks";
@@ -12,6 +13,7 @@ import { registerPageStyles } from "./styles";
 
 export default function RegisterPage() {
   const registerMutation = useRegisterMutation();
+  const nicknameAvailabilityMutation = useNicknameAvailabilityMutation();
   const sendCodeMutation = useSendEmailVerificationCodeMutation();
   const confirmCodeMutation = useConfirmEmailVerificationCodeMutation();
 
@@ -29,6 +31,7 @@ export default function RegisterPage() {
       <section className={registerPageStyles.formContent}>
         <RegisterForm
           registerMutation={registerMutation}
+          nicknameAvailabilityMutation={nicknameAvailabilityMutation}
           sendCodeMutation={sendCodeMutation}
           confirmCodeMutation={confirmCodeMutation}
         />

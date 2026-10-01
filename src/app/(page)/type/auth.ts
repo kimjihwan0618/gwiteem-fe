@@ -10,12 +10,16 @@ export const loginRequestSchema = z.object({
 export const registerRequestSchema = z.object({
   email: z.string().email(),
   password: passwordSchema,
-  nickname: z.string().min(1),
+  nickname: z.string().trim().min(1).max(50),
   remember: z.boolean().default(true),
 });
 
 export const emailCodeSendRequestSchema = z.object({
   email: z.string().email(),
+});
+
+export const nicknameAvailabilitySchema = z.object({
+  isAvailable: z.boolean(),
 });
 
 export const emailCodeConfirmRequestSchema = z.object({

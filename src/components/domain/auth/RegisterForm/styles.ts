@@ -21,6 +21,9 @@ export const registerFormStyles = {
   expiredMessage: "mt-2 text-xs text-danger-700",
   verifiedMessage:
     "flex items-center gap-1.5 text-sm font-semibold text-success-700",
+  nicknameAvailableMessage:
+    "mt-2 flex items-center gap-1.5 text-xs font-semibold text-success-700",
+  nicknameUnavailableMessage: "mt-2 text-xs font-semibold text-danger-700",
   visibilityButton:
     "focus-ring absolute top-1/2 right-3 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-subtle transition-colors hover:bg-surface-muted hover:text-ink-soft",
   submit: "mt-1 w-full",
