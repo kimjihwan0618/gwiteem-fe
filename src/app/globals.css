@@ -116,6 +116,32 @@ button {
   }
 }
 
+@keyframes like-heart-pop {
+  0% {
+    transform: scale(0.75) rotate(-8deg);
+  }
+  45% {
+    transform: scale(1.45) rotate(7deg);
+  }
+  72% {
+    transform: scale(0.92) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes like-particle-burst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--particle-x), var(--particle-y)) scale(1);
+  }
+}
+
 .animate-fade-up {
   animation: fade-up 420ms ease-out both;
 }
@@ -128,10 +154,54 @@ button {
   animation: loading-in 220ms ease-out both;
 }
 
+.like-heart-pop {
+  animation: like-heart-pop 520ms cubic-bezier(0.2, 0.9, 0.25, 1.25) both;
+}
+
+.like-particles {
+  pointer-events: none;
+  position: absolute;
+  inset: 50%;
+}
+
+.like-particles i {
+  --particle-x: 0;
+  --particle-y: -14px;
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-danger-500);
+  animation: like-particle-burst 480ms ease-out both;
+}
+
+.like-particles i:nth-child(2) {
+  --particle-x: 13px;
+  --particle-y: -5px;
+  background: var(--color-warning-500);
+}
+
+.like-particles i:nth-child(3) {
+  --particle-x: -13px;
+  --particle-y: -5px;
+  background: #f78fb3;
+}
+
+.like-particles i:nth-child(4) {
+  --particle-x: 0;
+  --particle-y: 13px;
+  background: var(--color-violet-600);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     scroll-behavior: auto !important;
+  }
+
+  .like-heart-pop,
+  .like-particles i {
+    animation: none !important;
   }
 }

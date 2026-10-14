@@ -7,6 +7,7 @@ export const choiceCategorySchema = z.enum([
   "daily",
 ]);
 export const choiceOptionSchema = z.enum(["A", "B", "C", "D"]);
+export const choiceSortSchema = z.enum(["popular", "latest", "liked"]);
 
 export const choiceReasonSchema = z.object({
   id: z.number(),
@@ -23,6 +24,8 @@ export const choiceQuestionSchema = z.object({
   option_d: z.string().nullable(),
   is_daily: z.boolean(),
   participant_count: z.number(),
+  like_count: z.number(),
+  is_liked: z.boolean(),
   my_choice: choiceOptionSchema.nullable(),
   author_name: z.string(),
   created_at: z.string(),
@@ -66,10 +69,22 @@ export const myChoiceSchema = z.object({
 });
 
 export const myChoicesSchema = z.array(myChoiceSchema);
+export const myLikedQuestionSchema = z.object({
+  question: choiceQuestionSchema,
+  liked_at: z.string(),
+});
+export const myLikedQuestionsSchema = z.array(myLikedQuestionSchema);
 export const choiceMigrationSchema = z.object({ migrated_count: z.number() });
+export const choiceLikeResponseSchema = z.object({
+  question_id: z.number(),
+  is_liked: z.boolean(),
+  like_count: z.number(),
+});
 
 export type ChoiceCategory = z.infer<typeof choiceCategorySchema>;
 export type ChoiceOption = z.infer<typeof choiceOptionSchema>;
+export type ChoiceSort = z.infer<typeof choiceSortSchema>;
 export type ChoiceQuestion = z.infer<typeof choiceQuestionSchema>;
 export type ChoiceQuestionDetail = z.infer<typeof choiceQuestionDetailSchema>;
 export type MyChoice = z.infer<typeof myChoiceSchema>;
+export type MyLikedQuestion = z.infer<typeof myLikedQuestionSchema>;

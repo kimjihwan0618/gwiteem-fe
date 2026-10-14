@@ -17,6 +17,7 @@ import {
   optionTones,
 } from "./choice-utils";
 import { ResultView } from "./ResultView";
+import { LikeButton } from "./LikeButton";
 import {
   choiceHubStyles,
   optionButtonVariants,
@@ -31,6 +32,8 @@ interface QuestionDialogProps {
   isLoggedIn: boolean;
   onClose: () => void;
   onVote: (id: number, option: ChoiceOption, reasonId: number) => void;
+  isLikePending: boolean;
+  onToggleLike: (question: ChoiceQuestionDetail) => void;
 }
 
 async function copyText(text: string) {
@@ -59,6 +62,8 @@ export function QuestionDialog({
   isLoggedIn,
   onClose,
   onVote,
+  isLikePending,
+  onToggleLike,
 }: QuestionDialogProps) {
   const [selectedOption, setSelectedOption] = useState<ChoiceOption | null>(
     detail?.my_choice ?? null,
@@ -107,15 +112,25 @@ export function QuestionDialog({
           <span className={choiceHubStyles.modalHeading}>오늘의 선택</span>
           <div className={choiceHubStyles.modalHeaderActions}>
             {detail && !isError && (
-              <button
-                type="button"
-                aria-label="질문 공유하기"
-                title="질문 공유하기"
-                className={choiceHubStyles.shareIconButton}
-                onClick={() => void shareQuestion()}
-              >
-                <Share2 size={18} />
-              </button>
+              <>
+                <LikeButton
+                  compact
+                  isLiked={detail.is_liked}
+                  likeCount={detail.like_count}
+                  canLike={isLoggedIn}
+                  isPending={isLikePending}
+                  onToggle={() => onToggleLike(detail)}
+                />
+                <button
+                  type="button"
+                  aria-label="질문 공유하기"
+                  title="질문 공유하기"
+                  className={choiceHubStyles.shareIconButton}
+                  onClick={() => void shareQuestion()}
+                >
+                  <Share2 size={18} />
+                </button>
+              </>
             )}
             <button
               aria-label="닫기"

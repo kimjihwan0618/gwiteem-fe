@@ -8,14 +8,24 @@ import {
   optionTones,
 } from "./choice-utils";
 import { QuestionByline } from "./QuestionByline";
+import { LikeButton } from "./LikeButton";
 import { choiceHubStyles, optionLabelVariants } from "./styles";
 
 interface FeaturedQuestionProps {
   question: ChoiceQuestion;
   onOpen: (id: number) => void;
+  isLoggedIn: boolean;
+  isLikePending: boolean;
+  onToggleLike: (question: ChoiceQuestion) => void;
 }
 
-export function FeaturedQuestion({ question, onOpen }: FeaturedQuestionProps) {
+export function FeaturedQuestion({
+  question,
+  onOpen,
+  isLoggedIn,
+  isLikePending,
+  onToggleLike,
+}: FeaturedQuestionProps) {
   return (
     <section className={choiceHubStyles.featured}>
       <div className={choiceHubStyles.featuredGlow} />
@@ -28,10 +38,6 @@ export function FeaturedQuestion({ question, onOpen }: FeaturedQuestionProps) {
           <h2 className={choiceHubStyles.featuredTitle}>{question.title}</h2>
           <div className={choiceHubStyles.featuredMeta}>
             <QuestionByline question={question} />
-            <span className={choiceHubStyles.participantMeta}>
-              <Users size={14} />총{" "}
-              {question.participant_count.toLocaleString()}회 선택
-            </span>
           </div>
           <div className={choiceHubStyles.featuredOptions}>
             {getQuestionOptions(question).map(({ option, label }) => (
@@ -46,6 +52,20 @@ export function FeaturedQuestion({ question, onOpen }: FeaturedQuestionProps) {
                 {label}
               </div>
             ))}
+          </div>
+          <div className={choiceHubStyles.featuredEngagement}>
+            <span className={choiceHubStyles.participantMeta}>
+              <Users size={14} />총{" "}
+              {question.participant_count.toLocaleString()}회 선택
+            </span>
+            <LikeButton
+              compact
+              isLiked={question.is_liked}
+              likeCount={question.like_count}
+              canLike={isLoggedIn}
+              isPending={isLikePending}
+              onToggle={() => onToggleLike(question)}
+            />
           </div>
         </div>
         <div className={choiceHubStyles.featuredAction}>

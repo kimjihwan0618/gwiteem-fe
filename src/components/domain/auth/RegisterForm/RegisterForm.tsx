@@ -1,21 +1,6 @@
 "use client";
 
 import {
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  KeyRound,
-  LockKeyhole,
-  Mail,
-  UserRound,
-} from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import type { UseMutationResult } from "@tanstack/react-query";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import type { ApiResponse } from "@/lib/api/response";
-import {
   formatVerificationTime,
   useVerificationTimer,
 } from "@/app/(page)/hooks/use-verification-timer";
@@ -27,6 +12,21 @@ import {
   type RegisterRequest,
 } from "@/app/(page)/type/auth";
 import { isPasswordValid } from "@/app/(page)/type/password";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import type { ApiResponse } from "@/lib/api/response";
+import type { UseMutationResult } from "@tanstack/react-query";
+import {
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  KeyRound,
+  LockKeyhole,
+  Mail,
+  UserRound,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { PasswordRuleHint } from "../PasswordRuleHint";
 import { registerFormStyles } from "./styles";
 
@@ -317,12 +317,6 @@ export function RegisterForm({
         >
           회원가입
         </Button>
-        {(!isEmailVerified || !isNicknameVerified) && (
-          <p className={registerFormStyles.submitHint}>
-            이메일 인증과 닉네임 중복확인을 완료하면 회원가입 버튼이
-            활성화됩니다.
-          </p>
-        )}
       </form>
       <p className={registerFormStyles.loginPrompt}>
         이미 계정이 있나요?{" "}

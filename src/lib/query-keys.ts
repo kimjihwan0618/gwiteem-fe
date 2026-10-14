@@ -22,5 +22,6 @@ export const queryKeys = {
     detail: (questionId: number | null) =>
       [...queryKeys.choices.all, "detail", questionId] as const,
     mine: () => [...queryKeys.choices.all, "mine"] as const,
+    liked: () => [...queryKeys.choices.all, "liked"] as const,
   },
 };

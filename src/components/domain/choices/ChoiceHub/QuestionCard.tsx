@@ -3,19 +3,38 @@ import { Badge } from "@/components/ui/Badge";
 import { Check, ChevronRight, Users } from "lucide-react";
 import { categoryLabels, getQuestionOptions } from "./choice-utils";
 import { QuestionByline } from "./QuestionByline";
+import { LikeButton } from "./LikeButton";
 import { choiceHubStyles } from "./styles";
 
 interface QuestionCardProps {
   question: ChoiceQuestion;
   isTight: boolean;
   onOpen: (id: number) => void;
+  isLoggedIn: boolean;
+  isLikePending: boolean;
+  onToggleLike: (question: ChoiceQuestion) => void;
 }
 
-export function QuestionCard({ question, isTight, onOpen }: QuestionCardProps) {
+export function QuestionCard({
+  question,
+  isTight,
+  onOpen,
+  isLoggedIn,
+  isLikePending,
+  onToggleLike,
+}: QuestionCardProps) {
   return (
-    <button
+    <article
+      role="button"
+      tabIndex={0}
       className={choiceHubStyles.questionCard}
       onClick={() => onOpen(question.id)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpen(question.id);
+        }
+      }}
     >
       <div className={choiceHubStyles.cardMeta}>
         <div className={choiceHubStyles.cardBadges}>
@@ -45,8 +64,18 @@ export function QuestionCard({ question, isTight, onOpen }: QuestionCardProps) {
           <Users size={14} className={choiceHubStyles.participantIcon} />
           {question.participant_count.toLocaleString()}회 선택
         </span>
-        <ChevronRight size={18} className={choiceHubStyles.arrow} />
+        <span className={choiceHubStyles.cardFooterActions}>
+          <LikeButton
+            compact
+            isLiked={question.is_liked}
+            likeCount={question.like_count}
+            canLike={isLoggedIn}
+            isPending={isLikePending}
+            onToggle={() => onToggleLike(question)}
+          />
+          <ChevronRight size={18} className={choiceHubStyles.arrow} />
+        </span>
       </div>
-    </button>
+    </article>
   );
 }

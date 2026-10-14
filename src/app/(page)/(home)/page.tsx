@@ -7,9 +7,16 @@ import {
   useChoiceQuestions,
   useMigrateGuestVotes,
   useMyChoices,
+  useMyLikedQuestions,
+  useToggleQuestionLike,
   useVoteQuestion,
 } from "./hooks";
-import type { ChoiceCategory, ChoiceOption } from "./type";
+import type {
+  ChoiceCategory,
+  ChoiceOption,
+  ChoiceQuestion,
+  ChoiceSort,
+} from "./type";
 import { useAuth } from "@/components/domain/auth/AuthProvider";
 import { ChoiceHub } from "@/components/domain/choices/ChoiceHub";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -45,7 +52,7 @@ function HomeContent() {
     ),
   );
   const activeView = searchParams.get("view") === "my" ? "mine" : "questions";
-  const [sort, setSort] = useState<"popular" | "latest">("popular");
+  const [sort, setSort] = useState<ChoiceSort>("popular");
   const questionParam = searchParams.get("question");
   const parsedQuestionId = questionParam ? Number(questionParam) : null;
   const selectedQuestionId =
@@ -58,7 +65,9 @@ function HomeContent() {
   const questions = useChoiceQuestions("all", sort);
   const detail = useChoiceQuestion(selectedQuestionId);
   const myChoices = useMyChoices(isReady && Boolean(user));
+  const myLikedQuestions = useMyLikedQuestions(isReady && Boolean(user));
   const vote = useVoteQuestion();
+  const toggleLike = useToggleQuestionLike();
   const migrate = useMigrateGuestVotes();
 
   useEffect(() => {
@@ -111,6 +120,24 @@ function HomeContent() {
     );
   }
 
+  function handleToggleLike(question: ChoiceQuestion) {
+    if (!user) {
+      toast.info("로그인하면 질문에 좋아요를 남길 수 있어요.");
+      return;
+    }
+    toggleLike.mutate(
+      { questionId: question.id, isLiked: !question.is_liked },
+      {
+        onError: (error) =>
+          toast.error(
+            error instanceof ApiError
+              ? error.message
+              : "좋아요를 반영하지 못했습니다.",
+          ),
+      },
+    );
+  }
+
   return (
     <ChoiceHub
       activeCategories={activeCategories}
@@ -119,21 +146,28 @@ function HomeContent() {
       questions={questions.data}
       detail={detail.data}
       myChoices={myChoices.data}
+      myLikedQuestions={myLikedQuestions.data}
       selectedQuestionId={selectedQuestionId}
       isLoading={
         !isReady ||
-        (activeView === "questions" ? questions.isPending : myChoices.isPending)
+        (activeView === "questions"
+          ? questions.isPending
+          : myChoices.isPending || myLikedQuestions.isPending)
       }
       isError={questions.isError}
       isDetailLoading={detail.isPending}
       isDetailError={detail.isError}
       isVoting={vote.isPending}
+      likingQuestionId={
+        toggleLike.isPending ? toggleLike.variables.questionId : null
+      }
       isLoggedIn={Boolean(user)}
       onCategoriesChange={changeCategories}
       onSortChange={setSort}
       onOpenQuestion={openQuestion}
       onCloseQuestion={closeQuestion}
       onVote={handleVote}
+      onToggleLike={handleToggleLike}
       onRetry={() => void questions.refetch()}
     />
   );

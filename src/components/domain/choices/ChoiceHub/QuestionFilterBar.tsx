@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChoiceCategory } from "@/app/(page)/(home)/type";
+import type { ChoiceCategory, ChoiceSort } from "@/app/(page)/(home)/type";
 import { cn } from "@/lib/cn";
 import { Check, Search, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -10,10 +10,10 @@ import { choiceHubStyles, filterCategoryVariants } from "./styles";
 interface QuestionFilterBarProps {
   activeCategories: ChoiceCategory[];
   searchQuery: string;
-  sort?: "popular" | "latest";
+  sort?: ChoiceSort;
   onCategoriesChange: (categories: ChoiceCategory[]) => void;
   onSearchQueryChange: (query: string) => void;
-  onSortChange?: (sort: "popular" | "latest") => void;
+  onSortChange?: (sort: ChoiceSort) => void;
 }
 
 export function QuestionFilterBar({
@@ -27,9 +27,7 @@ export function QuestionFilterBar({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isStuck, setIsStuck] = useState(false);
   const [draftCategories, setDraftCategories] = useState<ChoiceCategory[]>([]);
-  const [draftSort, setDraftSort] = useState<"popular" | "latest">(
-    sort ?? "popular",
-  );
+  const [draftSort, setDraftSort] = useState<ChoiceSort>(sort ?? "popular");
   const filterRef = useRef<HTMLDivElement>(null);
   const stickySentinelRef = useRef<HTMLDivElement>(null);
   const activeFilterCount =
@@ -192,20 +190,26 @@ export function QuestionFilterBar({
                   >
                     <p className={choiceHubStyles.filterSectionTitle}>정렬</p>
                     <div className={choiceHubStyles.sortGroup}>
-                      {(["popular", "latest"] as const).map((sortOption) => (
-                        <button
-                          key={sortOption}
-                          type="button"
-                          onClick={() => setDraftSort(sortOption)}
-                          className={cn(
-                            choiceHubStyles.sortButton,
-                            draftSort === sortOption &&
-                              choiceHubStyles.sortButtonActive,
-                          )}
-                        >
-                          {sortOption === "popular" ? "인기순" : "최신순"}
-                        </button>
-                      ))}
+                      {(["latest", "popular", "liked"] as const).map(
+                        (sortOption) => (
+                          <button
+                            key={sortOption}
+                            type="button"
+                            onClick={() => setDraftSort(sortOption)}
+                            className={cn(
+                              choiceHubStyles.sortButton,
+                              draftSort === sortOption &&
+                                choiceHubStyles.sortButtonActive,
+                            )}
+                          >
+                            {sortOption === "latest"
+                              ? "최신순"
+                              : sortOption === "popular"
+                                ? "참여순"
+                                : "좋아요순"}
+                          </button>
+                        ),
+                      )}
                     </div>
                   </div>
                 )}

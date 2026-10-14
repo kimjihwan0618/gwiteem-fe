@@ -5,7 +5,9 @@ import type {
   ChoiceOption,
   ChoiceQuestion,
   ChoiceQuestionDetail,
+  ChoiceSort,
   MyChoice,
+  MyLikedQuestion,
 } from "@/app/(page)/(home)/type";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -22,22 +24,25 @@ import { choiceHubStyles } from "./styles";
 interface ChoiceHubProps {
   activeCategories: ChoiceCategory[];
   activeView: "questions" | "mine";
-  sort: "popular" | "latest";
+  sort: ChoiceSort;
   questions?: ChoiceQuestion[];
   detail?: ChoiceQuestionDetail;
   myChoices?: MyChoice[];
+  myLikedQuestions?: MyLikedQuestion[];
   selectedQuestionId: number | null;
   isLoading: boolean;
   isError: boolean;
   isDetailLoading: boolean;
   isDetailError: boolean;
   isVoting: boolean;
+  likingQuestionId: number | null;
   isLoggedIn: boolean;
   onCategoriesChange: (categories: ChoiceCategory[]) => void;
-  onSortChange: (sort: "popular" | "latest") => void;
+  onSortChange: (sort: ChoiceSort) => void;
   onOpenQuestion: (questionId: number) => void;
   onCloseQuestion: () => void;
   onVote: (questionId: number, option: ChoiceOption, reasonId: number) => void;
+  onToggleLike: (question: ChoiceQuestion) => void;
   onRetry: () => void;
 }
 
@@ -73,6 +78,39 @@ export function ChoiceHub(props: ChoiceHubProps) {
           .includes(normalizedSearchQuery),
       )
     : categoryMyChoices;
+  const categoryLikedQuestions = props.activeCategories.length
+    ? props.myLikedQuestions?.filter((item) =>
+        props.activeCategories.includes(item.question.category),
+      )
+    : props.myLikedQuestions;
+  const filteredLikedQuestions = normalizedSearchQuery
+    ? categoryLikedQuestions?.filter((item) =>
+        item.question.title
+          .toLocaleLowerCase("ko-KR")
+          .includes(normalizedSearchQuery),
+      )
+    : categoryLikedQuestions;
+  const sortByQuestionMetrics = <T extends { question: ChoiceQuestion }>(
+    items: T[] | undefined,
+    dateOf: (item: T) => string,
+  ) =>
+    items?.toSorted((a, b) => {
+      if (props.sort === "popular") {
+        return b.question.participant_count - a.question.participant_count;
+      }
+      if (props.sort === "liked") {
+        return b.question.like_count - a.question.like_count;
+      }
+      return new Date(dateOf(b)).getTime() - new Date(dateOf(a)).getTime();
+    });
+  const sortedMyChoices = sortByQuestionMetrics(
+    filteredMyChoices,
+    (item) => item.voted_at,
+  );
+  const sortedLikedQuestions = sortByQuestionMetrics(
+    filteredLikedQuestions,
+    (item) => item.liked_at,
+  );
   const dateLabel = useMemo(
     () =>
       new Intl.DateTimeFormat("ko-KR", {
@@ -89,7 +127,8 @@ export function ChoiceHub(props: ChoiceHubProps) {
       <main className={choiceHubStyles.main}>
         {props.activeView === "mine" ? (
           <MyChoicesView
-            items={filteredMyChoices}
+            items={sortedMyChoices}
+            likedItems={sortedLikedQuestions}
             activeCategories={props.activeCategories}
             isLoggedIn={props.isLoggedIn}
             isLoading={props.isLoading}
@@ -97,6 +136,10 @@ export function ChoiceHub(props: ChoiceHubProps) {
             onCategoriesChange={props.onCategoriesChange}
             onOpenQuestion={props.onOpenQuestion}
             onSearchQueryChange={setSearchQuery}
+            likingQuestionId={props.likingQuestionId}
+            onToggleLike={props.onToggleLike}
+            sort={props.sort}
+            onSortChange={props.onSortChange}
           />
         ) : (
           <>
@@ -164,6 +207,9 @@ export function ChoiceHub(props: ChoiceHubProps) {
                   <FeaturedQuestion
                     question={dailyQuestion}
                     onOpen={props.onOpenQuestion}
+                    isLoggedIn={props.isLoggedIn}
+                    isLikePending={props.likingQuestionId === dailyQuestion.id}
+                    onToggleLike={props.onToggleLike}
                   />
                 )}
                 {Boolean(gridQuestions?.length) && (
@@ -182,6 +228,9 @@ export function ChoiceHub(props: ChoiceHubProps) {
                             index === 0 && question.participant_count > 0
                           }
                           onOpen={props.onOpenQuestion}
+                          isLoggedIn={props.isLoggedIn}
+                          isLikePending={props.likingQuestionId === question.id}
+                          onToggleLike={props.onToggleLike}
                         />
                       ))}
                     </div>
@@ -203,6 +252,8 @@ export function ChoiceHub(props: ChoiceHubProps) {
           isLoggedIn={props.isLoggedIn}
           onClose={props.onCloseQuestion}
           onVote={props.onVote}
+          isLikePending={props.likingQuestionId === props.selectedQuestionId}
+          onToggleLike={props.onToggleLike}
         />
       )}
     </div>
