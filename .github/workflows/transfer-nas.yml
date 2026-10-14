@@ -44,24 +44,27 @@ jobs:
           tar -czf "$ARCHIVE" -C .next/standalone .
           sha256sum "$ARCHIVE" > "$ARCHIVE.sha256"
 
+      - name: Install SSH password helper
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes sshpass
+
       - name: Transfer archive over SSH and verify checksum
         env:
-          NAS_SSH_PRIVATE_KEY: ${{ secrets.NAS_SSH_PRIVATE_KEY }}
+          SSHPASS: ${{ secrets.NAS_SSH_PASSWORD }}
           NAS_KNOWN_HOSTS: ${{ secrets.NAS_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
-          : "${NAS_SSH_PRIVATE_KEY:?Set NAS_SSH_PRIVATE_KEY repository secret}"
+          : "${SSHPASS:?Set NAS_SSH_PASSWORD repository secret}"
           : "${NAS_KNOWN_HOSTS:?Set NAS_KNOWN_HOSTS repository secret}"
           ssh_dir="$(mktemp -d)"
           trap 'rm -rf "$ssh_dir"' EXIT
-          printf '%s\n' "$NAS_SSH_PRIVATE_KEY" > "$ssh_dir/key"
           printf '%s\n' "$NAS_KNOWN_HOSTS" > "$ssh_dir/known_hosts"
-          chmod 600 "$ssh_dir/key" "$ssh_dir/known_hosts"
-          ssh_options=(-i "$ssh_dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$ssh_dir/known_hosts" -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
+          chmod 600 "$ssh_dir/known_hosts"
+          ssh_options=(-o BatchMode=no -o PubkeyAuthentication=no -o PreferredAuthentications=password -o NumberOfPasswordPrompts=1 -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$ssh_dir/known_hosts" -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
           target="hodo_admin@kimjihodo.synology.me"
           release="$NAS_PATH/${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          ssh -p 22 "${ssh_options[@]}" "$target" "umask 077; mkdir -p '$release'"
-          scp -O -P 22 "${ssh_options[@]}" "$ARCHIVE" "$ARCHIVE.sha256" "$target:$release/"
-          ssh -p 22 "${ssh_options[@]}" "$target" "cd '$release' && sha256sum -c '$ARCHIVE.sha256' && touch TRANSFER_COMPLETE"
+          sshpass -e ssh -p 22 "${ssh_options[@]}" "$target" "umask 077; mkdir -p '$release'"
+          sshpass -e scp -O -P 22 "${ssh_options[@]}" "$ARCHIVE" "$ARCHIVE.sha256" "$target:$release/"
+          sshpass -e ssh -p 22 "${ssh_options[@]}" "$target" "cd '$release' && sha256sum -c '$ARCHIVE.sha256' && touch TRANSFER_COMPLETE"
           printf 'Transferred and verified: %s:%s/%s\n' "$target" "$release" "$ARCHIVE" >> "$GITHUB_STEP_SUMMARY"
-
