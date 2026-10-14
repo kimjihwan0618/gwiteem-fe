@@ -6,13 +6,14 @@
 
 ## GitHub 설정
 
-각 저장소 Settings → Secrets and variables → Actions에 다음 Repository secrets를 등록합니다.
+각 저장소 Settings → Secrets and variables → Actions에서 New repository secret을 눌러 다음 항목 하나만 등록합니다.
 
 - `NAS_SSH_PASSWORD`: NAS의 `hodo_admin` 계정 로그인 비밀번호.
-- `NAS_KNOWN_HOSTS`: 신뢰할 수 있는 경로로 지문을 확인한 NAS의 OpenSSH known_hosts 항목. 호스트 이름은 `kimjihodo.synology.me`입니다. `ssh-keyscan -p 22 kimjihodo.synology.me` 결과는 NAS에서 확인한 호스트 키 지문과 비교한 후 등록합니다.
 
 Actions는 저장된 비밀번호를 sshpass의 환경변수로 읽습니다. 실행 중 비밀번호 입력창은 뜨지 않습니다.
-`NAS_SSH_PRIVATE_KEY`와 공개키 등록은 더 이상 필요하지 않습니다. 비밀번호는 코드나 실행 입력값에 넣지 않습니다.
+`NAS_SSH_PRIVATE_KEY`, `NAS_KNOWN_HOSTS`, NAS 공개키 등록은 필요하지 않습니다. 비밀번호는 코드나 실행 입력값에 넣지 않습니다.
+
+각 Actions 실행은 첫 SSH 접속에서 받은 호스트 키를 자동으로 신뢰하고 임시 known_hosts 파일에 저장합니다(`StrictHostKeyChecking=accept-new`). 같은 실행에서 이후 접속의 호스트 키가 달라지면 거부합니다. 새 실행마다 처음 받은 키를 신뢰하므로 최초 접속 대상의 신원을 사전에 검증하지는 않습니다.
 
 NAS에서 SSH 비밀번호 인증이 허용되어야 하며 해당 계정에 대상 디렉터리 생성/쓰기 권한이 필요합니다.
 SSH, SCP, sha256sum을 사용할 수 있어야 하며 외부 GitHub hosted runner에서 22번 포트에 연결할 수 있어야 합니다.

@@ -52,16 +52,15 @@ jobs:
       - name: Transfer archive over SSH and verify checksum
         env:
           SSHPASS: ${{ secrets.NAS_SSH_PASSWORD }}
-          NAS_KNOWN_HOSTS: ${{ secrets.NAS_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
           : "${SSHPASS:?Set NAS_SSH_PASSWORD repository secret}"
-          : "${NAS_KNOWN_HOSTS:?Set NAS_KNOWN_HOSTS repository secret}"
           ssh_dir="$(mktemp -d)"
           trap 'rm -rf "$ssh_dir"' EXIT
-          printf '%s\n' "$NAS_KNOWN_HOSTS" > "$ssh_dir/known_hosts"
+          touch "$ssh_dir/known_hosts"
           chmod 600 "$ssh_dir/known_hosts"
-          ssh_options=(-o BatchMode=no -o PubkeyAuthentication=no -o PreferredAuthentications=password -o NumberOfPasswordPrompts=1 -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$ssh_dir/known_hosts" -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
+          # 실행별 첫 접속의 호스트 키를 자동 저장하고, 같은 실행 중 키 변경은 거부합니다.
+          ssh_options=(-o BatchMode=no -o PubkeyAuthentication=no -o PreferredAuthentications=password -o NumberOfPasswordPrompts=1 -o StrictHostKeyChecking=accept-new -o "UserKnownHostsFile=$ssh_dir/known_hosts" -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
           target="hodo_admin@kimjihodo.synology.me"
           release="$NAS_PATH/${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           sshpass -e ssh -p 22 "${ssh_options[@]}" "$target" "umask 077; mkdir -p '$release'"
