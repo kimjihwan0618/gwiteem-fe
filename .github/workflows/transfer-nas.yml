@@ -29,7 +29,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
       - run: npm ci
       - run: npm run lint
@@ -37,11 +37,9 @@ jobs:
       - name: Package standalone build
         run: |
           set -euo pipefail
-          test -f .next/standalone/server.js
-          cp -r .next/static .next/standalone/.next/static
-          if [ -d public ]; then cp -r public .next/standalone/public; fi
-          find .next/standalone -type f -name '.env*' -delete
-          tar -czf "$ARCHIVE" -C .next/standalone .
+          runtime_dir="$RUNNER_TEMP/nas-runtime"
+          node scripts/package-nas-build.mjs "$runtime_dir"
+          tar -czf "$ARCHIVE" -C "$runtime_dir" .
           sha256sum "$ARCHIVE" > "$ARCHIVE.sha256"
 
       - name: Install SSH password helper
@@ -49,7 +47,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes sshpass
 
-      - name: Transfer archive over SSH and verify checksum
+      - name: Transfer and unpack runtime files on NAS
         env:
           SSHPASS: ${{ secrets.NAS_SSH_PASSWORD }}
         run: |
@@ -62,8 +60,10 @@ jobs:
           # 실행별 첫 접속의 호스트 키를 자동 저장하고, 같은 실행 중 키 변경은 거부합니다.
           ssh_options=(-o BatchMode=no -o PubkeyAuthentication=no -o PreferredAuthentications=password -o NumberOfPasswordPrompts=1 -o StrictHostKeyChecking=accept-new -o "UserKnownHostsFile=$ssh_dir/known_hosts" -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
           target="hodo_admin@kimjihodo.synology.me"
-          release="$NAS_PATH/${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          transfer_id="${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          release="$NAS_PATH/.transfers/$transfer_id"
           sshpass -e ssh -p 22 "${ssh_options[@]}" "$target" "umask 077; mkdir -p '$release'"
           sshpass -e scp -O -P 22 "${ssh_options[@]}" "$ARCHIVE" "$ARCHIVE.sha256" "$target:$release/"
-          sshpass -e ssh -p 22 "${ssh_options[@]}" "$target" "cd '$release' && sha256sum -c '$ARCHIVE.sha256' && touch TRANSFER_COMPLETE"
-          printf 'Transferred and verified: %s:%s/%s\n' "$target" "$release" "$ARCHIVE" >> "$GITHUB_STEP_SUMMARY"
+          sshpass -e ssh -p 22 "${ssh_options[@]}" "$target" "sh -s -- '$NAS_PATH' '$transfer_id' '$ARCHIVE'" < scripts/install-nas-build.sh
+          printf 'Runtime files ready: %s:%s (server not started)\n' "$target" "$NAS_PATH" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Archive and backup: %s:%s\n' "$target" "$release" >> "$GITHUB_STEP_SUMMARY"
