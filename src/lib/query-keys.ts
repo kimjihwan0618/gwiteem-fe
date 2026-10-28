@@ -17,6 +17,8 @@ export const queryKeys = {
   },
   choices: {
     all: ["choices"] as const,
+    comments: (questionId: number | null, userId: string | number | null) =>
+      [...queryKeys.choices.all, "comments", questionId, userId] as const,
     list: (category: string, sort: string) =>
       [...queryKeys.choices.all, "list", category, sort] as const,
     detail: (questionId: number | null) =>

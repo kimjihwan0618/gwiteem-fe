@@ -1,7 +1,7 @@
+import { CommentCountButton } from "./CommentCountButton";
 import type { ChoiceQuestion } from "@/app/(page)/(home)/type";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { ArrowRight, Users } from "lucide-react";
+import { ChevronRight, Users } from "lucide-react";
 import {
   categoryLabels,
   getQuestionOptions,
@@ -13,7 +13,7 @@ import { choiceHubStyles, optionLabelVariants } from "./styles";
 
 interface FeaturedQuestionProps {
   question: ChoiceQuestion;
-  onOpen: (id: number) => void;
+  onOpen: (id: number, tab?: "result" | "comments") => void;
   isLoggedIn: boolean;
   isLikePending: boolean;
   onToggleLike: (question: ChoiceQuestion) => void;
@@ -27,7 +27,20 @@ export function FeaturedQuestion({
   onToggleLike,
 }: FeaturedQuestionProps) {
   return (
-    <section className={choiceHubStyles.featured}>
+    <article
+      className={choiceHubStyles.featured}
+      role="button"
+      tabIndex={0}
+      aria-label={`오늘의 질문: ${question.title}`}
+      onClick={() => onOpen(question.id)}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpen(question.id);
+        }
+      }}
+    >
       <div className={choiceHubStyles.featuredGlow} />
       <div className={choiceHubStyles.featuredContent}>
         <div>
@@ -58,23 +71,28 @@ export function FeaturedQuestion({
               <Users size={14} />총{" "}
               {question.participant_count.toLocaleString()}회 선택
             </span>
-            <LikeButton
-              compact
-              isLiked={question.is_liked}
-              likeCount={question.like_count}
-              canLike={isLoggedIn}
-              isPending={isLikePending}
-              onToggle={() => onToggleLike(question)}
-            />
+            <span className={choiceHubStyles.cardFooterActions}>
+              <LikeButton
+                compact
+                isLiked={question.is_liked}
+                likeCount={question.like_count}
+                canLike={isLoggedIn}
+                isPending={isLikePending}
+                onToggle={() => onToggleLike(question)}
+              />
+              <CommentCountButton
+                count={question.comment_count}
+                onClick={() => onOpen(question.id, "comments")}
+              />
+              <ChevronRight
+                size={18}
+                className={choiceHubStyles.arrow}
+                aria-hidden="true"
+              />
+            </span>
           </div>
         </div>
-        <div className={choiceHubStyles.featuredAction}>
-          <Button size="lg" onClick={() => onOpen(question.id)}>
-            {question.my_choice ? "결과 다시 보기" : "선택하러 가기"}
-            <ArrowRight size={18} />
-          </Button>
-        </div>
       </div>
-    </section>
+    </article>
   );
 }

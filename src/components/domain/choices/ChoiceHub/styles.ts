@@ -59,6 +59,7 @@ export const resultSegmentVariants = cva(
 );
 
 export const choiceHubStyles = {
+  mineTabCount: "text-xs tabular-nums opacity-75",
   root: "min-h-screen bg-canvas",
   main: "mx-auto max-w-[1440px] px-4 py-8 sm:px-7 lg:px-10 lg:py-11",
   intro: "mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between",
@@ -91,21 +92,19 @@ export const choiceHubStyles = {
   filterSectionTitle: "mb-2 text-xs font-bold text-subtle",
   filterCategories: "grid grid-cols-2 gap-1 sm:grid-cols-3",
   featured:
-    "relative overflow-hidden rounded-card border border-brand-200 bg-white p-5 shadow-card sm:p-7 lg:p-8",
+    "focus-ring group relative cursor-pointer overflow-hidden rounded-card border border-brand-200 bg-white p-5 shadow-card transition-[border-color,box-shadow] hover:border-brand-300 hover:shadow-lg sm:p-6",
   featuredGlow:
-    "pointer-events-none absolute -top-24 -right-20 h-64 w-64 rounded-full bg-brand-50",
-  featuredContent:
-    "relative grid items-end gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-6",
+    "pointer-events-none absolute -top-20 -right-16 h-48 w-48 rounded-full bg-brand-50",
+  featuredContent: "relative",
   badgeRow: "mb-4 flex flex-wrap items-center gap-2",
   featuredTitle:
-    "max-w-3xl text-2xl font-black tracking-[-0.04em] text-ink sm:text-3xl",
+    "max-w-3xl text-xl font-black tracking-[-0.04em] text-ink sm:text-2xl",
   featuredMeta: "flex flex-wrap items-center gap-x-4 gap-y-1",
   featuredEngagement:
     "mt-4 flex items-center justify-between gap-3 whitespace-nowrap border-t border-border-subtle pt-3",
-  featuredOptions: "mt-6 grid gap-3 sm:grid-cols-2",
+  featuredOptions: "mt-4 grid gap-3 sm:grid-cols-2",
   featuredOption:
     "flex min-h-16 items-center gap-3 rounded-xl border border-border bg-surface-muted px-4 py-3 font-bold text-ink-soft",
-  featuredAction: "flex min-w-48 flex-col items-stretch pt-1 lg:pt-0 lg:pl-2",
   participantMeta:
     "inline-flex items-center gap-1 text-xs font-semibold text-subtle",
   sectionHeader: "mt-9 mb-4",

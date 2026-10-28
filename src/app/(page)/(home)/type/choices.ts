@@ -25,6 +25,7 @@ export const choiceQuestionSchema = z.object({
   is_daily: z.boolean(),
   participant_count: z.number(),
   like_count: z.number(),
+  comment_count: z.number(),
   is_liked: z.boolean(),
   my_choice: choiceOptionSchema.nullable(),
   author_name: z.string(),

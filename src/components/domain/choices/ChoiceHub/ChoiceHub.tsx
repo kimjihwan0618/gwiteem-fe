@@ -1,5 +1,6 @@
 "use client";
 
+import type { CommentsState } from "@/app/(page)/(home)/type/comments";
 import type {
   ChoiceCategory,
   ChoiceOption,
@@ -22,6 +23,8 @@ import { QuestionFilterBar } from "./QuestionFilterBar";
 import { choiceHubStyles } from "./styles";
 
 interface ChoiceHubProps {
+  comments: CommentsState;
+  initialTab: "result" | "comments";
   activeCategories: ChoiceCategory[];
   activeView: "questions" | "mine";
   sort: ChoiceSort;
@@ -39,7 +42,7 @@ interface ChoiceHubProps {
   isLoggedIn: boolean;
   onCategoriesChange: (categories: ChoiceCategory[]) => void;
   onSortChange: (sort: ChoiceSort) => void;
-  onOpenQuestion: (questionId: number) => void;
+  onOpenQuestion: (questionId: number, tab?: "result" | "comments") => void;
   onCloseQuestion: () => void;
   onVote: (questionId: number, option: ChoiceOption, reasonId: number) => void;
   onToggleLike: (question: ChoiceQuestion) => void;
@@ -245,6 +248,8 @@ export function ChoiceHub(props: ChoiceHubProps) {
       {props.selectedQuestionId !== null && (
         <QuestionDialog
           key={`${props.selectedQuestionId}-${props.detail?.result ? "result" : "choice"}`}
+          comments={props.comments}
+          initialTab={props.initialTab}
           detail={props.detail}
           isLoading={props.isDetailLoading}
           isError={props.isDetailError}

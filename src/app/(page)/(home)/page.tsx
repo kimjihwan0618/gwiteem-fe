@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuestionComments } from "./hooks/comments";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -61,6 +62,7 @@ function HomeContent() {
     parsedQuestionId > 0
       ? parsedQuestionId
       : null;
+  const comments = useQuestionComments(selectedQuestionId, user?.id ?? null);
   const hasMigrated = useRef(false);
   const questions = useChoiceQuestions("all", sort);
   const detail = useChoiceQuestion(selectedQuestionId);
@@ -79,6 +81,7 @@ function HomeContent() {
   function changeCategories(categories: ChoiceCategory[]) {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("question");
+    params.delete("tab");
     if (categories.length) {
       params.set("category", categories.join(","));
     } else {
@@ -88,15 +91,20 @@ function HomeContent() {
     router.push(query ? `/?${query}` : "/", { scroll: false });
   }
 
-  function openQuestion(questionId: number) {
+  function openQuestion(
+    questionId: number,
+    tab: "result" | "comments" = "result",
+  ) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("question", String(questionId));
+    params.set("tab", tab);
     router.push(`/?${params.toString()}`, { scroll: false });
   }
 
   function closeQuestion() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("question");
+    params.delete("tab");
     const query = params.toString();
     router.push(query ? `/?${query}` : "/", { scroll: false });
   }
@@ -140,6 +148,10 @@ function HomeContent() {
 
   return (
     <ChoiceHub
+      comments={comments}
+      initialTab={
+        searchParams.get("tab") === "comments" ? "comments" : "result"
+      }
       activeCategories={activeCategories}
       activeView={activeView}
       sort={sort}

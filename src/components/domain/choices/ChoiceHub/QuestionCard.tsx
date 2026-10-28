@@ -1,3 +1,4 @@
+import { CommentCountButton } from "./CommentCountButton";
 import type { ChoiceQuestion } from "@/app/(page)/(home)/type";
 import { Badge } from "@/components/ui/Badge";
 import { Check, ChevronRight, Users } from "lucide-react";
@@ -9,7 +10,7 @@ import { choiceHubStyles } from "./styles";
 interface QuestionCardProps {
   question: ChoiceQuestion;
   isTight: boolean;
-  onOpen: (id: number) => void;
+  onOpen: (id: number, tab?: "result" | "comments") => void;
   isLoggedIn: boolean;
   isLikePending: boolean;
   onToggleLike: (question: ChoiceQuestion) => void;
@@ -30,6 +31,7 @@ export function QuestionCard({
       className={choiceHubStyles.questionCard}
       onClick={() => onOpen(question.id)}
       onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           onOpen(question.id);
@@ -72,6 +74,10 @@ export function QuestionCard({
             canLike={isLoggedIn}
             isPending={isLikePending}
             onToggle={() => onToggleLike(question)}
+          />
+          <CommentCountButton
+            count={question.comment_count}
+            onClick={() => onOpen(question.id, "comments")}
           />
           <ChevronRight size={18} className={choiceHubStyles.arrow} />
         </span>

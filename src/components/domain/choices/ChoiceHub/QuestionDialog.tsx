@@ -1,5 +1,9 @@
 "use client";
 
+import { Comments } from "./Comments";
+import { commentStyles, commentIndicator } from "./Comments.styles";
+import { QuestionByline } from "./QuestionByline";
+import type { CommentsState } from "@/app/(page)/(home)/type/comments";
 import type {
   ChoiceOption,
   ChoiceQuestionDetail,
@@ -25,6 +29,8 @@ import {
 } from "./styles";
 
 interface QuestionDialogProps {
+  comments: CommentsState;
+  initialTab: "result" | "comments";
   detail?: ChoiceQuestionDetail;
   isLoading: boolean;
   isError: boolean;
@@ -55,6 +61,8 @@ async function copyText(text: string) {
 }
 
 export function QuestionDialog({
+  comments,
+  initialTab,
   detail,
   isLoading,
   isError,
@@ -65,6 +73,7 @@ export function QuestionDialog({
   isLikePending,
   onToggleLike,
 }: QuestionDialogProps) {
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [selectedOption, setSelectedOption] = useState<ChoiceOption | null>(
     detail?.my_choice ?? null,
   );
@@ -170,117 +179,169 @@ export function QuestionDialog({
           <div className={choiceHubStyles.modalBody}>
             <Badge>{categoryLabels[detail.category]}</Badge>
             <h2 className={choiceHubStyles.modalQuestion}>{detail.title}</h2>
-            {detail.result && !isEditing ? (
-              <ResultView detail={detail} />
+            <div className={commentStyles.byline}>
+              <QuestionByline question={detail} />
+              <span>{detail.participant_count.toLocaleString()}회 선택</span>
+            </div>
+            <div
+              className={commentStyles.tabs}
+              role="tablist"
+              aria-label="질문 상세"
+            >
+              <button
+                id="result-tab"
+                role="tab"
+                aria-selected={activeTab === "result"}
+                aria-controls="result-panel"
+                className={commentStyles.tab}
+                onClick={() => setActiveTab("result")}
+              >
+                결과
+              </button>
+              <button
+                id="comments-tab"
+                role="tab"
+                aria-selected={activeTab === "comments"}
+                aria-controls="comments-panel"
+                className={commentStyles.tab}
+                onClick={() => setActiveTab("comments")}
+              >
+                댓글 {comments.totalCount ?? detail.comment_count}
+              </button>
+              <span className={commentIndicator({ tab: activeTab })} />
+            </div>
+            {activeTab === "comments" ? (
+              <div
+                id="comments-panel"
+                role="tabpanel"
+                aria-labelledby="comments-tab"
+              >
+                <Comments state={comments} />
+              </div>
             ) : (
-              <>
-                <div className={choiceHubStyles.optionGrid}>
-                  {getQuestionOptions(detail).map(({ option, label }) => (
-                    <button
-                      key={option}
-                      className={optionButtonVariants({
-                        tone: optionTones[option],
-                        selected: selectedOption === option,
-                      })}
-                      onClick={() => setSelectedOption(option)}
-                    >
-                      <span
-                        className={optionLabelVariants({
-                          tone: optionTones[option],
-                        })}
-                      >
-                        {option}
-                      </span>
-                      <span className={choiceHubStyles.optionText}>
-                        {label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                {selectedOption && (
-                  <div className={choiceHubStyles.reasonPanel}>
-                    <label
-                      htmlFor="choice-reason"
-                      className={choiceHubStyles.reasonLabel}
-                    >
-                      왜 이 선택을 했나요?{" "}
-                      <span className={choiceHubStyles.requiredLabel}>
-                        (필수)
-                      </span>
-                    </label>
-                    <select
-                      id="choice-reason"
-                      required
-                      aria-required="true"
-                      value={reasonId ?? ""}
-                      onChange={(event) =>
-                        setReasonId(
-                          event.target.value
-                            ? Number(event.target.value)
-                            : null,
-                        )
-                      }
-                      className={choiceHubStyles.select}
-                    >
-                      <option value="">가장 가까운 이유를 선택해 주세요</option>
-                      {detail.reasons.map((reason) => (
-                        <option key={reason.id} value={reason.id}>
-                          {reason.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div className={choiceHubStyles.submitRow}>
-                      {detail.result && (
-                        <Button
-                          variant="ghost"
-                          onClick={() => setIsEditing(false)}
+              <div
+                id="result-panel"
+                role="tabpanel"
+                aria-labelledby="result-tab"
+              >
+                {detail.result && !isEditing ? (
+                  <ResultView detail={detail} />
+                ) : (
+                  <>
+                    <div className={choiceHubStyles.optionGrid}>
+                      {getQuestionOptions(detail).map(({ option, label }) => (
+                        <button
+                          key={option}
+                          className={optionButtonVariants({
+                            tone: optionTones[option],
+                            selected: selectedOption === option,
+                          })}
+                          onClick={() => setSelectedOption(option)}
                         >
-                          취소
-                        </Button>
-                      )}
-                      <Button
-                        isPending={isVoting}
-                        loadingText="반영 중"
-                        onClick={() => {
-                          if (!reasonId) {
-                            toast.error("선택한 이유를 골라주세요.");
-                            return;
+                          <span
+                            className={optionLabelVariants({
+                              tone: optionTones[option],
+                            })}
+                          >
+                            {option}
+                          </span>
+                          <span className={choiceHubStyles.optionText}>
+                            {label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    {selectedOption && (
+                      <div className={choiceHubStyles.reasonPanel}>
+                        <label
+                          htmlFor="choice-reason"
+                          className={choiceHubStyles.reasonLabel}
+                        >
+                          왜 이 선택을 했나요?{" "}
+                          <span className={choiceHubStyles.requiredLabel}>
+                            (필수)
+                          </span>
+                        </label>
+                        <select
+                          id="choice-reason"
+                          required
+                          aria-required="true"
+                          value={reasonId ?? ""}
+                          onChange={(event) =>
+                            setReasonId(
+                              event.target.value
+                                ? Number(event.target.value)
+                                : null,
+                            )
                           }
-                          onVote(detail.id, selectedOption, reasonId);
-                        }}
+                          className={choiceHubStyles.select}
+                        >
+                          <option value="">
+                            가장 가까운 이유를 선택해 주세요
+                          </option>
+                          {detail.reasons.map((reason) => (
+                            <option key={reason.id} value={reason.id}>
+                              {reason.label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className={choiceHubStyles.submitRow}>
+                          {detail.result && (
+                            <Button
+                              variant="ghost"
+                              onClick={() => setIsEditing(false)}
+                            >
+                              취소
+                            </Button>
+                          )}
+                          <Button
+                            isPending={isVoting}
+                            loadingText="반영 중"
+                            onClick={() => {
+                              if (!reasonId) {
+                                toast.error("선택한 이유를 골라주세요.");
+                                return;
+                              }
+                              onVote(detail.id, selectedOption, reasonId);
+                            }}
+                          >
+                            결과 보기
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {detail.result && !isEditing && (
+                  <>
+                    {!isLoggedIn && (
+                      <div className={choiceHubStyles.resultActions}>
+                        <Link href="/login" className={buttonVariants()}>
+                          <LogIn size={17} /> 로그인하고 선택 저장
+                        </Link>
+                      </div>
+                    )}
+                    <div className={choiceHubStyles.submitRow}>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setIsEditing(true)}
                       >
-                        결과 보기
+                        선택 바꾸기
+                      </Button>
+                      <Button variant="secondary" onClick={onClose}>
+                        다른 질문 보기
                       </Button>
                     </div>
-                  </div>
+                    {!isLoggedIn && (
+                      <p className={choiceHubStyles.loginNote}>
+                        지금 선택은 이 브라우저에 유지됩니다. 로그인하면 다른
+                        기기에서도 기록을 확인할 수 있어요.
+                      </p>
+                    )}
+                  </>
                 )}
-              </>
-            )}
-
-            {detail.result && !isEditing && (
-              <>
-                {!isLoggedIn && (
-                  <div className={choiceHubStyles.resultActions}>
-                    <Link href="/login" className={buttonVariants()}>
-                      <LogIn size={17} /> 로그인하고 선택 저장
-                    </Link>
-                  </div>
-                )}
-                <div className={choiceHubStyles.submitRow}>
-                  <Button variant="ghost" onClick={() => setIsEditing(true)}>
-                    선택 바꾸기
-                  </Button>
-                  <Button variant="secondary" onClick={onClose}>
-                    다른 질문 보기
-                  </Button>
-                </div>
-                {!isLoggedIn && (
-                  <p className={choiceHubStyles.loginNote}>
-                    지금 선택은 이 브라우저에 유지됩니다. 로그인하면 다른
-                    기기에서도 기록을 확인할 수 있어요.
-                  </p>
-                )}
-              </>
+              </div>
             )}
           </div>
         )}

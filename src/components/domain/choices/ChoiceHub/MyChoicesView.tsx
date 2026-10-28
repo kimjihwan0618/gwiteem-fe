@@ -1,3 +1,4 @@
+import { CommentCountButton } from "./CommentCountButton";
 import type {
   ChoiceCategory,
   ChoiceSort,
@@ -25,7 +26,7 @@ interface MyChoicesViewProps {
   isLoading: boolean;
   searchQuery: string;
   onCategoriesChange: (categories: ChoiceCategory[]) => void;
-  onOpenQuestion: (id: number) => void;
+  onOpenQuestion: (id: number, tab?: "result" | "comments") => void;
   onSearchQueryChange: (query: string) => void;
   likingQuestionId: number | null;
   onToggleLike: (question: MyChoice["question"]) => void;
@@ -85,7 +86,6 @@ export function MyChoicesView({
           <p className={choiceHubStyles.eyebrow}>나의 기록</p>
           <h1 className={choiceHubStyles.title}>내 선택</h1>
         </div>
-        <Badge variant="outline">{visibleCount}개</Badge>
       </div>
       <div
         className={choiceHubStyles.mineTabs}
@@ -103,6 +103,9 @@ export function MyChoicesView({
           onClick={() => setActiveRecord("participated")}
         >
           <MousePointerClick size={16} /> 참여한 질문
+          <span className={choiceHubStyles.mineTabCount}>
+            {items?.length ?? 0}
+          </span>
         </button>
         <button
           type="button"
@@ -115,6 +118,9 @@ export function MyChoicesView({
           onClick={() => setActiveRecord("liked")}
         >
           <Heart size={16} /> 좋아요한 질문
+          <span className={choiceHubStyles.mineTabCount}>
+            {likedItems?.length ?? 0}
+          </span>
         </button>
       </div>
       <QuestionFilterBar
@@ -157,6 +163,7 @@ export function MyChoicesView({
                 className={choiceHubStyles.questionCard}
                 onClick={() => onOpenQuestion(item.question.id)}
                 onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return;
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
                     onOpenQuestion(item.question.id);
@@ -201,6 +208,12 @@ export function MyChoicesView({
                       isPending={likingQuestionId === item.question.id}
                       onToggle={() => onToggleLike(item.question)}
                     />
+                    <CommentCountButton
+                      count={item.question.comment_count}
+                      onClick={() =>
+                        onOpenQuestion(item.question.id, "comments")
+                      }
+                    />
                     <ChevronRight size={18} className={choiceHubStyles.arrow} />
                   </span>
                 </div>
@@ -215,6 +228,7 @@ export function MyChoicesView({
                 className={choiceHubStyles.questionCard}
                 onClick={() => onOpenQuestion(item.question.id)}
                 onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return;
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
                     onOpenQuestion(item.question.id);
@@ -244,6 +258,12 @@ export function MyChoicesView({
                       canLike
                       isPending={likingQuestionId === item.question.id}
                       onToggle={() => onToggleLike(item.question)}
+                    />
+                    <CommentCountButton
+                      count={item.question.comment_count}
+                      onClick={() =>
+                        onOpenQuestion(item.question.id, "comments")
+                      }
                     />
                     <ChevronRight size={18} className={choiceHubStyles.arrow} />
                   </span>
