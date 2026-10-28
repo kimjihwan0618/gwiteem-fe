@@ -43,5 +43,5 @@ if (existsSync("public")) {
 const manifestPath = path.join(destination, "package.json");
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 // Linux 컨테이너에서 외부 포트 연결을 받을 수 있도록 모든 인터페이스에 바인딩합니다.
-manifest.scripts = { start: "HOSTNAME=0.0.0.0 node server.js" };
+manifest.scripts = { start: "HOSTNAME=0.0.0.0 PORT=6812 node server.js" };
 writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);

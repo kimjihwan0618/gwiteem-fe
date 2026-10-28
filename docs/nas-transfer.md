@@ -2,7 +2,7 @@
 
 `.github/workflows/transfer-nas.yml`은 main push 또는 Actions의 Run workflow로 실행합니다.
 대상: `hodo_admin@kimjihodo.synology.me:22`.
-실행 파일 경로: `/volume1/docker/gwiteem/product/fe/`.
+실행 파일 경로: `/volume1/docker/gwiteem/FE/`.
 해당 디렉터리를 Node.js 컨테이너에 마운트하면 `npm run start`로 프론트 서버를 실행할 수 있도록 준비합니다.
 Actions는 빌드, 파일 전송, 체크섬 검증, 압축 해제와 파일 배치까지만 수행하며 서버를 실행하거나 재시작하지 않습니다.
 
@@ -25,7 +25,7 @@ Synology 호환성을 위해 SCP의 기존 프로토콜(`-O`)을 사용합니다
 
 - Node.js 22 / Linux x64에서 Next.js standalone 빌드를 생성합니다.
 - `gwiteem-fe.tar.gz`: server.js, 실행용 package.json, 필요한 node_modules, public, .next/static을 포함합니다.
-- 배포용 package.json의 start 명령은 `HOSTNAME=0.0.0.0 node server.js`입니다. 저장소의 개발용 package.json은 변경하지 않습니다.
+- 배포용 package.json의 start 명령은 `HOSTNAME=0.0.0.0 PORT=6812 node server.js`입니다. 저장소의 개발용 package.json은 변경하지 않습니다.
 - 환경변수 파일은 압축에서 제외합니다. 서버용 `API_BASE_URL`은 컨테이너 실행 환경변수로 설정합니다.
 - standalone 구성 참고: https://nextjs.org/docs/app/api-reference/config/next-config-js/output
 - 압축 파일과 SHA-256 파일은 `.transfers/<commit SHA>-<run ID>-<attempt>/`에 전송합니다.
@@ -39,7 +39,7 @@ Synology 호환성을 위해 SCP의 기존 프로토콜(`-O`)을 사용합니다
 완료 후 디렉터리 구조는 다음과 같습니다. `.next`와 `.transfers`는 숨김 디렉터리이므로 `ls -la`로 확인합니다.
 
 ```text
-/volume1/docker/gwiteem/product/fe/
+/volume1/docker/gwiteem/FE/
 ├── package.json
 ├── server.js
 ├── node_modules/
@@ -60,21 +60,25 @@ Synology 호환성을 위해 SCP의 기존 프로토콜(`-O`)을 사용합니다
 
 아래 설정은 사용자가 이후 컨테이너를 실행할 때 적용합니다. Actions에서 컨테이너를 생성하거나 실행하지 않습니다.
 
-| 항목                 | 값                                                                                        |
-| -------------------- | ----------------------------------------------------------------------------------------- |
-| 이미지               | `node:22-bookworm-slim`                                                                   |
-| 플랫폼               | Linux amd64 / x86_64                                                                      |
-| NAS 마운트 경로      | `/volume1/docker/gwiteem/product/fe`                                                      |
-| 컨테이너 마운트 경로 | `/app`                                                                                    |
-| 작업 디렉터리        | `/app`                                                                                    |
-| 실행 명령            | `npm run start`                                                                           |
-| 컨테이너 포트        | `3000`                                                                                    |
-| 환경변수             | `NODE_ENV=production`, `PORT=3000`, `API_BASE_URL=<컨테이너에서 접근 가능한 백엔드 주소>` |
+| 항목                 | 값                                                                         |
+| -------------------- | -------------------------------------------------------------------------- |
+| 이미지               | `node:22-bookworm-slim`                                                    |
+| 플랫폼               | Linux amd64 / x86_64                                                       |
+| NAS 마운트 경로      | `/volume1/docker/gwiteem/FE`                                               |
+| 컨테이너 마운트 경로 | `/app`                                                                     |
+| 작업 디렉터리        | `/app`                                                                     |
+| 실행 명령            | `npm run start`                                                            |
+| 컨테이너 포트        | `6812`                                                                     |
+| 환경변수             | `NODE_ENV=production`, `PORT=6812`, `API_BASE_URL=http://<백엔드_IP>:5134` |
 
 빌드에 포함된 네이티브 의존성이 Linux x64 기준이므로 Debian 계열의 위 이미지와 같은 플랫폼을 사용합니다. Alpine이나 ARM 컨테이너용 결과물은 별도 빌드가 필요합니다.
 
-NAS에서 사용할 외부 포트를 컨테이너의 `3000`에 연결하세요. `API_BASE_URL`에는 실제 백엔드 주소를 넣어야 하며, 컨테이너 안의 `localhost`는 그 프론트 컨테이너 자신을 가리킵니다. 로그인과 백엔드 API 요청에는 실행 중인 백엔드가 필요합니다.
+NAS에서 사용할 외부 포트를 컨테이너의 `6812`에 연결하세요. `API_BASE_URL`에는 실제 백엔드 주소를 넣어야 하며, 컨테이너 안의 `localhost`는 그 프론트 컨테이너 자신을 가리킵니다. 로그인과 백엔드 API 요청에는 실행 중인 백엔드가 필요합니다.
 
 실행에 필요한 node_modules를 포함하므로 컨테이너에서 `npm install`이나 `npm run build`를 다시 실행할 필요가 없습니다. 마운트는 Next.js 캐시를 쓸 수 있도록 쓰기 가능하게 설정합니다. 컨테이너 사용자를 별도로 지정한다면 NAS 마운트 디렉터리의 읽기/탐색 권한과 `.next` 캐시 쓰기 권한을 확인하세요.
 
 이미 실행 중인 컨테이너가 있다면 파일 배치가 끝난 뒤 사용자가 재시작해야 새 빌드가 적용됩니다. 파일 교체 중 서비스 무중단 운영은 보장하지 않습니다. 이번 단계에서는 Docker 이미지 로드, 컨테이너/서버 실행, 재시작, DB 마이그레이션을 하지 않습니다.
+
+FE와 BE의 호스트·컨테이너 포트를 각각 `6812:6812`, `5134:5134`로 연결합니다.
+FE 컨테이너 환경변수에 `API_BASE_URL=http://<백엔드_IP>:5134`를 설정합니다.
+기존 컨테이너의 `PORT=3000` 및 이전 백엔드 주소가 남아 있다면 함께 갱신합니다.
