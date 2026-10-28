@@ -19,11 +19,49 @@ export const queryKeys = {
     all: ["choices"] as const,
     comments: (questionId: number | null, userId: string | number | null) =>
       [...queryKeys.choices.all, "comments", questionId, userId] as const,
-    list: (category: string, sort: string) =>
-      [...queryKeys.choices.all, "list", category, sort] as const,
+    list: (
+      category: string,
+      sort: string,
+      search: string,
+      userId: string | number | null,
+    ) =>
+      [
+        ...queryKeys.choices.all,
+        "list",
+        category,
+        sort,
+        search,
+        userId,
+      ] as const,
     detail: (questionId: number | null) =>
       [...queryKeys.choices.all, "detail", questionId] as const,
-    mine: () => [...queryKeys.choices.all, "mine"] as const,
-    liked: () => [...queryKeys.choices.all, "liked"] as const,
+    mine: (
+      category: string,
+      sort: string,
+      search: string,
+      userId: string | number | null,
+    ) =>
+      [
+        ...queryKeys.choices.all,
+        "mine",
+        category,
+        sort,
+        search,
+        userId,
+      ] as const,
+    liked: (
+      category: string,
+      sort: string,
+      search: string,
+      userId: string | number | null,
+    ) =>
+      [
+        ...queryKeys.choices.all,
+        "liked",
+        category,
+        sort,
+        search,
+        userId,
+      ] as const,
   },
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuestionComments } from "./hooks/comments";
+import { useQuestionSearch } from "./hooks/use-question-search";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -54,6 +55,8 @@ function HomeContent() {
   );
   const activeView = searchParams.get("view") === "my" ? "mine" : "questions";
   const [sort, setSort] = useState<ChoiceSort>("popular");
+  const { searchQuery, search, changeSearch, isSearchPending } =
+    useQuestionSearch();
   const questionParam = searchParams.get("question");
   const parsedQuestionId = questionParam ? Number(questionParam) : null;
   const selectedQuestionId =
@@ -64,10 +67,28 @@ function HomeContent() {
       : null;
   const comments = useQuestionComments(selectedQuestionId, user?.id ?? null);
   const hasMigrated = useRef(false);
-  const questions = useChoiceQuestions("all", sort);
+  const questions = useChoiceQuestions(
+    activeCategories,
+    sort,
+    search,
+    user?.id ?? null,
+    isReady && activeView === "questions",
+  );
   const detail = useChoiceQuestion(selectedQuestionId);
-  const myChoices = useMyChoices(isReady && Boolean(user));
-  const myLikedQuestions = useMyLikedQuestions(isReady && Boolean(user));
+  const myChoices = useMyChoices(
+    isReady && Boolean(user) && activeView === "mine",
+    activeCategories,
+    sort,
+    search,
+    user?.id ?? null,
+  );
+  const myLikedQuestions = useMyLikedQuestions(
+    isReady && Boolean(user) && activeView === "mine",
+    activeCategories,
+    sort,
+    search,
+    user?.id ?? null,
+  );
   const vote = useVoteQuestion();
   const toggleLike = useToggleQuestionLike();
   const migrate = useMigrateGuestVotes();
@@ -148,6 +169,52 @@ function HomeContent() {
 
   return (
     <ChoiceHub
+      searchQuery={searchQuery}
+      isSearching={
+        isSearchPending ||
+        (activeView === "questions"
+          ? questions.isFetching && !questions.isFetchingNextPage
+          : (myChoices.isFetching && !myChoices.isFetchingNextPage) ||
+            (myLikedQuestions.isFetching &&
+              !myLikedQuestions.isFetchingNextPage))
+      }
+      onSearchQueryChange={changeSearch}
+      pagination={{
+        hasMore: questions.hasNextPage,
+        isLoadingMore: questions.isFetchingNextPage,
+        isLoadMoreError: questions.isFetchNextPageError,
+        isPaused: isSearchPending || questions.isFetching,
+        onLoadMore: () => {
+          if (!questions.isFetching)
+            void questions.fetchNextPage({ cancelRefetch: false });
+        },
+      }}
+      myPagination={{
+        hasMore: myChoices.hasNextPage,
+        isLoadingMore: myChoices.isFetchingNextPage,
+        isLoadMoreError: myChoices.isFetchNextPageError,
+        isPaused: isSearchPending || myChoices.isFetching,
+        onLoadMore: () => {
+          if (!myChoices.isFetching)
+            void myChoices.fetchNextPage({ cancelRefetch: false });
+        },
+      }}
+      likedPagination={{
+        hasMore: myLikedQuestions.hasNextPage,
+        isLoadingMore: myLikedQuestions.isFetchingNextPage,
+        isLoadMoreError: myLikedQuestions.isFetchNextPageError,
+        isPaused: isSearchPending || myLikedQuestions.isFetching,
+        onLoadMore: () => {
+          if (!myLikedQuestions.isFetching)
+            void myLikedQuestions.fetchNextPage({ cancelRefetch: false });
+        },
+      }}
+      isMyError={myChoices.isError && !myChoices.data}
+      isLikedError={myLikedQuestions.isError && !myLikedQuestions.data}
+      onRetryMine={() => {
+        void myChoices.refetch();
+        void myLikedQuestions.refetch();
+      }}
       comments={comments}
       initialTab={
         searchParams.get("tab") === "comments" ? "comments" : "result"
@@ -164,9 +231,10 @@ function HomeContent() {
         !isReady ||
         (activeView === "questions"
           ? questions.isPending
-          : myChoices.isPending || myLikedQuestions.isPending)
+          : Boolean(user) &&
+            (myChoices.isPending || myLikedQuestions.isPending))
       }
-      isError={questions.isError}
+      isError={questions.isError && !questions.data}
       isDetailLoading={detail.isPending}
       isDetailError={detail.isError}
       isVoting={vote.isPending}

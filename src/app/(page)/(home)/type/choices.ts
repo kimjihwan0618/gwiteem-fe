@@ -56,6 +56,7 @@ export const choiceQuestionDetailSchema = choiceQuestionSchema.extend({
 
 export const choiceQuestionsResponseSchema = z.object({
   items: z.array(choiceQuestionSchema),
+  next_cursor: z.string().nullable(),
 });
 
 export const choiceVoteResponseSchema = z.object({
@@ -69,12 +70,18 @@ export const myChoiceSchema = z.object({
   voted_at: z.string(),
 });
 
-export const myChoicesSchema = z.array(myChoiceSchema);
+export const myChoicesSchema = z.object({
+  items: z.array(myChoiceSchema),
+  next_cursor: z.string().nullable(),
+});
 export const myLikedQuestionSchema = z.object({
   question: choiceQuestionSchema,
   liked_at: z.string(),
 });
-export const myLikedQuestionsSchema = z.array(myLikedQuestionSchema);
+export const myLikedQuestionsSchema = z.object({
+  items: z.array(myLikedQuestionSchema),
+  next_cursor: z.string().nullable(),
+});
 export const choiceMigrationSchema = z.object({ migrated_count: z.number() });
 export const choiceLikeResponseSchema = z.object({
   question_id: z.number(),

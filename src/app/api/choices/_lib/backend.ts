@@ -29,6 +29,7 @@ export async function proxyChoiceApi(
     }
     const guestSessionId = request.headers.get("x-guest-session-id");
     const response = await fetch(`${getBackendBaseUrl()}${path}`, {
+      signal: request.signal,
       method: options.method ?? "GET",
       body: options.body,
       cache: "no-store",

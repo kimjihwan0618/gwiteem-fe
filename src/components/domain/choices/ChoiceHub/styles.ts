@@ -59,6 +59,10 @@ export const resultSegmentVariants = cva(
 );
 
 export const choiceHubStyles = {
+  searchLoading:
+    "flex items-center justify-center gap-2 py-6 text-sm font-medium text-muted",
+  searchSpinner: "animate-spin",
+  loadMore: "flex flex-col items-center gap-3 py-8 text-sm text-muted",
   mineTabCount: "text-xs tabular-nums opacity-75",
   root: "min-h-screen bg-canvas",
   main: "mx-auto max-w-[1440px] px-4 py-8 sm:px-7 lg:px-10 lg:py-11",

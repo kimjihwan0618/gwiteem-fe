@@ -20,7 +20,7 @@ jobs:
       run:
         shell: bash
     env:
-      NAS_PATH: /volume1/docker/gwiteem/product/fe
+      NAS_PATH: /volume1/docker/gwiteem/FE
       ARCHIVE: gwiteem-fe.tar.gz
     steps:
       - uses: actions/checkout@v6

@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query-keys";
 import {
@@ -42,6 +47,14 @@ function updateLikeInCache(
   isLiked: boolean,
   likeCount?: number,
 ): unknown {
+  if (isRecord(cached) && Array.isArray(cached.pages)) {
+    return {
+      ...cached,
+      pages: cached.pages.map((page) =>
+        updateLikeInCache(page, questionId, isLiked, likeCount),
+      ),
+    };
+  }
   if (!isRecord(cached) || !("data" in cached)) return cached;
   const payload = cached.data;
 
@@ -70,7 +83,17 @@ function updateLikeInCache(
       data: {
         ...payload,
         items: payload.items.map((item) =>
-          updateQuestionLike(item, questionId, isLiked, likeCount),
+          isRecord(item) && "question" in item
+            ? {
+                ...item,
+                question: updateQuestionLike(
+                  item.question,
+                  questionId,
+                  isLiked,
+                  likeCount,
+                ),
+              }
+            : updateQuestionLike(item, questionId, isLiked, likeCount),
         ),
       },
     };
@@ -83,20 +106,51 @@ function updateLikeInCache(
 }
 
 export function useChoiceQuestions(
-  category: ChoiceCategory | "all",
+  categories: ChoiceCategory[],
   sort: ChoiceSort,
+  search: string,
+  userId: string | number | null,
+  isEnabled: boolean,
 ) {
-  const query = new URLSearchParams({ sort });
-  if (category !== "all") query.set("category", category);
-  return useQuery({
-    queryKey: queryKeys.choices.list(category, sort),
-    queryFn: () =>
+  return useInfiniteQuery({
+    queryKey: queryKeys.choices.list(
+      [...categories].sort().join(","),
+      sort,
+      search,
+      userId,
+    ),
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam, signal }) =>
       apiClient(
-        `/api/choices/questions?${query}`,
+        `/api/choices/questions?${questionParams(categories, sort, search, pageParam)}`,
         choiceQuestionsResponseSchema,
+        { signal },
       ),
-    select: (response) => response.data.items,
+    getNextPageParam: (last) => last.data.next_cursor ?? undefined,
+    select: (response) =>
+      Array.from(
+        new Map(
+          response.pages
+            .flatMap((page) => page.data.items)
+            .map((item) => [item.id, item]),
+        ).values(),
+      ),
+    enabled: isEnabled,
   });
+}
+
+function questionParams(
+  categories: ChoiceCategory[],
+  sort: ChoiceSort,
+  search: string,
+  cursor: string | null,
+) {
+  const query = new URLSearchParams({ sort, q: search, limit: "15" });
+  [...categories]
+    .sort()
+    .forEach((category) => query.append("category", category));
+  if (cursor) query.set("cursor", cursor);
+  return query;
 }
 
 export function useChoiceQuestion(questionId: number | null) {
@@ -195,20 +249,70 @@ export function useToggleQuestionLike() {
   });
 }
 
-export function useMyChoices(isEnabled: boolean) {
-  return useQuery({
-    queryKey: queryKeys.choices.mine(),
-    queryFn: () => apiClient("/api/choices/me", myChoicesSchema),
-    select: (response) => response.data,
+export function useMyChoices(
+  isEnabled: boolean,
+  categories: ChoiceCategory[],
+  sort: ChoiceSort,
+  search: string,
+  userId: string | number | null,
+) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.choices.mine(
+      [...categories].sort().join(","),
+      sort,
+      search,
+      userId,
+    ),
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam, signal }) =>
+      apiClient(
+        `/api/choices/me?${questionParams(categories, sort, search, pageParam)}`,
+        myChoicesSchema,
+        { signal },
+      ),
+    getNextPageParam: (last) => last.data.next_cursor ?? undefined,
+    select: (response) =>
+      Array.from(
+        new Map(
+          response.pages
+            .flatMap((page) => page.data.items)
+            .map((item) => [item.question.id, item]),
+        ).values(),
+      ),
     enabled: isEnabled,
   });
 }
 
-export function useMyLikedQuestions(isEnabled: boolean) {
-  return useQuery({
-    queryKey: queryKeys.choices.liked(),
-    queryFn: () => apiClient("/api/choices/me/likes", myLikedQuestionsSchema),
-    select: (response) => response.data,
+export function useMyLikedQuestions(
+  isEnabled: boolean,
+  categories: ChoiceCategory[],
+  sort: ChoiceSort,
+  search: string,
+  userId: string | number | null,
+) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.choices.liked(
+      [...categories].sort().join(","),
+      sort,
+      search,
+      userId,
+    ),
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam, signal }) =>
+      apiClient(
+        `/api/choices/me/likes?${questionParams(categories, sort, search, pageParam)}`,
+        myLikedQuestionsSchema,
+        { signal },
+      ),
+    getNextPageParam: (last) => last.data.next_cursor ?? undefined,
+    select: (response) =>
+      Array.from(
+        new Map(
+          response.pages
+            .flatMap((page) => page.data.items)
+            .map((item) => [item.question.id, item]),
+        ).values(),
+      ),
     enabled: isEnabled,
   });
 }

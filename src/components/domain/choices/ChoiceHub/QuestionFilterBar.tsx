@@ -12,7 +12,7 @@ interface QuestionFilterBarProps {
   searchQuery: string;
   sort?: ChoiceSort;
   onCategoriesChange: (categories: ChoiceCategory[]) => void;
-  onSearchQueryChange: (query: string) => void;
+  onSearchQueryChange: (query: string, isComposing?: boolean) => void;
   onSortChange?: (sort: ChoiceSort) => void;
 }
 
@@ -29,6 +29,7 @@ export function QuestionFilterBar({
   const [draftCategories, setDraftCategories] = useState<ChoiceCategory[]>([]);
   const [draftSort, setDraftSort] = useState<ChoiceSort>(sort ?? "popular");
   const filterRef = useRef<HTMLDivElement>(null);
+  const composingRef = useRef(false);
   const stickySentinelRef = useRef<HTMLDivElement>(null);
   const activeFilterCount =
     activeCategories.length + Number(Boolean(sort && sort !== "popular"));
@@ -117,8 +118,19 @@ export function QuestionFilterBar({
           <Search size={19} className={choiceHubStyles.searchIcon} />
           <input
             type="search"
+            maxLength={200}
             value={searchQuery}
-            onChange={(event) => onSearchQueryChange(event.target.value)}
+            onChange={(event) =>
+              onSearchQueryChange(event.target.value, composingRef.current)
+            }
+            onCompositionStart={() => {
+              composingRef.current = true;
+              onSearchQueryChange(searchQuery, true);
+            }}
+            onCompositionEnd={(event) => {
+              composingRef.current = false;
+              onSearchQueryChange(event.currentTarget.value);
+            }}
             placeholder="질문 제목을 검색해 보세요"
             aria-label="질문 제목 검색"
             className={choiceHubStyles.searchInput}

@@ -1,7 +1,11 @@
 import { proxyChoiceApi } from "../../_lib/backend";
 
 export async function GET(request: Request) {
-  return proxyChoiceApi(request, "/api/v1/choices/me/likes", {
-    requiresAuth: true,
-  });
+  return proxyChoiceApi(
+    request,
+    `/api/v1/choices/me/likes${new URL(request.url).search}`,
+    {
+      requiresAuth: true,
+    },
+  );
 }

@@ -6,19 +6,27 @@ import type {
   MyLikedQuestion,
 } from "@/app/(page)/(home)/type";
 import { Badge } from "@/components/ui/Badge";
-import { buttonVariants } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
+import { QuestionListMore, type QuestionPagination } from "./QuestionListMore";
 import { cn } from "@/lib/cn";
 import Link from "next/link";
 import { ChevronRight, Heart, MousePointerClick, Users } from "lucide-react";
 import { useState } from "react";
 import { categoryLabels, getSelectedOptionLabel } from "./choice-utils";
 import { ChoiceSkeleton } from "./ChoiceSkeleton";
+import { SearchLoading } from "./SearchLoading";
 import { QuestionFilterBar } from "./QuestionFilterBar";
 import { LikeButton } from "./LikeButton";
 import { QuestionByline } from "./QuestionByline";
 import { choiceHubStyles } from "./styles";
 
 interface MyChoicesViewProps {
+  isSearching: boolean;
+  pagination: QuestionPagination;
+  likedPagination: QuestionPagination;
+  isError: boolean;
+  isLikedError: boolean;
+  onRetry: () => void;
   items?: MyChoice[];
   likedItems?: MyLikedQuestion[];
   activeCategories: ChoiceCategory[];
@@ -27,7 +35,7 @@ interface MyChoicesViewProps {
   searchQuery: string;
   onCategoriesChange: (categories: ChoiceCategory[]) => void;
   onOpenQuestion: (id: number, tab?: "result" | "comments") => void;
-  onSearchQueryChange: (query: string) => void;
+  onSearchQueryChange: (query: string, isComposing?: boolean) => void;
   likingQuestionId: number | null;
   onToggleLike: (question: MyChoice["question"]) => void;
   sort: ChoiceSort;
@@ -35,6 +43,12 @@ interface MyChoicesViewProps {
 }
 
 export function MyChoicesView({
+  isSearching,
+  pagination,
+  likedPagination,
+  isError,
+  isLikedError,
+  onRetry,
   items,
   likedItems,
   activeCategories,
@@ -76,8 +90,6 @@ export function MyChoicesView({
       </div>
     );
   }
-
-  if (isLoading) return <ChoiceSkeleton />;
 
   return (
     <section>
@@ -131,7 +143,18 @@ export function MyChoicesView({
         sort={sort}
         onSortChange={onSortChange}
       />
-      {visibleCount === 0 ? (
+      {isSearching ? (
+        <SearchLoading />
+      ) : isLoading ? (
+        <ChoiceSkeleton />
+      ) : (activeRecord === "participated" ? isError : isLikedError) ? (
+        <div className={choiceHubStyles.state} role="alert">
+          질문을 불러오지 못했어요.
+          <Button variant="ghost" onClick={onRetry}>
+            다시 시도
+          </Button>
+        </div>
+      ) : visibleCount === 0 ? (
         <div className={choiceHubStyles.state}>
           <div>
             <p className={choiceHubStyles.stateTitle}>
@@ -271,6 +294,13 @@ export function MyChoicesView({
               </article>
             ))}
         </div>
+      )}
+      {!isSearching && !isLoading && visibleCount > 0 && (
+        <QuestionListMore
+          pagination={
+            activeRecord === "participated" ? pagination : likedPagination
+          }
+        />
       )}
     </section>
   );

@@ -13,8 +13,10 @@ import type {
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Button } from "@/components/ui/Button";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { QuestionListMore, type QuestionPagination } from "./QuestionListMore";
 import { ChoiceSkeleton } from "./ChoiceSkeleton";
+import { SearchLoading } from "./SearchLoading";
 import { FeaturedQuestion } from "./FeaturedQuestion";
 import { MyChoicesView } from "./MyChoicesView";
 import { QuestionCard } from "./QuestionCard";
@@ -23,6 +25,15 @@ import { QuestionFilterBar } from "./QuestionFilterBar";
 import { choiceHubStyles } from "./styles";
 
 interface ChoiceHubProps {
+  isSearching: boolean;
+  searchQuery: string;
+  onSearchQueryChange: (value: string, isComposing?: boolean) => void;
+  pagination: QuestionPagination;
+  myPagination: QuestionPagination;
+  likedPagination: QuestionPagination;
+  isMyError: boolean;
+  isLikedError: boolean;
+  onRetryMine: () => void;
   comments: CommentsState;
   initialTab: "result" | "comments";
   activeCategories: ChoiceCategory[];
@@ -50,70 +61,14 @@ interface ChoiceHubProps {
 }
 
 export function ChoiceHub(props: ChoiceHubProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase("ko-KR");
-  const categoryQuestions = props.activeCategories.length
-    ? props.questions?.filter((item) =>
-        props.activeCategories.includes(item.category),
-      )
-    : props.questions;
-  const filteredQuestions = normalizedSearchQuery
-    ? categoryQuestions?.filter((item) =>
-        item.title.toLocaleLowerCase("ko-KR").includes(normalizedSearchQuery),
-      )
-    : categoryQuestions;
+  const { searchQuery, onSearchQueryChange } = props;
   const dailyQuestion =
     props.activeCategories.length === 0
-      ? filteredQuestions?.find((item) => item.is_daily)
+      ? props.questions?.slice(0, 15).find((item) => item.is_daily)
       : undefined;
   const gridQuestions = dailyQuestion
-    ? filteredQuestions?.filter((item) => item.id !== dailyQuestion.id)
-    : filteredQuestions;
-  const categoryMyChoices = props.activeCategories.length
-    ? props.myChoices?.filter((item) =>
-        props.activeCategories.includes(item.question.category),
-      )
-    : props.myChoices;
-  const filteredMyChoices = normalizedSearchQuery
-    ? categoryMyChoices?.filter((item) =>
-        item.question.title
-          .toLocaleLowerCase("ko-KR")
-          .includes(normalizedSearchQuery),
-      )
-    : categoryMyChoices;
-  const categoryLikedQuestions = props.activeCategories.length
-    ? props.myLikedQuestions?.filter((item) =>
-        props.activeCategories.includes(item.question.category),
-      )
-    : props.myLikedQuestions;
-  const filteredLikedQuestions = normalizedSearchQuery
-    ? categoryLikedQuestions?.filter((item) =>
-        item.question.title
-          .toLocaleLowerCase("ko-KR")
-          .includes(normalizedSearchQuery),
-      )
-    : categoryLikedQuestions;
-  const sortByQuestionMetrics = <T extends { question: ChoiceQuestion }>(
-    items: T[] | undefined,
-    dateOf: (item: T) => string,
-  ) =>
-    items?.toSorted((a, b) => {
-      if (props.sort === "popular") {
-        return b.question.participant_count - a.question.participant_count;
-      }
-      if (props.sort === "liked") {
-        return b.question.like_count - a.question.like_count;
-      }
-      return new Date(dateOf(b)).getTime() - new Date(dateOf(a)).getTime();
-    });
-  const sortedMyChoices = sortByQuestionMetrics(
-    filteredMyChoices,
-    (item) => item.voted_at,
-  );
-  const sortedLikedQuestions = sortByQuestionMetrics(
-    filteredLikedQuestions,
-    (item) => item.liked_at,
-  );
+    ? props.questions?.filter((item) => item.id !== dailyQuestion.id)
+    : props.questions;
   const dateLabel = useMemo(
     () =>
       new Intl.DateTimeFormat("ko-KR", {
@@ -130,15 +85,21 @@ export function ChoiceHub(props: ChoiceHubProps) {
       <main className={choiceHubStyles.main}>
         {props.activeView === "mine" ? (
           <MyChoicesView
-            items={sortedMyChoices}
-            likedItems={sortedLikedQuestions}
+            items={props.myChoices}
+            likedItems={props.myLikedQuestions}
+            pagination={props.myPagination}
+            likedPagination={props.likedPagination}
+            isError={props.isMyError}
+            isLikedError={props.isLikedError}
+            onRetry={props.onRetryMine}
             activeCategories={props.activeCategories}
             isLoggedIn={props.isLoggedIn}
             isLoading={props.isLoading}
+            isSearching={props.isSearching}
             searchQuery={searchQuery}
             onCategoriesChange={props.onCategoriesChange}
             onOpenQuestion={props.onOpenQuestion}
-            onSearchQueryChange={setSearchQuery}
+            onSearchQueryChange={onSearchQueryChange}
             likingQuestionId={props.likingQuestionId}
             onToggleLike={props.onToggleLike}
             sort={props.sort}
@@ -160,10 +121,12 @@ export function ChoiceHub(props: ChoiceHubProps) {
               searchQuery={searchQuery}
               sort={props.sort}
               onCategoriesChange={props.onCategoriesChange}
-              onSearchQueryChange={setSearchQuery}
+              onSearchQueryChange={onSearchQueryChange}
               onSortChange={props.onSortChange}
             />
-            {props.isLoading ? (
+            {props.isSearching ? (
+              <SearchLoading />
+            ) : props.isLoading ? (
               <ChoiceSkeleton />
             ) : props.isError ? (
               <div className={choiceHubStyles.state}>
@@ -186,21 +149,14 @@ export function ChoiceHub(props: ChoiceHubProps) {
               <div className={choiceHubStyles.state}>
                 <div>
                   <p className={choiceHubStyles.stateTitle}>
-                    아직 등록된 질문이 없어요.
+                    {searchQuery.trim() || props.activeCategories.length
+                      ? "검색 결과가 없어요."
+                      : "아직 등록된 질문이 없어요."}
                   </p>
                   <p className={choiceHubStyles.stateDescription}>
-                    새로운 질문을 준비하고 있습니다.
-                  </p>
-                </div>
-              </div>
-            ) : !filteredQuestions?.length ? (
-              <div className={choiceHubStyles.state}>
-                <div>
-                  <p className={choiceHubStyles.stateTitle}>
-                    검색 결과가 없어요.
-                  </p>
-                  <p className={choiceHubStyles.stateDescription}>
-                    다른 검색어나 카테고리로 찾아보세요.
+                    {searchQuery.trim() || props.activeCategories.length
+                      ? "다른 검색어나 카테고리로 찾아보세요."
+                      : "새로운 질문을 준비하고 있습니다."}
                   </p>
                 </div>
               </div>
@@ -239,6 +195,7 @@ export function ChoiceHub(props: ChoiceHubProps) {
                     </div>
                   </section>
                 )}
+                <QuestionListMore pagination={props.pagination} />
               </>
             )}
           </>
