@@ -98,6 +98,18 @@ src/
 
 좋아요·투표는 해당 질문의 캐시를 갱신하고, 댓글 좋아요는 해당 댓글 상태를 반영합니다. 댓글 작성·수정·삭제는 해당 질문의 댓글을 다시 조회합니다. 백그라운드 갱신 중에는 기존 목록을 유지합니다.
 
+## 검색 노출과 SNS 공유
+
+- 검색 노출 대상은 메인(`/`)과 로그인(`/login`)이며 `sitemap.xml`에도 두 주소만 포함합니다.
+- 회원가입·비밀번호 재설정·인증 콜백과 질문 모달·내 기록·필터 query URL에는 `noindex`를 적용합니다. UTM 등 허용된 유입 추적 query는 메인과 같은 대표 URL을 사용합니다.
+- `robots.txt`는 `/api/`를 제외한 크롤링을 허용해 검색 로봇이 각 페이지의 `noindex`를 읽도록 합니다.
+- 운영 대표 도메인과 공통 메타데이터는 `src/lib/seo.ts`에서 관리하며 기본값은 `https://gwiteem.com`입니다.
+- 메인·로그인의 제목, 설명, canonical, Open Graph, Twitter Card를 서버에서 출력합니다. 메인에는 서비스명과 설명을 담은 `WebSite` 구조화 데이터를 제공합니다.
+- SNS 공유 이미지는 `public/brand/gwiteem-share.png`(1200×630)이며 SVG 원본도 같은 폴더에 보관합니다. 플랫폼이 링크 미리보기를 지원하는 위치에서 사용됩니다.
+- `src/app/favicon.ico`, `icon.svg`, `apple-icon.png`는 메인 워드마크의 남색과 이탤릭 `G`를 사용한 탭·홈 화면 아이콘입니다.
+
+운영 배포 후 Search Console에 `https://gwiteem.com/sitemap.xml`을 제출하고 메인·로그인 URL을 검사합니다. SNS 미리보기는 운영 주소와 이미지에 외부에서 접근할 수 있어야 확인할 수 있습니다.
+
 ## 검증
 
 ```bash

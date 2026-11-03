@@ -12,6 +12,7 @@
 - [컴포넌트, 스타일, 타입 규칙](agents/rules/06-ui-style-types.md)
 - [Mock, 검증, 완료 정의](agents/rules/07-validation.md)
 - [개발 서버 유지 규칙](agents/rules/08-dev-server.md)
+- [페이지 SEO와 메타데이터 규칙](agents/rules/09-page-seo.md)
 
 ## 우선순위
 

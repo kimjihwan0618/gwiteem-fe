@@ -10,7 +10,9 @@ src/
       hooks/                   # 여러 페이지가 공유하는 page-level hook
       type/                    # 여러 페이지가 공유하는 page-level type/schema
       <page>/
-        page.tsx               # 페이지 엔트리
+        page.tsx               # 페이지 엔트리, 서버 컴포넌트이면 metadata 선언 가능
+        layout.tsx             # client page의 정적 metadata를 선언할 때 사용
+        <PageName>Page.tsx      # 서버 page에서 분리한 client UI가 필요할 때 사용
         hooks/                 # 해당 페이지에서 호출하는 API hook 및 page hook
           index.ts
         store/                 # 해당 페이지에서만 쓰는 UI/client state slice
@@ -39,6 +41,7 @@ src/
 - 화면 페이지는 `src/app/(page)` 아래에 둔다.
 - `(page)`는 Next.js route group이므로 URL path에 포함되지 않는다. 예: `src/app/(page)/login/page.tsx`는 `/login`이다.
 - 페이지 폴더는 기본적으로 `page.tsx`, `hooks/`, `store/`, `type/`, `styles.ts`로 구성한다.
+- 새 페이지는 [페이지 SEO 규칙](09-page-seo.md)에 따라 서버 `page.tsx` 또는 `layout.tsx`에 메타데이터를 반드시 연결한다. 별도 `meta.ts`는 필수가 아니며 필요 없는 빈 파일은 만들지 않는다.
 - `hooks/`에는 해당 페이지에서 실행하는 API 호출 함수와 React Query hook을 함께 둔다.
 - `type/`에는 해당 페이지에서 쓰는 타입, Zod schema, 페이지 전용 상수를 둔다.
 - 여러 페이지가 공유하는 인증 세션 hook/type처럼 page 영역 공통 책임은 `src/app/(page)/hooks`와 `src/app/(page)/type`에 둔다.

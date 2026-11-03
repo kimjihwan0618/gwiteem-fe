@@ -1,13 +1,19 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { pageMetadata, siteDescription, siteName, siteUrl } from "@/lib/seo";
 import { QueryProvider } from "@/app/providers/QueryProvider";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { AuthProvider } from "@/components/domain/auth/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Gwiteem | 오늘, 당신의 선택은?",
-  description: "가볍게 선택하고 사람들의 생각을 확인하는 일상 선택 서비스",
+  ...pageMetadata("Gwiteem | 오늘, 당신의 선택은?", siteDescription, "/"),
+  metadataBase: new URL(siteUrl),
+  applicationName: siteName,
+  formatDetection: { telephone: false, address: false, email: false },
+  category: "community",
 };
+
+export const viewport: Viewport = { themeColor: "#14376d" };
 
 export default function RootLayout({
   children,
