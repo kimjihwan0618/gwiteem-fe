@@ -1,152 +1,116 @@
 # Gwiteem Frontend
 
-출근 경로, 날씨, 관심 산업과 종목의 변화를 하나의 **3분 개인화 아침 브리핑**으로 제공하는 Next.js 프론트엔드입니다.
+**오늘, 당신의 선택은?** Gwiteem은 일상의 고민을 질문으로 만나고, 자신의 선택과 이유를 남긴 뒤 다른 사람들의 생각을 확인하는 서비스입니다.
+
+직장·소비·관계·일상 네 가지 주제에서 가볍게 참여하고, 투표 결과와 댓글로 서로의 관점을 나눕니다. 이 저장소는 질문 탐색, 참여, 결과 확인, 댓글과 내 기록을 제공하는 Next.js 프론트엔드입니다.
+
+## 서비스 경험
+
+1. 오늘의 질문과 질문 목록에서 관심 있는 고민을 찾습니다.
+2. 선택지와 해당 선택의 이유를 고르고 참여합니다.
+3. 참여 후 선택지별 비율과 이유별 집계를 확인합니다. 기존 선택도 변경할 수 있습니다.
+4. 댓글과 답글로 생각을 나누고, 마음에 드는 질문이나 댓글에 좋아요를 남깁니다.
+5. 로그인하면 내 선택과 좋아요한 질문을 모아볼 수 있습니다.
+
+비로그인 사용자도 질문·댓글을 조회하고 투표할 수 있습니다. 게스트 선택은 브라우저의 게스트 식별자로 구분하며, 로그인하면 계정의 선택 기록으로 병합합니다. 질문·댓글 좋아요와 댓글·답글 작성에는 로그인이 필요합니다.
+
+## 주요 기능
+
+- **질문 탐색**: 직장·소비·관계·일상 다중 카테고리 필터, 참여순·최신순·좋아요순 정렬
+- **제목 검색**: 입력창 오른쪽 검색 아이콘 또는 Enter로 검색 실행. 입력만으로는 조회하지 않으며, X 버튼으로 입력값과 적용된 검색어 초기화
+- **목록 더 보기**: 15개 단위 커서 페이지네이션, 하단 도달 시 추가 조회 및 실패 시 재시도
+- **질문 상세**: 선택지·필수 이유 선택, 투표 결과, 선택 변경, 질문 링크 공유
+- **댓글과 답글**: 댓글 최신순 20개씩 조회, 본인 글 수정·삭제, 한 단계 답글, 댓글 좋아요. 답글에는 좋아요가 없으며 원댓글 삭제 시 답글도 삭제
+- **내 기록**: 참여한 질문과 좋아요한 질문을 각각 탐색
+- **인증**: 이메일 가입·인증·로그인, 비밀번호 재설정, 카카오·네이버·Google 로그인 연동, 로그아웃·회원 탈퇴
+- **반응형 UI**: 모바일과 데스크톱에서 질문 목록과 상세 모달 이용
 
 ## 기술 스택
 
-- Next.js 16 App Router + React 19
-- TypeScript
-- Tailwind CSS 4
-- Tailwind `@theme`: 색상, 테두리, 반경, 그림자 디자인 토큰
-- CVA: 공통 UI variant 관리
-- clsx + tailwind-merge: 조건부 class와 Tailwind 충돌 병합
-- Prettier + Tailwind CSS plugin: 코드 및 class 순서 자동 정렬
-- Colocated `*.styles.ts`: JSX와 Tailwind/CVA 스타일 정의 분리
-- PascalCase component folders: `Button/Button.tsx + styles.ts + index.ts`
-- TanStack Query: 서버 상태, 캐시, 재시도 정책
-- Zod: FastAPI 응답 런타임 검증
-- Lucide React: 일관된 아이콘 시스템
-- 공통 API Client: 응답 envelope 검증 및 `ApiError` 표준화
-- Toast Provider: API 성공·실패 메시지 전역 표시
-- ESLint + Next.js 권장 규칙
+- Next.js 16 App Router, React 19, TypeScript
+- TanStack Query 5: 서버 상태·조회 캐시·mutation 관리
+- Zod 4: API 응답 검증
+- Tailwind CSS 4, CVA, clsx, tailwind-merge: 디자인 토큰과 컴포넌트 스타일
+- Lucide React: 아이콘
+- ESLint, Prettier 및 Tailwind CSS plugin
 
-전역 클라이언트 상태 라이브러리는 현재 MVP에 필요하지 않아 제외했습니다. 사용자 인증이 추가되면 서버 세션을 기준으로 설계하고, 화면 전용 상태는 컴포넌트에 가깝게 유지합니다.
-
-## 실행
+## 로컬 실행
 
 ```bash
 npm install
+```
+
+저장소 루트에 `.env.local`을 만들고 실행 중인 백엔드 주소를 설정합니다.
+
+```env
+API_BASE_URL=http://localhost:8000
+```
+
+```bash
 npm run dev
 ```
 
-브라우저에서 `http://localhost:3000`을 엽니다.
+[로컬 화면](http://localhost:3000)을 엽니다. API 주소에는 `/api/v1`을 붙이지 않습니다. Next.js Route Handler가 백엔드 경로를 조립합니다. `NEXT_PUBLIC_API_BASE_URL`도 대체 설정으로 지원하지만, 서버 프록시용 `API_BASE_URL`을 우선 사용합니다.
 
-## FastAPI 연결
-
-`.env.example`을 `.env.local`로 복사하고 백엔드 주소를 설정합니다.
-
-```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
-```
-
-프론트는 `GET /api/briefing`을 호출하며, 응답은 `src/lib/briefing.ts`의 Zod 스키마를 통과해야 합니다. 환경 변수가 비어 있으면 데모를 위한 Next.js Route Handler가 사용됩니다.
-
-## 구현된 사용자 흐름
-
-- 비회원의 오늘 브리핑 즉시 체험
-- 출발 권장 시각, 교통 지연, 날씨 확인
-- 중복 뉴스를 이슈 단위로 탐색
-- 관심 종목과 관련 이슈 연결
-- 3단계 브리핑 재생과 근거 확인
-- 저장, 공유, 유용성 피드백
-- 로그인 후 개인 브리핑 전환 CTA
-- 모바일/태블릿/데스크톱 반응형 레이아웃
+질문·인증 기능은 실제 FastAPI와 연결됩니다. 백엔드 주소가 없을 때 자동으로 mock 서비스로 전환하지 않습니다. 소셜 로그인과 이메일 인증은 백엔드의 제공사 설정이 필요합니다.
 
 ## 주요 디렉터리
 
 ```text
 src/
   app/
-    (home)/
-      page.tsx             # Next.js 예약 라우트 파일
-      store.ts             # 홈 페이지 UI 상태
-    api/briefing/route.ts  # 개발용 mock API
-    login/
-      page.tsx             # 로그인 페이지
-      store.ts             # 로그인 페이지 UI 상태
-      styles.ts            # 로그인 페이지 스타일
-    layout.tsx
+    (page)/
+      (home)/
+        page.tsx          # 질문 목록·내 기록·상세 모달 조립
+        hooks/            # 질문·투표·좋아요·댓글 API hook, 검색 상태
+        type/             # 질문·댓글 타입과 응답 스키마
+      hooks/              # 공통 인증 세션 hook
+      type/               # 공통 인증 타입과 스키마
+      login/              # 로그인
+      register/           # 회원가입
+      password-reset/     # 비밀번호 재설정
+    api/
+      choices/            # 질문·투표·좋아요·댓글 백엔드 프록시
+      auth/               # 인증 프록시와 쿠키 처리
+    providers/            # QueryProvider 등 전역 provider
+    globals.css           # 디자인 토큰과 공통 스타일
   components/
-    layout/
-      AppHeader/
-        AppHeader.tsx
-        styles.ts
-        index.ts
-    ui/
-      Button/
-        Button.tsx
-        styles.ts
-        index.ts
-    QueryProvider/
-      QueryProvider.tsx
-      index.ts
-  features/
-    auth/                  # 로그인 폼과 인증 UI
-    briefing/              # 브리핑 모델, API, 기능별 카드
-    notification/          # 알림 모델과 더미 데이터
-  lib/cn.ts                # 공통 className 유틸리티
-  lib/api/                 # HTTP client, ApiResponse, ApiError
-  lib/query-keys.ts        # React Query key factory
+    domain/choices/       # 질문 카드·상세·댓글·검색·내 기록 UI
+    domain/auth/          # 인증 UI와 AuthProvider
+    layout/               # 헤더·푸터·프로필 메뉴
+    ui/                   # Button·Skeleton·Toast 등 공통 UI
+  lib/
+    api/                  # HTTP client, 응답 검증, ApiError
+    query-keys.ts         # TanStack Query key 관리
 ```
 
-## 구조 원칙
-
-- `app`: 라우팅과 페이지 조립만 담당
-- `components/ui`: 도메인과 무관한 공통 디자인 컴포넌트
-- `components/layout`: 여러 페이지에서 공유하는 레이아웃
-- `features`: 인증, 브리핑처럼 기능 단위로 모델·API·UI를 함께 배치
-- `lib`: 전역에서 재사용하는 작은 유틸리티만 배치
-
-## API 호출 흐름
+## 데이터와 상태 흐름
 
 ```text
-Component
-  → feature/hooks (useQuery, useMutation)
-  → feature/api
-  → lib/api/client
-  → FastAPI 또는 Next.js mock route
+화면 컴포넌트
+  → 페이지 hooks의 useQuery / useMutation
+  → lib/api/client.ts
+  → Next.js /api/choices 또는 /api/auth
+  → FastAPI /api/v1/choices 또는 /api/v1/auth
 ```
 
-API 응답은 아래 envelope 형식을 사용합니다.
+서버 데이터는 TanStack Query, 인증 사용자 정보는 `AuthProvider`, 검색 입력·탭·임시 작성 내용은 UI 상태로 관리합니다. 인증 토큰은 Next.js 서버의 HTTP-only 쿠키로 처리합니다. 게스트 식별자는 브라우저에 저장되며 인증 토큰과 구분합니다.
 
-```json
-{
-  "success": true,
-  "data": {},
-  "message": "처리되었습니다.",
-  "code": "OPTIONAL_CODE"
-}
+좋아요·투표는 해당 질문의 캐시를 갱신하고, 댓글 좋아요는 해당 댓글 상태를 반영합니다. 댓글 작성·수정·삭제는 해당 질문의 댓글을 다시 조회합니다. 백그라운드 갱신 중에는 기존 목록을 유지합니다.
+
+## 검증
+
+```bash
+npm run lint
+npm run build
+npm run format:check
 ```
 
-- mutation 응답의 `message`는 Toast로 표시합니다.
-- 공통 `Button`은 `isPending`과 `loadingText`를 지원합니다.
-- 최초 조회 중에는 `DashboardSkeleton`을 표시합니다.
-- 개발 환경의 모든 API 요청은 `lib/api/client.ts`에서 1초 지연되어 pending UI를 확인할 수 있습니다.
+화면 확인 시 검색 아이콘·Enter·X 초기화, 로그인 여부에 따른 참여 권한, mutation 중 중복 클릭 방지, 오류 안내, 모바일 레이아웃을 점검합니다.
 
-현재 연결된 mock mutation:
+## 배포
 
-- 이메일 로그인, 카카오·네이버·Google 로그인
-- 브리핑 시작
-- 브리핑 저장 및 저장 취소
-- 브리핑 유용성 피드백
-- 브리핑 공유 기록
-
-헤더는 `AuthProvider`의 사용자 상태를 기준으로 렌더링됩니다.
-
-- 비로그인: 로그인 버튼만 표시
-- 로그인: 더미 알림 목록과 프로필 메뉴 표시
-- 프로필 이미지 URL 존재: 이미지 표시
-- 프로필 이미지 없음: 사용자 이름의 첫 글자 표시
-
-# 질문별 댓글
-
-각 댓글에서 답글을 펼치거나 작성할 수 있습니다. 답글은 한 단계만 지원하며 좋아요는 없고,
-본인이 작성한 답글만 수정·삭제할 수 있습니다. 원댓글 삭제 시 답글도 함께 삭제됩니다.
-대댓글 기능 사용 전 백엔드 마이그레이션 `87af8eca06fd`를 적용하세요.
-
-질문 카드의 댓글 버튼으로 상세 댓글 탭을 바로 열 수 있습니다. 댓글 조회는 공개이며
-로그인 후 작성·좋아요, 본인 댓글 수정·삭제를 지원합니다. 최신순 20개씩 더 불러오며
-댓글 변경 후 카드와 탭의 댓글 수를 갱신합니다. 댓글 내용은 공백 제거 후 1~1,000자입니다.
-
-프론트 API는 `/api/choices/questions/[questionId]/comments`에서 FastAPI로 프록시합니다.
-백엔드 배포 전에 `alembic upgrade head`로 댓글 마이그레이션 `1c159ec384dd`를 적용하세요.
+```bash
+npm run build
+npm run start
+```
