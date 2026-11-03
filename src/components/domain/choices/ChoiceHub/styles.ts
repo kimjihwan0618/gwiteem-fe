@@ -78,7 +78,9 @@ export const choiceHubStyles = {
   searchField:
     "focus-within:ring-brand-500/20 relative mx-auto flex min-h-11 w-full min-w-0 items-center rounded-xl border border-border-strong bg-white transition-[max-width,border-color,box-shadow] duration-300 ease-out focus-within:border-brand-500 focus-within:ring-4",
   searchFieldStuck: "shadow-sm",
-  searchIcon: "pointer-events-none ml-3 shrink-0 text-subtle",
+  searchForm: "flex min-w-0 flex-1 items-center",
+  searchSubmitButton:
+    "focus-ring mr-2 inline-flex min-h-9 min-w-9 shrink-0 items-center justify-center rounded-lg text-brand-700 transition-colors hover:bg-brand-50",
   searchInput:
     "min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm font-medium text-ink outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden",
   searchClearButton:

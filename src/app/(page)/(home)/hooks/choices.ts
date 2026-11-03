@@ -6,6 +6,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { questionQueries, updateQuestionInCache } from "./question-cache";
 import { apiClient } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query-keys";
 import {
@@ -20,90 +21,6 @@ import {
   type ChoiceOption,
   type ChoiceSort,
 } from "../type";
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function updateQuestionLike(
-  value: unknown,
-  questionId: number,
-  isLiked: boolean,
-  likeCount?: number,
-): unknown {
-  if (!isRecord(value) || value.id !== questionId) return value;
-  const currentCount =
-    typeof value.like_count === "number" ? value.like_count : 0;
-  return {
-    ...value,
-    is_liked: isLiked,
-    like_count: likeCount ?? Math.max(0, currentCount + (isLiked ? 1 : -1)),
-  };
-}
-
-function updateLikeInCache(
-  cached: unknown,
-  questionId: number,
-  isLiked: boolean,
-  likeCount?: number,
-): unknown {
-  if (isRecord(cached) && Array.isArray(cached.pages)) {
-    return {
-      ...cached,
-      pages: cached.pages.map((page) =>
-        updateLikeInCache(page, questionId, isLiked, likeCount),
-      ),
-    };
-  }
-  if (!isRecord(cached) || !("data" in cached)) return cached;
-  const payload = cached.data;
-
-  if (Array.isArray(payload)) {
-    return {
-      ...cached,
-      data: payload.map((item) =>
-        isRecord(item) && "question" in item
-          ? {
-              ...item,
-              question: updateQuestionLike(
-                item.question,
-                questionId,
-                isLiked,
-                likeCount,
-              ),
-            }
-          : updateQuestionLike(item, questionId, isLiked, likeCount),
-      ),
-    };
-  }
-
-  if (isRecord(payload) && Array.isArray(payload.items)) {
-    return {
-      ...cached,
-      data: {
-        ...payload,
-        items: payload.items.map((item) =>
-          isRecord(item) && "question" in item
-            ? {
-                ...item,
-                question: updateQuestionLike(
-                  item.question,
-                  questionId,
-                  isLiked,
-                  likeCount,
-                ),
-              }
-            : updateQuestionLike(item, questionId, isLiked, likeCount),
-        ),
-      },
-    };
-  }
-
-  return {
-    ...cached,
-    data: updateQuestionLike(payload, questionId, isLiked, likeCount),
-  };
-}
 
 export function useChoiceQuestions(
   categories: ChoiceCategory[],
@@ -194,7 +111,15 @@ export function useVoteQuestion() {
         ...response,
         data: response.data.question,
       });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.choices.all });
+      queryClient.setQueriesData(questionQueries, (cached) =>
+        updateQuestionInCache(cached, variables.questionId, (question) => ({
+          ...question,
+          ...response.data.question,
+        })),
+      );
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.choices.mineAll,
+      });
     },
   });
 }
@@ -215,36 +140,57 @@ export function useToggleQuestionLike() {
         { method: isLiked ? "PUT" : "DELETE" },
       ),
     onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.choices.all });
-      const previous = queryClient.getQueriesData({
-        queryKey: queryKeys.choices.all,
-      });
-      queryClient.setQueriesData(
-        { queryKey: queryKeys.choices.all },
-        (cached) =>
-          updateLikeInCache(cached, variables.questionId, variables.isLiked),
+      await queryClient.cancelQueries(questionQueries);
+      const previous = queryClient.getQueriesData(questionQueries);
+      queryClient.setQueriesData(questionQueries, (cached) =>
+        updateQuestionInCache(cached, variables.questionId, (question) => ({
+          ...question,
+          is_liked: variables.isLiked,
+          like_count: Math.max(
+            0,
+            Number(question.like_count) +
+              (question.is_liked === variables.isLiked
+                ? 0
+                : variables.isLiked
+                  ? 1
+                  : -1),
+          ),
+        })),
       );
       return { previous };
     },
-    onError: (_error, _variables, context) => {
+    onError: (_error, variables, context) => {
       context?.previous.forEach(([queryKey, cached]) => {
-        queryClient.setQueryData(queryKey, cached);
+        updateQuestionInCache(cached, variables.questionId, (previous) => {
+          queryClient.setQueryData(queryKey, (current: unknown) =>
+            updateQuestionInCache(
+              current,
+              variables.questionId,
+              (question) => ({
+                ...question,
+                is_liked: previous.is_liked,
+                like_count: previous.like_count,
+              }),
+            ),
+          );
+          return previous;
+        });
       });
     },
     onSuccess: (response, variables) => {
-      queryClient.setQueriesData(
-        { queryKey: queryKeys.choices.all },
-        (cached) =>
-          updateLikeInCache(
-            cached,
-            variables.questionId,
-            response.data.is_liked,
-            response.data.like_count,
-          ),
+      queryClient.setQueriesData(questionQueries, (cached) =>
+        updateQuestionInCache(cached, variables.questionId, (question) => ({
+          ...question,
+          is_liked: response.data.is_liked,
+          like_count: response.data.like_count,
+        })),
       );
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.choices.all });
+      // Only collection membership and liked_at need to be fetched again.
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.choices.likedAll,
+      });
     },
   });
 }

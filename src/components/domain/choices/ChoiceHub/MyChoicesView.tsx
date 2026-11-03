@@ -33,9 +33,12 @@ interface MyChoicesViewProps {
   isLoggedIn: boolean;
   isLoading: boolean;
   searchQuery: string;
+  appliedSearch: string;
   onCategoriesChange: (categories: ChoiceCategory[]) => void;
   onOpenQuestion: (id: number, tab?: "result" | "comments") => void;
-  onSearchQueryChange: (query: string, isComposing?: boolean) => void;
+  onSearchQueryChange: (query: string) => void;
+  onSearchSubmit: () => void;
+  onSearchReset: () => void;
   likingQuestionId: number | null;
   onToggleLike: (question: MyChoice["question"]) => void;
   sort: ChoiceSort;
@@ -55,9 +58,12 @@ export function MyChoicesView({
   isLoggedIn,
   isLoading,
   searchQuery,
+  appliedSearch,
   onCategoriesChange,
   onOpenQuestion,
   onSearchQueryChange,
+  onSearchSubmit,
+  onSearchReset,
   likingQuestionId,
   onToggleLike,
   sort,
@@ -140,6 +146,8 @@ export function MyChoicesView({
         searchQuery={searchQuery}
         onCategoriesChange={onCategoriesChange}
         onSearchQueryChange={onSearchQueryChange}
+        onSearchSubmit={onSearchSubmit}
+        onSearchReset={onSearchReset}
         sort={sort}
         onSortChange={onSortChange}
       />
@@ -158,7 +166,7 @@ export function MyChoicesView({
         <div className={choiceHubStyles.state}>
           <div>
             <p className={choiceHubStyles.stateTitle}>
-              {searchQuery.trim()
+              {appliedSearch
                 ? "검색 결과가 없어요."
                 : activeCategories.length === 0
                   ? activeRecord === "participated"
@@ -167,7 +175,7 @@ export function MyChoicesView({
                   : "이 카테고리에 해당하는 질문이 없어요."}
             </p>
             <p className={choiceHubStyles.stateDescription}>
-              {searchQuery.trim()
+              {appliedSearch
                 ? "다른 검색어나 카테고리로 찾아보세요."
                 : activeRecord === "participated"
                   ? "질문에 답하면 참여한 질문으로 기록됩니다."

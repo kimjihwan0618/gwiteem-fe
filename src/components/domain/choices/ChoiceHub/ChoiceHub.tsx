@@ -27,7 +27,10 @@ import { choiceHubStyles } from "./styles";
 interface ChoiceHubProps {
   isSearching: boolean;
   searchQuery: string;
-  onSearchQueryChange: (value: string, isComposing?: boolean) => void;
+  appliedSearch: string;
+  onSearchQueryChange: (value: string) => void;
+  onSearchSubmit: () => void;
+  onSearchReset: () => void;
   pagination: QuestionPagination;
   myPagination: QuestionPagination;
   likedPagination: QuestionPagination;
@@ -85,6 +88,7 @@ export function ChoiceHub(props: ChoiceHubProps) {
       <main className={choiceHubStyles.main}>
         {props.activeView === "mine" ? (
           <MyChoicesView
+            appliedSearch={props.appliedSearch}
             items={props.myChoices}
             likedItems={props.myLikedQuestions}
             pagination={props.myPagination}
@@ -100,6 +104,8 @@ export function ChoiceHub(props: ChoiceHubProps) {
             onCategoriesChange={props.onCategoriesChange}
             onOpenQuestion={props.onOpenQuestion}
             onSearchQueryChange={onSearchQueryChange}
+            onSearchSubmit={props.onSearchSubmit}
+            onSearchReset={props.onSearchReset}
             likingQuestionId={props.likingQuestionId}
             onToggleLike={props.onToggleLike}
             sort={props.sort}
@@ -122,6 +128,8 @@ export function ChoiceHub(props: ChoiceHubProps) {
               sort={props.sort}
               onCategoriesChange={props.onCategoriesChange}
               onSearchQueryChange={onSearchQueryChange}
+              onSearchSubmit={props.onSearchSubmit}
+              onSearchReset={props.onSearchReset}
               onSortChange={props.onSortChange}
             />
             {props.isSearching ? (
@@ -149,12 +157,12 @@ export function ChoiceHub(props: ChoiceHubProps) {
               <div className={choiceHubStyles.state}>
                 <div>
                   <p className={choiceHubStyles.stateTitle}>
-                    {searchQuery.trim() || props.activeCategories.length
+                    {props.appliedSearch || props.activeCategories.length
                       ? "검색 결과가 없어요."
                       : "아직 등록된 질문이 없어요."}
                   </p>
                   <p className={choiceHubStyles.stateDescription}>
-                    {searchQuery.trim() || props.activeCategories.length
+                    {props.appliedSearch || props.activeCategories.length
                       ? "다른 검색어나 카테고리로 찾아보세요."
                       : "새로운 질문을 준비하고 있습니다."}
                   </p>

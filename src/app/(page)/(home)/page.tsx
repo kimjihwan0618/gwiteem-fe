@@ -55,7 +55,7 @@ function HomeContent() {
   );
   const activeView = searchParams.get("view") === "my" ? "mine" : "questions";
   const [sort, setSort] = useState<ChoiceSort>("popular");
-  const { searchQuery, search, changeSearch, isSearchPending } =
+  const { searchQuery, search, changeSearch, submitSearch, resetSearch } =
     useQuestionSearch();
   const questionParam = searchParams.get("question");
   const parsedQuestionId = questionParam ? Number(questionParam) : null;
@@ -119,15 +119,16 @@ function HomeContent() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("question", String(questionId));
     params.set("tab", tab);
-    router.push(`/?${params.toString()}`, { scroll: false });
+    // 모달 상태는 서버 페이지 이동 없이 URL과 동기화한다.
+    window.history.pushState(null, "", `/?${params.toString()}`);
   }
 
   function closeQuestion() {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete("question");
     params.delete("tab");
     const query = params.toString();
-    router.push(query ? `/?${query}` : "/", { scroll: false });
+    window.history.replaceState(null, "", query ? `/?${query}` : "/");
   }
 
   function handleVote(
@@ -170,20 +171,20 @@ function HomeContent() {
   return (
     <ChoiceHub
       searchQuery={searchQuery}
+      appliedSearch={search}
+      onSearchSubmit={submitSearch}
+      onSearchReset={resetSearch}
       isSearching={
-        isSearchPending ||
-        (activeView === "questions"
-          ? questions.isFetching && !questions.isFetchingNextPage
-          : (myChoices.isFetching && !myChoices.isFetchingNextPage) ||
-            (myLikedQuestions.isFetching &&
-              !myLikedQuestions.isFetchingNextPage))
+        activeView === "questions"
+          ? questions.isLoading
+          : myChoices.isLoading || myLikedQuestions.isLoading
       }
       onSearchQueryChange={changeSearch}
       pagination={{
         hasMore: questions.hasNextPage,
         isLoadingMore: questions.isFetchingNextPage,
         isLoadMoreError: questions.isFetchNextPageError,
-        isPaused: isSearchPending || questions.isFetching,
+        isPaused: questions.isFetching,
         onLoadMore: () => {
           if (!questions.isFetching)
             void questions.fetchNextPage({ cancelRefetch: false });
@@ -193,7 +194,7 @@ function HomeContent() {
         hasMore: myChoices.hasNextPage,
         isLoadingMore: myChoices.isFetchingNextPage,
         isLoadMoreError: myChoices.isFetchNextPageError,
-        isPaused: isSearchPending || myChoices.isFetching,
+        isPaused: myChoices.isFetching,
         onLoadMore: () => {
           if (!myChoices.isFetching)
             void myChoices.fetchNextPage({ cancelRefetch: false });
@@ -203,7 +204,7 @@ function HomeContent() {
         hasMore: myLikedQuestions.hasNextPage,
         isLoadingMore: myLikedQuestions.isFetchingNextPage,
         isLoadMoreError: myLikedQuestions.isFetchNextPageError,
-        isPaused: isSearchPending || myLikedQuestions.isFetching,
+        isPaused: myLikedQuestions.isFetching,
         onLoadMore: () => {
           if (!myLikedQuestions.isFetching)
             void myLikedQuestions.fetchNextPage({ cancelRefetch: false });

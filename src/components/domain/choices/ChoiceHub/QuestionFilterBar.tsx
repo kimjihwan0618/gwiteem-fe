@@ -12,7 +12,9 @@ interface QuestionFilterBarProps {
   searchQuery: string;
   sort?: ChoiceSort;
   onCategoriesChange: (categories: ChoiceCategory[]) => void;
-  onSearchQueryChange: (query: string, isComposing?: boolean) => void;
+  onSearchQueryChange: (query: string) => void;
+  onSearchSubmit: () => void;
+  onSearchReset: () => void;
   onSortChange?: (sort: ChoiceSort) => void;
 }
 
@@ -22,6 +24,8 @@ export function QuestionFilterBar({
   sort,
   onCategoriesChange,
   onSearchQueryChange,
+  onSearchSubmit,
+  onSearchReset,
   onSortChange,
 }: QuestionFilterBarProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -29,7 +33,6 @@ export function QuestionFilterBar({
   const [draftCategories, setDraftCategories] = useState<ChoiceCategory[]>([]);
   const [draftSort, setDraftSort] = useState<ChoiceSort>(sort ?? "popular");
   const filterRef = useRef<HTMLDivElement>(null);
-  const composingRef = useRef(false);
   const stickySentinelRef = useRef<HTMLDivElement>(null);
   const activeFilterCount =
     activeCategories.length + Number(Boolean(sort && sort !== "popular"));
@@ -115,36 +118,50 @@ export function QuestionFilterBar({
             isStuck && choiceHubStyles.searchFieldStuck,
           )}
         >
-          <Search size={19} className={choiceHubStyles.searchIcon} />
-          <input
-            type="search"
-            maxLength={200}
-            value={searchQuery}
-            onChange={(event) =>
-              onSearchQueryChange(event.target.value, composingRef.current)
-            }
-            onCompositionStart={() => {
-              composingRef.current = true;
-              onSearchQueryChange(searchQuery, true);
+          <form
+            role="search"
+            className={choiceHubStyles.searchForm}
+            onSubmit={(event) => {
+              event.preventDefault();
+              onSearchSubmit();
             }}
-            onCompositionEnd={(event) => {
-              composingRef.current = false;
-              onSearchQueryChange(event.currentTarget.value);
-            }}
-            placeholder="질문 제목을 검색해 보세요"
-            aria-label="질문 제목 검색"
-            className={choiceHubStyles.searchInput}
-          />
-          {searchQuery && (
+          >
+            <input
+              type="search"
+              maxLength={200}
+              onKeyDown={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  (event.nativeEvent.isComposing || event.keyCode === 229)
+                ) {
+                  event.preventDefault();
+                }
+              }}
+              value={searchQuery}
+              onChange={(event) => onSearchQueryChange(event.target.value)}
+              placeholder="질문 제목을 검색해 보세요"
+              aria-label="질문 제목 검색"
+              className={choiceHubStyles.searchInput}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                aria-label="검색어 지우기"
+                className={choiceHubStyles.searchClearButton}
+                onClick={onSearchReset}
+              >
+                <X size={17} />
+              </button>
+            )}
             <button
-              type="button"
-              aria-label="검색어 지우기"
-              className={choiceHubStyles.searchClearButton}
-              onClick={() => onSearchQueryChange("")}
+              type="submit"
+              aria-label="질문 검색"
+              title="검색"
+              className={choiceHubStyles.searchSubmitButton}
             >
-              <X size={17} />
+              <Search size={19} aria-hidden="true" />
             </button>
-          )}
+          </form>
           <div ref={filterRef} className={choiceHubStyles.filterMenuRoot}>
             <button
               type="button"

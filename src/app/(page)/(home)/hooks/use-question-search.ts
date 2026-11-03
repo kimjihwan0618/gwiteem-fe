@@ -1,24 +1,27 @@
 "use client";
 
-import debounce from "lodash.debounce";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
 export function useQuestionSearch() {
   const [searchQuery, setSearchQuery] = useState("");
   const [search, setSearch] = useState("");
-  const commitSearch = useMemo(() => debounce(setSearch, 300), []);
-  useEffect(() => () => commitSearch.cancel(), [commitSearch]);
 
-  function changeSearch(value: string, isComposing = false) {
-    setSearchQuery(value);
-    commitSearch.cancel();
-    if (!isComposing) commitSearch(value.trim());
+  function submitSearch() {
+    const normalized = searchQuery.trim();
+    setSearchQuery(normalized);
+    setSearch(normalized);
+  }
+
+  function resetSearch() {
+    setSearchQuery("");
+    setSearch("");
   }
 
   return {
     searchQuery,
     search,
-    changeSearch,
-    isSearchPending: searchQuery.trim() !== search,
+    changeSearch: setSearchQuery,
+    submitSearch,
+    resetSearch,
   };
 }

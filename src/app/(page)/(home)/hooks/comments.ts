@@ -5,6 +5,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { questionQueries, updateQuestionInCache } from "./question-cache";
 import { apiClient } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query-keys";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -29,15 +30,34 @@ export function useQuestionComments(
   const query = useInfiniteQuery({
     queryKey: queryKeys.choices.comments(questionId, userId),
     initialPageParam: null as number | null,
-    queryFn: ({ pageParam }) =>
-      apiClient(
+    queryFn: async ({ pageParam, signal }) => {
+      const response = await apiClient(
         `/api/choices/questions/${questionId}/comments${pageParam ? `?cursor=${pageParam}` : ""}`,
         commentPageSchema,
-      ),
+        { signal },
+      );
+      if (questionId !== null) {
+        client.setQueriesData(questionQueries, (cached) =>
+          updateQuestionInCache(cached, questionId, (question) => ({
+            ...question,
+            comment_count: response.data.total_count,
+          })),
+        );
+      }
+      return response;
+    },
     getNextPageParam: (last) => last.data.next_cursor ?? undefined,
     enabled: questionId !== null,
   });
   const mutation = useMutation({
+    onMutate: async (input: CommentAction) => {
+      if (input.action === "like" || input.action === "unlike") {
+        await client.cancelQueries({
+          queryKey: queryKeys.choices.comments(questionId, userId),
+          exact: true,
+        });
+      }
+    },
     mutationFn: (input: CommentAction) => {
       const isLike = input.action === "like" || input.action === "unlike";
       const suffix =
@@ -65,9 +85,45 @@ export function useQuestionComments(
       });
     },
     onSuccess: async (response, input) => {
-      if (input.action !== "like" && input.action !== "unlike")
-        toast.success(response.message);
-      await client.invalidateQueries({ queryKey: queryKeys.choices.all });
+      if (input.action === "like" || input.action === "unlike") {
+        const isLiked = input.action === "like";
+        client.setQueryData<typeof query.data>(
+          queryKeys.choices.comments(questionId, userId),
+          (cached) =>
+            cached && {
+              ...cached,
+              pages: cached.pages.map((page) => ({
+                ...page,
+                data: {
+                  ...page.data,
+                  items: page.data.items.map((comment) =>
+                    comment.id === input.id
+                      ? {
+                          ...comment,
+                          is_liked: isLiked,
+                          like_count: Math.max(
+                            0,
+                            comment.like_count +
+                              (comment.is_liked === isLiked
+                                ? 0
+                                : isLiked
+                                  ? 1
+                                  : -1),
+                          ),
+                        }
+                      : comment,
+                  ),
+                },
+              })),
+            },
+        );
+        return;
+      }
+      toast.success(response.message);
+      await client.invalidateQueries({
+        queryKey: queryKeys.choices.comments(questionId, userId),
+        exact: true,
+      });
     },
     onError: (error) => toast.error(error.message),
   });
