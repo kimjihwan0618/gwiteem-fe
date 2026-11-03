@@ -3,6 +3,7 @@ import { pageMetadata, siteDescription, siteName, siteUrl } from "@/lib/seo";
 import { QueryProvider } from "@/app/providers/QueryProvider";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { AuthProvider } from "@/components/domain/auth/AuthProvider";
+import { GoogleAnalytics } from "@/components/layout/GoogleAnalytics";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({
             <AuthProvider>{children}</AuthProvider>
           </ToastProvider>
         </QueryProvider>
+        <GoogleAnalytics />
       </body>
     </html>
   );
