@@ -1,26 +1,4 @@
-import type {
-  ChoiceCategory,
-  ChoiceOption,
-  ChoiceQuestion,
-} from "@/app/(page)/(home)/type";
-
-export const categories: Array<{
-  value: ChoiceCategory | "all";
-  label: string;
-}> = [
-  { value: "all", label: "전체" },
-  { value: "work", label: "직장" },
-  { value: "spending", label: "소비" },
-  { value: "relationship", label: "관계" },
-  { value: "daily", label: "일상" },
-];
-
-export const categoryLabels: Record<ChoiceCategory, string> = {
-  work: "직장",
-  spending: "소비",
-  relationship: "관계",
-  daily: "일상",
-};
+import type { ChoiceOption, ChoiceQuestion } from "@/app/(page)/(home)/type";
 
 export const optionTones = {
   A: "a",

@@ -1,3 +1,4 @@
+import type { ChoiceCategoryItem } from "@/app/(page)/type/choice-categories";
 import { CommentCountButton } from "./CommentCountButton";
 import type {
   ChoiceCategory,
@@ -12,7 +13,7 @@ import { cn } from "@/lib/cn";
 import Link from "next/link";
 import { ChevronRight, Heart, MousePointerClick, Users } from "lucide-react";
 import { useState } from "react";
-import { categoryLabels, getSelectedOptionLabel } from "./choice-utils";
+import { getSelectedOptionLabel } from "./choice-utils";
 import { ChoiceSkeleton } from "./ChoiceSkeleton";
 import { SearchLoading } from "./SearchLoading";
 import { QuestionFilterBar } from "./QuestionFilterBar";
@@ -21,6 +22,7 @@ import { QuestionByline } from "./QuestionByline";
 import { choiceHubStyles } from "./styles";
 
 interface MyChoicesViewProps {
+  categoryItems: ChoiceCategoryItem[];
   isSearching: boolean;
   pagination: QuestionPagination;
   likedPagination: QuestionPagination;
@@ -46,6 +48,7 @@ interface MyChoicesViewProps {
 }
 
 export function MyChoicesView({
+  categoryItems,
   isSearching,
   pagination,
   likedPagination,
@@ -104,6 +107,9 @@ export function MyChoicesView({
           <p className={choiceHubStyles.eyebrow}>나의 기록</p>
           <h1 className={choiceHubStyles.title}>내 선택</h1>
         </div>
+        <Link href="/questions/new" className={buttonVariants()}>
+          질문 만들기
+        </Link>
       </div>
       <div
         className={choiceHubStyles.mineTabs}
@@ -142,6 +148,7 @@ export function MyChoicesView({
         </button>
       </div>
       <QuestionFilterBar
+        categoryItems={categoryItems}
         activeCategories={activeCategories}
         searchQuery={searchQuery}
         onCategoriesChange={onCategoriesChange}
@@ -202,7 +209,7 @@ export function MyChoicesView({
                 }}
               >
                 <div className={choiceHubStyles.cardMeta}>
-                  <Badge>{categoryLabels[item.question.category]}</Badge>
+                  <Badge>{item.question.category_label}</Badge>
                 </div>
                 <h3 className={choiceHubStyles.cardTitle}>
                   {item.question.title}
@@ -267,7 +274,7 @@ export function MyChoicesView({
                 }}
               >
                 <div className={choiceHubStyles.cardMeta}>
-                  <Badge>{categoryLabels[item.question.category]}</Badge>
+                  <Badge>{item.question.category_label}</Badge>
                 </div>
                 <h3 className={choiceHubStyles.cardTitle}>
                   {item.question.title}

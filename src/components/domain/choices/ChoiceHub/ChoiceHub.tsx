@@ -1,5 +1,6 @@
 "use client";
 
+import type { ChoiceCategoryItem } from "@/app/(page)/type/choice-categories";
 import type { CommentsState } from "@/app/(page)/(home)/type/comments";
 import type {
   ChoiceCategory,
@@ -12,6 +13,9 @@ import type {
 } from "@/app/(page)/(home)/type";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 import { Button } from "@/components/ui/Button";
 import { useMemo } from "react";
 import { QuestionListMore, type QuestionPagination } from "./QuestionListMore";
@@ -25,6 +29,7 @@ import { QuestionFilterBar } from "./QuestionFilterBar";
 import { choiceHubStyles } from "./styles";
 
 interface ChoiceHubProps {
+  categoryItems: ChoiceCategoryItem[];
   isSearching: boolean;
   searchQuery: string;
   appliedSearch: string;
@@ -88,6 +93,7 @@ export function ChoiceHub(props: ChoiceHubProps) {
       <main className={choiceHubStyles.main}>
         {props.activeView === "mine" ? (
           <MyChoicesView
+            categoryItems={props.categoryItems}
             appliedSearch={props.appliedSearch}
             items={props.myChoices}
             likedItems={props.myLikedQuestions}
@@ -121,8 +127,12 @@ export function ChoiceHub(props: ChoiceHubProps) {
                   가볍게 고르고 사람들의 생각을 확인해 보세요.
                 </p>
               </div>
+              <Link href="/questions/new" className={buttonVariants()}>
+                <Plus size={17} /> 질문 만들기
+              </Link>
             </section>
             <QuestionFilterBar
+              categoryItems={props.categoryItems}
               activeCategories={props.activeCategories}
               searchQuery={searchQuery}
               sort={props.sort}

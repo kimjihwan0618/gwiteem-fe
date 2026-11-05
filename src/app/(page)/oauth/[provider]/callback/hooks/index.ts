@@ -1,5 +1,6 @@
 "use client";
 
+import { consumeAuthReturn } from "@/lib/auth-return";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -31,7 +32,7 @@ export function useSocialCallbackMutation() {
     onSuccess: (response) => {
       auth.setUser(response.data.user);
       toast.success(response.message);
-      router.replace("/");
+      router.replace(consumeAuthReturn());
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "소셜 로그인을 완료하지 못했습니다."));

@@ -16,6 +16,7 @@ export const queryKeys = {
     lists: () => [...queryKeys.favorites.all, "lists"] as const,
   },
   choices: {
+    categories: ["choice-categories"] as const,
     all: ["choices"] as const,
     mineAll: ["choices", "mine"] as const,
     likedAll: ["choices", "liked"] as const,

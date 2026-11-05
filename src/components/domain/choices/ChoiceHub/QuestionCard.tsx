@@ -2,7 +2,7 @@ import { CommentCountButton } from "./CommentCountButton";
 import type { ChoiceQuestion } from "@/app/(page)/(home)/type";
 import { Badge } from "@/components/ui/Badge";
 import { Check, ChevronRight, Users } from "lucide-react";
-import { categoryLabels, getQuestionOptions } from "./choice-utils";
+import { getQuestionOptions } from "./choice-utils";
 import { QuestionByline } from "./QuestionByline";
 import { LikeButton } from "./LikeButton";
 import { choiceHubStyles } from "./styles";
@@ -40,7 +40,7 @@ export function QuestionCard({
     >
       <div className={choiceHubStyles.cardMeta}>
         <div className={choiceHubStyles.cardBadges}>
-          <Badge>{categoryLabels[question.category]}</Badge>
+          <Badge>{question.category_label}</Badge>
           {isTight && !question.my_choice && (
             <span className={choiceHubStyles.tension}>많이 참여해요</span>
           )}

@@ -1,11 +1,6 @@
 import { z } from "zod";
 
-export const choiceCategorySchema = z.enum([
-  "work",
-  "spending",
-  "relationship",
-  "daily",
-]);
+export const choiceCategorySchema = z.string().min(1);
 export const choiceOptionSchema = z.enum(["A", "B", "C", "D"]);
 export const choiceSortSchema = z.enum(["popular", "latest", "liked"]);
 
@@ -17,6 +12,7 @@ export const choiceReasonSchema = z.object({
 export const choiceQuestionSchema = z.object({
   id: z.number(),
   category: choiceCategorySchema,
+  category_label: z.string(),
   title: z.string(),
   option_a: z.string(),
   option_b: z.string(),

@@ -15,11 +15,7 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { LogIn, Share2, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import {
-  categoryLabels,
-  getQuestionOptions,
-  optionTones,
-} from "./choice-utils";
+import { getQuestionOptions, optionTones } from "./choice-utils";
 import { ResultView } from "./ResultView";
 import { LikeButton } from "./LikeButton";
 import {
@@ -177,7 +173,7 @@ export function QuestionDialog({
           </div>
         ) : (
           <div className={choiceHubStyles.modalBody}>
-            <Badge>{categoryLabels[detail.category]}</Badge>
+            <Badge>{detail.category_label}</Badge>
             <h2 className={choiceHubStyles.modalQuestion}>{detail.title}</h2>
             <div className={commentStyles.byline}>
               <QuestionByline question={detail} />

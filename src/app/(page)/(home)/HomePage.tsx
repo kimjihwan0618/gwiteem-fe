@@ -1,5 +1,6 @@
 "use client";
 
+import { useChoiceCategories } from "@/app/(page)/hooks/use-choice-categories";
 import { useQuestionComments } from "./hooks/comments";
 import { useQuestionSearch } from "./hooks/use-question-search";
 import { Suspense, useEffect, useRef, useState } from "react";
@@ -24,13 +25,6 @@ import { ChoiceHub } from "@/components/domain/choices/ChoiceHub";
 import { useToast } from "@/components/ui/ToastProvider";
 import { ApiError } from "@/lib/api/response";
 
-const categoryHashes = new Set<ChoiceCategory>([
-  "work",
-  "spending",
-  "relationship",
-  "daily",
-]);
-
 export default function Home() {
   return (
     <Suspense fallback={null}>
@@ -41,6 +35,11 @@ export default function Home() {
 
 function HomeContent() {
   const router = useRouter();
+  const categoryCatalog = useChoiceCategories();
+  const catalogFailed = categoryCatalog.isError && !categoryCatalog.data;
+  const categoryHashes = new Set(
+    categoryCatalog.data?.map((item) => item.code),
+  );
   const searchParams = useSearchParams();
   const { user, isReady } = useAuth();
   const toast = useToast();
@@ -49,7 +48,7 @@ function HomeContent() {
       (searchParams.get("category") ?? "")
         .split(",")
         .filter((category): category is ChoiceCategory =>
-          categoryHashes.has(category as ChoiceCategory),
+          categoryHashes.has(category),
         ),
     ),
   );
@@ -72,18 +71,24 @@ function HomeContent() {
     sort,
     search,
     user?.id ?? null,
-    isReady && activeView === "questions",
+    isReady && Boolean(categoryCatalog.data) && activeView === "questions",
   );
   const detail = useChoiceQuestion(selectedQuestionId);
   const myChoices = useMyChoices(
-    isReady && Boolean(user) && activeView === "mine",
+    isReady &&
+      Boolean(categoryCatalog.data) &&
+      Boolean(user) &&
+      activeView === "mine",
     activeCategories,
     sort,
     search,
     user?.id ?? null,
   );
   const myLikedQuestions = useMyLikedQuestions(
-    isReady && Boolean(user) && activeView === "mine",
+    isReady &&
+      Boolean(categoryCatalog.data) &&
+      Boolean(user) &&
+      activeView === "mine",
     activeCategories,
     sort,
     search,
@@ -170,6 +175,7 @@ function HomeContent() {
 
   return (
     <ChoiceHub
+      categoryItems={categoryCatalog.data ?? []}
       searchQuery={searchQuery}
       appliedSearch={search}
       onSearchSubmit={submitSearch}
@@ -210,9 +216,12 @@ function HomeContent() {
             void myLikedQuestions.fetchNextPage({ cancelRefetch: false });
         },
       }}
-      isMyError={myChoices.isError && !myChoices.data}
-      isLikedError={myLikedQuestions.isError && !myLikedQuestions.data}
+      isMyError={catalogFailed || (myChoices.isError && !myChoices.data)}
+      isLikedError={
+        catalogFailed || (myLikedQuestions.isError && !myLikedQuestions.data)
+      }
       onRetryMine={() => {
+        void categoryCatalog.refetch();
         void myChoices.refetch();
         void myLikedQuestions.refetch();
       }}
@@ -231,11 +240,12 @@ function HomeContent() {
       isLoading={
         !isReady ||
         (activeView === "questions"
-          ? questions.isPending
-          : Boolean(user) &&
+          ? !catalogFailed && questions.isPending
+          : !catalogFailed &&
+            Boolean(user) &&
             (myChoices.isPending || myLikedQuestions.isPending))
       }
-      isError={questions.isError && !questions.data}
+      isError={(questions.isError && !questions.data) || catalogFailed}
       isDetailLoading={detail.isPending}
       isDetailError={detail.isError}
       isVoting={vote.isPending}
@@ -249,7 +259,10 @@ function HomeContent() {
       onCloseQuestion={closeQuestion}
       onVote={handleVote}
       onToggleLike={handleToggleLike}
-      onRetry={() => void questions.refetch()}
+      onRetry={() => {
+        void categoryCatalog.refetch();
+        void questions.refetch();
+      }}
     />
   );
 }

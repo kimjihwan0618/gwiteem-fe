@@ -2,11 +2,7 @@ import { CommentCountButton } from "./CommentCountButton";
 import type { ChoiceQuestion } from "@/app/(page)/(home)/type";
 import { Badge } from "@/components/ui/Badge";
 import { ChevronRight, Users } from "lucide-react";
-import {
-  categoryLabels,
-  getQuestionOptions,
-  optionTones,
-} from "./choice-utils";
+import { getQuestionOptions, optionTones } from "./choice-utils";
 import { QuestionByline } from "./QuestionByline";
 import { LikeButton } from "./LikeButton";
 import { choiceHubStyles, optionLabelVariants } from "./styles";
@@ -45,7 +41,7 @@ export function FeaturedQuestion({
       <div className={choiceHubStyles.featuredContent}>
         <div>
           <div className={choiceHubStyles.badgeRow}>
-            <Badge>오늘의 질문 · {categoryLabels[question.category]}</Badge>
+            <Badge>오늘의 질문 · {question.category_label}</Badge>
             {question.my_choice && <Badge variant="success">참여 완료</Badge>}
           </div>
           <h2 className={choiceHubStyles.featuredTitle}>{question.title}</h2>

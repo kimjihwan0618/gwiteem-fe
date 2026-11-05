@@ -1,5 +1,6 @@
 "use client";
 
+import { consumeAuthReturn, rememberAuthReturn } from "@/lib/auth-return";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -14,6 +15,7 @@ import {
 } from "@/app/(page)/type/auth";
 
 function login(payload: LoginRequest) {
+  rememberAuthReturn();
   return apiClient("/api/auth/login", loginResultSchema, {
     method: "POST",
     body: payload,
@@ -21,6 +23,7 @@ function login(payload: LoginRequest) {
 }
 
 function getSocialLoginUrl(provider: SocialProvider) {
+  rememberAuthReturn();
   return apiClient(
     `/api/auth/social-login?provider=${encodeURIComponent(provider)}`,
     socialLoginUrlSchema,
@@ -40,7 +43,7 @@ export function useLoginMutation() {
     onSuccess: (response) => {
       auth.setUser(response.data.user);
       toast.success(response.message);
-      router.push("/");
+      router.push(consumeAuthReturn());
     },
     onError: (error) =>
       toast.error(getErrorMessage(error, "로그인 중 오류가 발생했습니다.")),

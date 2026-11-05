@@ -4,10 +4,11 @@ import type { ChoiceCategory, ChoiceSort } from "@/app/(page)/(home)/type";
 import { cn } from "@/lib/cn";
 import { Check, Search, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { categories } from "./choice-utils";
+import type { ChoiceCategoryItem } from "@/app/(page)/type/choice-categories";
 import { choiceHubStyles, filterCategoryVariants } from "./styles";
 
 interface QuestionFilterBarProps {
+  categoryItems: ChoiceCategoryItem[];
   activeCategories: ChoiceCategory[];
   searchQuery: string;
   sort?: ChoiceSort;
@@ -19,6 +20,7 @@ interface QuestionFilterBarProps {
 }
 
 export function QuestionFilterBar({
+  categoryItems,
   activeCategories,
   searchQuery,
   sort,
@@ -28,6 +30,10 @@ export function QuestionFilterBar({
   onSearchReset,
   onSortChange,
 }: QuestionFilterBarProps) {
+  const categories = [
+    { value: "all", label: "전체" },
+    ...categoryItems.map((item) => ({ value: item.code, label: item.label })),
+  ];
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isStuck, setIsStuck] = useState(false);
   const [draftCategories, setDraftCategories] = useState<ChoiceCategory[]>([]);
