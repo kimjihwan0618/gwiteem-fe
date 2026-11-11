@@ -12,7 +12,7 @@ export async function generateMetadata({ searchParams }: Props) {
     (key) => key.startsWith("utm_") || ["gclid", "fbclid"].includes(key),
   );
   return pageMetadata(
-    "Gwiteem | 오늘, 당신의 선택은? 일상 고민 투표",
+    "귀뜸 | 오늘, 당신의 선택은? 일상 고민 투표",
     siteDescription,
     "/",
     isMainPage,
@@ -29,6 +29,7 @@ export default function Page() {
             "@context": "https://schema.org",
             "@type": "WebSite",
             name: siteName,
+            alternateName: "gwiteem",
             url: siteUrl,
             description: siteDescription,
             inLanguage: "ko-KR",

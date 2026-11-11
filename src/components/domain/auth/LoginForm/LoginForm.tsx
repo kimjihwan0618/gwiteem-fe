@@ -49,7 +49,7 @@ export function LoginForm({
       <div className={loginFormStyles.intro}>
         <h1 className={loginFormStyles.title}>로그인</h1>
         {/* <p className={loginFormStyles.description}>
-          Gwiteem 계정으로 나만의 브리핑을 이어보세요.
+          귀뜸에서 일상의 선택과 생각을 함께 나눠보세요.
         </p> */}
       </div>
 

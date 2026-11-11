@@ -2,6 +2,7 @@
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import { RegisterForm } from "@/components/domain/auth/RegisterForm";
 import {
   useConfirmEmailVerificationCodeMutation,
@@ -21,7 +22,7 @@ export default function RegisterPage() {
     <main className={registerPageStyles.root}>
       <header className={registerPageStyles.header}>
         <Link href="/" className={registerPageStyles.logo}>
-          Gwiteem
+          <BrandLogo />
         </Link>
         <Link href="/" className={registerPageStyles.backLink}>
           <ArrowLeft size={17} /> 메인으로
@@ -38,7 +39,7 @@ export default function RegisterPage() {
       </section>
 
       <footer className={registerPageStyles.footer}>
-        <span>© 2026 Gwiteem</span>
+        <span>© 2026 귀뜸</span>
         <nav className={registerPageStyles.footerLinks}>
           <Link href="#">이용약관</Link>
           <Link href="#">개인정보처리방침</Link>

@@ -2,6 +2,7 @@
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import { PasswordResetForm } from "@/components/domain/auth/PasswordResetForm";
 import {
   useConfirmPasswordResetCodeMutation,
@@ -19,7 +20,7 @@ export default function PasswordResetPage() {
     <main className={passwordResetPageStyles.root}>
       <header className={passwordResetPageStyles.header}>
         <Link href="/" className={passwordResetPageStyles.logo}>
-          Gwiteem
+          <BrandLogo />
         </Link>
         <Link href="/login" className={passwordResetPageStyles.backLink}>
           <ArrowLeft size={17} /> 로그인으로
@@ -35,7 +36,7 @@ export default function PasswordResetPage() {
       </section>
 
       <footer className={passwordResetPageStyles.footer}>
-        <span>© 2026 Gwiteem</span>
+        <span>© 2026 귀뜸</span>
         <nav className={passwordResetPageStyles.footerLinks}>
           <Link href="#">이용약관</Link>
           <Link href="#">개인정보처리방침</Link>

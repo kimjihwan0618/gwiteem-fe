@@ -2,16 +2,24 @@ import type { ChoiceCategoryItem } from "@/app/(page)/type/choice-categories";
 import { CommentCountButton } from "./CommentCountButton";
 import type {
   ChoiceCategory,
+  ChoiceQuestion,
   ChoiceSort,
   MyChoice,
   MyLikedQuestion,
 } from "@/app/(page)/(home)/type";
+import { QuestionCard } from "./QuestionCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { QuestionListMore, type QuestionPagination } from "./QuestionListMore";
 import { cn } from "@/lib/cn";
 import Link from "next/link";
-import { ChevronRight, Heart, MousePointerClick, Users } from "lucide-react";
+import {
+  ChevronRight,
+  Heart,
+  MousePointerClick,
+  Users,
+  PencilLine,
+} from "lucide-react";
 import { useState } from "react";
 import { getSelectedOptionLabel } from "./choice-utils";
 import { ChoiceSkeleton } from "./ChoiceSkeleton";
@@ -22,6 +30,10 @@ import { QuestionByline } from "./QuestionByline";
 import { choiceHubStyles } from "./styles";
 
 interface MyChoicesViewProps {
+  createdItems?: ChoiceQuestion[];
+  createdPagination: QuestionPagination;
+  isCreatedLoading: boolean;
+  isCreatedError: boolean;
   categoryItems: ChoiceCategoryItem[];
   isSearching: boolean;
   pagination: QuestionPagination;
@@ -48,6 +60,10 @@ interface MyChoicesViewProps {
 }
 
 export function MyChoicesView({
+  createdItems,
+  createdPagination,
+  isCreatedLoading,
+  isCreatedError,
   categoryItems,
   isSearching,
   pagination,
@@ -72,13 +88,15 @@ export function MyChoicesView({
   sort,
   onSortChange,
 }: MyChoicesViewProps) {
-  const [activeRecord, setActiveRecord] = useState<"participated" | "liked">(
-    "participated",
-  );
+  const [activeRecord, setActiveRecord] = useState<
+    "participated" | "liked" | "created"
+  >("participated");
   const visibleCount =
     activeRecord === "participated"
       ? (items?.length ?? 0)
-      : (likedItems?.length ?? 0);
+      : activeRecord === "liked"
+        ? (likedItems?.length ?? 0)
+        : (createdItems?.length ?? 0);
   if (!isLoggedIn) {
     return (
       <div className={choiceHubStyles.state}>
@@ -101,15 +119,12 @@ export function MyChoicesView({
   }
 
   return (
-    <section>
+    <section className={choiceHubStyles.mineRoot}>
       <div className={choiceHubStyles.mineHeader}>
         <div>
           <p className={choiceHubStyles.eyebrow}>나의 기록</p>
           <h1 className={choiceHubStyles.title}>내 선택</h1>
         </div>
-        <Link href="/questions/new" className={buttonVariants()}>
-          질문 만들기
-        </Link>
       </div>
       <div
         className={choiceHubStyles.mineTabs}
@@ -146,6 +161,21 @@ export function MyChoicesView({
             {likedItems?.length ?? 0}
           </span>
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeRecord === "created"}
+          className={cn(
+            choiceHubStyles.mineTab,
+            activeRecord === "created" && choiceHubStyles.mineTabActive,
+          )}
+          onClick={() => setActiveRecord("created")}
+        >
+          <PencilLine size={16} /> 내가 만든 질문
+          <span className={choiceHubStyles.mineTabCount}>
+            {createdItems?.length ?? 0}
+          </span>
+        </button>
       </div>
       <QuestionFilterBar
         categoryItems={categoryItems}
@@ -158,11 +188,17 @@ export function MyChoicesView({
         sort={sort}
         onSortChange={onSortChange}
       />
-      {isSearching ? (
+      {(activeRecord === "created" ? isCreatedLoading : isSearching) ? (
         <SearchLoading />
-      ) : isLoading ? (
+      ) : activeRecord !== "created" && isLoading ? (
         <ChoiceSkeleton />
-      ) : (activeRecord === "participated" ? isError : isLikedError) ? (
+      ) : (
+          activeRecord === "participated"
+            ? isError
+            : activeRecord === "liked"
+              ? isLikedError
+              : isCreatedError
+        ) ? (
         <div className={choiceHubStyles.state} role="alert">
           질문을 불러오지 못했어요.
           <Button variant="ghost" onClick={onRetry}>
@@ -178,7 +214,9 @@ export function MyChoicesView({
                 : activeCategories.length === 0
                   ? activeRecord === "participated"
                     ? "참여한 질문이 없어요."
-                    : "좋아요한 질문이 없어요."
+                    : activeRecord === "liked"
+                      ? "좋아요한 질문이 없어요."
+                      : "아직 만든 질문이 없어요."
                   : "이 카테고리에 해당하는 질문이 없어요."}
             </p>
             <p className={choiceHubStyles.stateDescription}>
@@ -186,12 +224,32 @@ export function MyChoicesView({
                 ? "다른 검색어나 카테고리로 찾아보세요."
                 : activeRecord === "participated"
                   ? "질문에 답하면 참여한 질문으로 기록됩니다."
-                  : "마음에 드는 질문의 하트를 눌러보세요."}
+                  : activeRecord === "liked"
+                    ? "마음에 드는 질문의 하트를 눌러보세요."
+                    : "직접 게시한 질문을 이곳에서 확인할 수 있어요."}
             </p>
           </div>
         </div>
       ) : (
-        <div className={choiceHubStyles.mineList}>
+        <div
+          className={
+            activeRecord === "created"
+              ? choiceHubStyles.grid
+              : choiceHubStyles.mineList
+          }
+        >
+          {activeRecord === "created" &&
+            createdItems?.map((question) => (
+              <QuestionCard
+                key={question.id}
+                isTight={false}
+                question={question}
+                onOpen={onOpenQuestion}
+                isLoggedIn={isLoggedIn}
+                isLikePending={likingQuestionId === question.id}
+                onToggleLike={onToggleLike}
+              />
+            ))}
           {activeRecord === "participated" &&
             items?.map((item) => (
               <article
@@ -310,13 +368,20 @@ export function MyChoicesView({
             ))}
         </div>
       )}
-      {!isSearching && !isLoading && visibleCount > 0 && (
-        <QuestionListMore
-          pagination={
-            activeRecord === "participated" ? pagination : likedPagination
-          }
-        />
-      )}
+      {(activeRecord === "created"
+        ? !isCreatedLoading
+        : !isSearching && !isLoading) &&
+        visibleCount > 0 && (
+          <QuestionListMore
+            pagination={
+              activeRecord === "participated"
+                ? pagination
+                : activeRecord === "liked"
+                  ? likedPagination
+                  : createdPagination
+            }
+          />
+        )}
     </section>
   );
 }

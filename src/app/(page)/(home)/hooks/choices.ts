@@ -275,3 +275,37 @@ export function useMigrateGuestVotes() {
     },
   });
 }
+
+export function useMyCreatedQuestions(
+  categories: ChoiceCategory[],
+  sort: ChoiceSort,
+  search: string,
+  userId: string | number | null,
+  isEnabled: boolean,
+) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.choices.created(
+      [...categories].sort().join(","),
+      sort,
+      search,
+      userId,
+    ),
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam, signal }) =>
+      apiClient(
+        `/api/choices/me/questions?${questionParams(categories, sort, search, pageParam)}`,
+        choiceQuestionsResponseSchema,
+        { signal },
+      ),
+    getNextPageParam: (last) => last.data.next_cursor ?? undefined,
+    select: (response) =>
+      Array.from(
+        new Map(
+          response.pages
+            .flatMap((page) => page.data.items)
+            .map((item) => [item.id, item]),
+        ).values(),
+      ),
+    enabled: isEnabled,
+  });
+}

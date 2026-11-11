@@ -3,7 +3,9 @@ import { queryKeys } from "@/lib/query-keys";
 export const questionQueries = {
   queryKey: queryKeys.choices.all,
   predicate: (query: { queryKey: readonly unknown[] }) =>
-    ["list", "detail", "mine", "liked"].includes(String(query.queryKey[1])),
+    ["list", "detail", "mine", "liked", "created"].includes(
+      String(query.queryKey[1]),
+    ),
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {

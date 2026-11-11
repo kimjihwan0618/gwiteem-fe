@@ -52,6 +52,20 @@ export const queryKeys = {
         search,
         userId,
       ] as const,
+    created: (
+      category: string,
+      sort: string,
+      search: string,
+      userId: string | number | null,
+    ) =>
+      [
+        ...queryKeys.choices.all,
+        "created",
+        category,
+        sort,
+        search,
+        userId,
+      ] as const,
     liked: (
       category: string,
       sort: string,

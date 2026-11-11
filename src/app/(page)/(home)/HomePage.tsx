@@ -10,6 +10,7 @@ import {
   useChoiceQuestions,
   useMigrateGuestVotes,
   useMyChoices,
+  useMyCreatedQuestions,
   useMyLikedQuestions,
   useToggleQuestionLike,
   useVoteQuestion,
@@ -74,6 +75,15 @@ function HomeContent() {
     isReady && Boolean(categoryCatalog.data) && activeView === "questions",
   );
   const detail = useChoiceQuestion(selectedQuestionId);
+  // Reuse the existing list endpoint independently of browsing filters.
+  // A dedicated dated archive endpoint can replace this selection later.
+  const featuredQuestions = useChoiceQuestions(
+    [],
+    "popular",
+    "",
+    user?.id ?? null,
+    isReady && Boolean(categoryCatalog.data) && activeView === "questions",
+  );
   const myChoices = useMyChoices(
     isReady &&
       Boolean(categoryCatalog.data) &&
@@ -93,6 +103,16 @@ function HomeContent() {
     sort,
     search,
     user?.id ?? null,
+  );
+  const myCreatedQuestions = useMyCreatedQuestions(
+    activeCategories,
+    sort,
+    search,
+    user?.id ?? null,
+    isReady &&
+      Boolean(categoryCatalog.data) &&
+      Boolean(user) &&
+      activeView === "mine",
   );
   const vote = useVoteQuestion();
   const toggleLike = useToggleQuestionLike();
@@ -216,6 +236,22 @@ function HomeContent() {
             void myLikedQuestions.fetchNextPage({ cancelRefetch: false });
         },
       }}
+      createdQuestions={myCreatedQuestions.data}
+      isCreatedLoading={myCreatedQuestions.isLoading}
+      isCreatedError={
+        catalogFailed ||
+        (myCreatedQuestions.isError && !myCreatedQuestions.data)
+      }
+      createdPagination={{
+        hasMore: myCreatedQuestions.hasNextPage,
+        isLoadingMore: myCreatedQuestions.isFetchingNextPage,
+        isLoadMoreError: myCreatedQuestions.isFetchNextPageError,
+        isPaused: myCreatedQuestions.isFetching,
+        onLoadMore: () => {
+          if (!myCreatedQuestions.isFetching)
+            void myCreatedQuestions.fetchNextPage({ cancelRefetch: false });
+        },
+      }}
       isMyError={catalogFailed || (myChoices.isError && !myChoices.data)}
       isLikedError={
         catalogFailed || (myLikedQuestions.isError && !myLikedQuestions.data)
@@ -224,6 +260,7 @@ function HomeContent() {
         void categoryCatalog.refetch();
         void myChoices.refetch();
         void myLikedQuestions.refetch();
+        void myCreatedQuestions.refetch();
       }}
       comments={comments}
       initialTab={
@@ -233,6 +270,19 @@ function HomeContent() {
       activeView={activeView}
       sort={sort}
       questions={questions.data}
+      isDailyLoading={
+        !isReady || (!catalogFailed && featuredQuestions.isPending)
+      }
+      isDailyError={
+        catalogFailed || (featuredQuestions.isError && !featuredQuestions.data)
+      }
+      onRetryDaily={() => {
+        void categoryCatalog.refetch();
+        void featuredQuestions.refetch();
+      }}
+      dailyQuestion={featuredQuestions.data?.find(
+        (question) => question.is_daily,
+      )}
       detail={detail.data}
       myChoices={myChoices.data}
       myLikedQuestions={myLikedQuestions.data}

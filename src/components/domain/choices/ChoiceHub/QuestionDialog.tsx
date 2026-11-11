@@ -86,7 +86,7 @@ export function QuestionDialog({
       .join("\n");
     const text = `${detail.title}\n${optionText}`;
     const url = `${window.location.origin}/?question=${detail.id}`;
-    const shareData: ShareData = { title: "Gwiteem 질문", text, url };
+    const shareData: ShareData = { title: "귀뜸 질문", text, url };
     const canUseSystemShare =
       typeof navigator.share === "function" &&
       (typeof navigator.canShare !== "function" ||

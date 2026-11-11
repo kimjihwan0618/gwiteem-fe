@@ -13,7 +13,7 @@ export const filterCategoryVariants = cva(
 );
 
 export const optionButtonVariants = cva(
-  "focus-ring flex min-h-16 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all",
+  "focus-ring flex min-h-16 w-full items-center gap-3 rounded-sm border px-4 py-3 text-left transition-all",
   {
     variants: {
       tone: {
@@ -59,24 +59,30 @@ export const resultSegmentVariants = cva(
 );
 
 export const choiceHubStyles = {
+  featuredOptionsStacked: "sm:grid-cols-1",
+  featuredLetter:
+    "grid w-14 shrink-0 place-items-center bg-brand-700 font-editorial text-3xl font-normal text-white",
+  featuredOptionText: "min-w-0 flex-1 p-4 break-words",
+  pageHeading: "sr-only",
+  featuredEmpty: "flex min-h-72 flex-col justify-center px-4 py-10",
+  featuredOpen: "focus-ring block w-full text-left",
   searchLoading:
     "flex items-center justify-center gap-2 py-6 text-sm font-medium text-muted",
   searchSpinner: "animate-spin",
   loadMore: "flex flex-col items-center gap-3 py-8 text-sm text-muted",
   mineTabCount: "text-xs tabular-nums opacity-75",
   root: "min-h-screen bg-canvas",
-  main: "mx-auto max-w-[1440px] px-4 py-8 sm:px-7 lg:px-10 lg:py-11",
+  main: "mx-auto max-w-[1440px] px-5 pb-10 sm:px-8 lg:px-10",
   intro: "mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between",
   eyebrow: "mb-2 text-sm font-semibold text-muted",
   title: "text-3xl font-black tracking-[-0.045em] text-ink sm:text-4xl",
   subtitle: "mt-2 text-sm text-muted sm:text-base",
   date: "text-sm font-semibold text-subtle",
   stickySentinel: "h-px",
-  filterBar:
-    "sticky top-[74px] z-30 mx-auto mb-7 w-[min(100%,56rem)] max-w-full border-y border-border bg-white/95 p-2 shadow-sm backdrop-blur-xl transition-[width,border-radius,padding] duration-300 ease-out sm:rounded-2xl sm:border sm:p-3",
-  filterBarStuck: "w-full max-w-full px-3 shadow-md sm:px-4",
+  filterBar: "relative z-20 mb-2 w-full border-y border-border bg-canvas py-3",
+  filterBarStuck: "w-full",
   searchField:
-    "focus-within:ring-brand-500/20 relative mx-auto flex min-h-11 w-full min-w-0 items-center rounded-xl border border-border-strong bg-white transition-[max-width,border-color,box-shadow] duration-300 ease-out focus-within:border-brand-500 focus-within:ring-4",
+    "relative flex min-h-11 w-full min-w-0 items-center rounded-sm border border-border-strong bg-surface transition-colors focus-within:border-brand-700",
   searchFieldStuck: "shadow-sm",
   searchForm: "flex min-w-0 flex-1 items-center",
   searchSubmitButton:
@@ -87,45 +93,43 @@ export const choiceHubStyles = {
     "focus-ring mr-2 rounded-lg p-1.5 text-subtle hover:bg-surface-muted hover:text-ink",
   filterMenuRoot: "relative h-11 shrink-0 self-stretch",
   filterTrigger:
-    "focus-ring inline-flex h-full items-center justify-center gap-2 rounded-r-xl border-l border-border-strong bg-white px-3 text-sm font-bold text-ink-soft transition-colors hover:bg-surface-muted",
+    "focus-ring inline-flex h-full items-center justify-center gap-2 rounded-r-xl border-l border-border-strong bg-surface px-3 text-sm font-bold text-ink-soft transition-colors hover:bg-surface-muted",
   filterTriggerOpen: "border-brand-500 bg-brand-50 text-brand-700",
   filterCount:
     "grid h-5 min-w-5 place-items-center rounded-full bg-brand-700 px-1 text-[0.6875rem] font-black text-white",
   filterPopover:
-    "animate-state-in absolute top-[calc(100%+0.625rem)] right-0 z-40 w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-border bg-white p-4 shadow-2xl",
+    "animate-state-in absolute top-[calc(100%+0.625rem)] right-0 z-40 w-[min(20rem,calc(100vw-2rem))] rounded-sm border border-border bg-surface p-4 shadow-2xl",
   filterSection: "",
   filterSortSection: "mt-4 border-t border-border-subtle pt-4",
   filterSectionTitle: "mb-2 text-xs font-bold text-subtle",
   filterCategories: "grid grid-cols-2 gap-1 sm:grid-cols-3",
-  featured:
-    "focus-ring group relative cursor-pointer overflow-hidden rounded-card border border-brand-200 bg-white p-5 shadow-card transition-[border-color,box-shadow] hover:border-brand-300 hover:shadow-lg sm:p-6",
-  featuredGlow:
-    "pointer-events-none absolute -top-20 -right-16 h-48 w-48 rounded-full bg-brand-50",
+  featured: "group min-w-0 py-8 lg:py-10 lg:pr-9",
+  featuredGlow: "hidden",
   featuredContent: "relative",
   badgeRow: "mb-4 flex flex-wrap items-center gap-2",
   featuredTitle:
-    "max-w-3xl text-xl font-black tracking-[-0.04em] text-ink sm:text-2xl",
-  featuredMeta: "flex flex-wrap items-center gap-x-4 gap-y-1",
+    "min-w-0 font-editorial text-3xl leading-[1.55] font-bold tracking-tight break-words text-ink sm:text-4xl lg:text-5xl",
+  featuredMeta: "mt-4 flex flex-wrap items-center gap-x-4 gap-y-1",
   featuredEngagement:
-    "mt-4 flex items-center justify-between gap-3 whitespace-nowrap border-t border-border-subtle pt-3",
-  featuredOptions: "mt-4 grid gap-3 sm:grid-cols-2",
+    "mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4",
+  featuredOptions: "mt-7 grid gap-3 sm:grid-cols-2",
   featuredOption:
-    "flex min-h-16 items-center gap-3 rounded-xl border border-border bg-surface-muted px-4 py-3 font-bold text-ink-soft",
+    "focus-ring flex min-h-20 min-w-0 items-stretch overflow-hidden rounded-sm border border-border-strong bg-transparent text-left font-editorial text-lg leading-relaxed font-bold text-ink transition-colors hover:bg-brand-50",
   participantMeta:
     "inline-flex items-center gap-1 text-xs font-semibold text-subtle",
   sectionHeader: "mt-9 mb-4",
   sectionTitle: "text-xl font-black tracking-[-0.03em] text-ink sm:text-2xl",
   sortGroup:
-    "grid grid-cols-3 rounded-xl border border-border bg-surface-subtle p-1",
+    "grid grid-cols-3 rounded-sm border border-border bg-surface-subtle p-1",
   sortButton:
     "focus-ring rounded-lg px-4 py-2.5 text-xs font-bold text-muted transition-colors",
-  sortButtonActive: "bg-white text-brand-700 shadow-sm",
+  sortButtonActive: "bg-surface text-brand-700 shadow-sm",
   filterActions: "mt-4 border-t border-border-subtle pt-4",
   filterApplyButton:
-    "focus-ring min-h-11 w-full rounded-xl bg-brand-700 px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-brand-800",
-  grid: "grid gap-4 md:grid-cols-2 xl:grid-cols-3",
+    "focus-ring min-h-11 w-full rounded-sm bg-brand-700 px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-brand-800",
+  grid: "grid",
   questionCard:
-    "group flex min-h-52 flex-col rounded-card border border-border bg-white p-5 text-left shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg",
+    "group flex min-h-52 flex-col rounded-card border border-border bg-surface p-5 text-left shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg",
   cardMeta: "flex items-center justify-between gap-3",
   cardBadges: "flex flex-wrap gap-2",
   tension:
@@ -135,7 +139,7 @@ export const choiceHubStyles = {
   questionByline: "mt-1 block text-xs font-medium text-subtle",
   cardOptions: "mt-4 grid grid-cols-2 gap-2",
   cardOption:
-    "truncate rounded-lg bg-surface-muted px-3 py-2.5 text-xs font-bold text-ink-soft",
+    "rounded-sm bg-surface-muted px-3 py-2.5 text-xs leading-relaxed font-bold break-words text-ink-soft",
   cardOptionKey: "mr-1 font-black text-brand-600",
   cardFooter:
     "mt-auto flex items-center justify-between border-t border-border-subtle pt-4 text-xs font-semibold text-subtle",
@@ -144,13 +148,13 @@ export const choiceHubStyles = {
   arrow: "text-brand-600 transition-transform group-hover:translate-x-1",
   participantIcon: "mr-1 inline",
   likeButton:
-    "focus-ring relative inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-bold text-muted shadow-sm transition-[color,background-color,border-color,transform] hover:border-danger-200 hover:bg-danger-50 hover:text-danger-700 active:scale-95 disabled:cursor-wait disabled:opacity-70",
+    "focus-ring relative inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-bold text-muted shadow-sm transition-[color,background-color,border-color,transform] hover:border-danger-200 hover:bg-danger-50 hover:text-danger-700 active:scale-95 disabled:cursor-wait disabled:opacity-70",
   likeButtonActive: "border-danger-200 bg-danger-50 text-danger-700",
   likeButtonCompact: "min-h-8 px-2.5 py-1",
   likeIconWrap: "relative grid place-items-center",
   moreRow: "mt-6 flex justify-center",
   state:
-    "grid min-h-72 place-items-center rounded-card border border-border bg-white p-8 text-center shadow-card",
+    "grid min-h-72 place-items-center rounded-card border border-border bg-surface p-8 text-center shadow-card",
   stateTitle: "font-bold text-ink",
   stateDescription: "mt-2 text-sm text-muted",
   retryButton: "mt-4",
@@ -160,9 +164,9 @@ export const choiceHubStyles = {
   modalLayer: "fixed inset-0 z-50 grid place-items-center p-3 sm:p-6",
   backdrop: "absolute inset-0 bg-brand-900/55 backdrop-blur-sm",
   modal:
-    "animate-state-in relative z-10 max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-card border border-border bg-white shadow-2xl",
+    "animate-state-in relative z-10 max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-card border border-border bg-surface shadow-2xl",
   modalHeader:
-    "sticky top-0 z-10 flex items-center justify-between border-b border-border bg-white/95 px-5 py-4 backdrop-blur sm:px-7",
+    "sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/95 px-5 py-4 backdrop-blur sm:px-7",
   modalHeading: "font-black text-ink",
   modalHeaderActions: "flex items-center gap-1",
   shareIconButton:
@@ -174,16 +178,16 @@ export const choiceHubStyles = {
   modalSkeletonTitle: "mt-4 h-16 w-full",
   modalSkeletonOptions: "mt-7 h-32 w-full",
   modalQuestion:
-    "mt-3 text-2xl font-black leading-tight tracking-[-0.04em] text-ink sm:text-3xl",
+    "mt-3 font-editorial text-2xl leading-relaxed font-bold tracking-tight break-words text-ink sm:text-3xl",
   modalHint: "mt-2 text-sm text-muted",
   optionGrid: "mt-6 grid gap-3 sm:grid-cols-2",
-  optionText: "font-extrabold text-ink",
+  optionText: "min-w-0 font-bold break-words text-ink",
   reasonPanel:
-    "animate-fade-up mt-6 rounded-xl border border-border bg-surface-muted p-4 sm:p-5",
+    "animate-fade-up mt-6 rounded-sm border border-border bg-surface-muted p-4 sm:p-5",
   reasonLabel: "mb-2 block text-sm font-bold text-ink-soft",
   requiredLabel: "text-danger-700",
   select:
-    "focus-ring min-h-12 w-full rounded-xl border border-border-strong bg-white px-4 text-sm font-semibold text-ink",
+    "focus-ring min-h-12 w-full rounded-sm border border-border-strong bg-surface px-4 text-sm font-semibold text-ink",
   submitRow: "mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
   resultHeader:
     "mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
@@ -191,7 +195,7 @@ export const choiceHubStyles = {
   resultCount:
     "inline-flex items-center gap-1 text-xs font-semibold text-subtle",
   resultBar:
-    "mt-4 flex h-12 overflow-hidden rounded-xl bg-surface-subtle text-sm font-black text-white",
+    "mt-4 flex h-12 overflow-hidden rounded-sm bg-surface-subtle text-sm font-black text-white",
   resultLabels: "mt-3 grid grid-cols-2 gap-3 text-sm font-bold",
   reasonResults: "mt-6 space-y-3",
   reasonResult: "grid grid-cols-[minmax(0,1fr)_3rem] items-center gap-3",
@@ -202,15 +206,16 @@ export const choiceHubStyles = {
   resultActions: "mt-7 grid gap-2",
   loginNote: "mt-3 text-center text-xs leading-relaxed text-subtle",
   loginLink: "mt-4",
+  mineRoot: "pt-8 sm:pt-10",
   mineHeader: "mb-5 flex items-center justify-between",
   mineTabs:
-    "mb-4 inline-grid grid-cols-2 rounded-xl border border-border bg-white p-1 shadow-sm",
+    "mb-4 inline-flex max-w-full flex-wrap rounded-sm border border-border bg-surface p-1 shadow-sm",
   mineTab:
     "focus-ring flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-4 text-sm font-bold text-muted transition-colors hover:bg-surface-muted hover:text-ink",
   mineTabActive:
     "bg-brand-700 text-white shadow-sm hover:bg-brand-700 hover:text-white",
   mineList: "grid gap-4 md:grid-cols-2 xl:grid-cols-3",
-  mineSelection: "mt-4 rounded-xl bg-surface-muted px-3 py-2.5",
+  mineSelection: "mt-4 rounded-sm bg-surface-muted px-3 py-2.5",
   mineAnswer: "text-sm font-semibold text-brand-700",
   mineReason: "mt-1 text-xs text-muted",
 } as const;

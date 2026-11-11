@@ -27,6 +27,9 @@ import { QuestionCard } from "./QuestionCard";
 import { QuestionDialog } from "./QuestionDialog";
 import { QuestionFilterBar } from "./QuestionFilterBar";
 import { choiceHubStyles } from "./styles";
+import { QuestionCalendar } from "./QuestionCalendar";
+import { editorialStyles } from "./editorial.styles";
+import { cn } from "@/lib/cn";
 
 interface ChoiceHubProps {
   categoryItems: ChoiceCategoryItem[];
@@ -37,6 +40,10 @@ interface ChoiceHubProps {
   onSearchSubmit: () => void;
   onSearchReset: () => void;
   pagination: QuestionPagination;
+  createdQuestions?: ChoiceQuestion[];
+  createdPagination: QuestionPagination;
+  isCreatedLoading: boolean;
+  isCreatedError: boolean;
   myPagination: QuestionPagination;
   likedPagination: QuestionPagination;
   isMyError: boolean;
@@ -48,6 +55,10 @@ interface ChoiceHubProps {
   activeView: "questions" | "mine";
   sort: ChoiceSort;
   questions?: ChoiceQuestion[];
+  dailyQuestion?: ChoiceQuestion;
+  isDailyLoading: boolean;
+  isDailyError: boolean;
+  onRetryDaily: () => void;
   detail?: ChoiceQuestionDetail;
   myChoices?: MyChoice[];
   myLikedQuestions?: MyLikedQuestion[];
@@ -70,22 +81,16 @@ interface ChoiceHubProps {
 
 export function ChoiceHub(props: ChoiceHubProps) {
   const { searchQuery, onSearchQueryChange } = props;
-  const dailyQuestion =
-    props.activeCategories.length === 0
-      ? props.questions?.slice(0, 15).find((item) => item.is_daily)
-      : undefined;
+  const dailyQuestion = props.dailyQuestion;
   const gridQuestions = dailyQuestion
     ? props.questions?.filter((item) => item.id !== dailyQuestion.id)
     : props.questions;
-  const dateLabel = useMemo(
-    () =>
-      new Intl.DateTimeFormat("ko-KR", {
-        month: "long",
-        day: "numeric",
-        weekday: "long",
-      }).format(new Date()),
-    [],
-  );
+  const today = useMemo(() => {
+    const seoul = new Intl.DateTimeFormat("sv-SE", {
+      timeZone: "Asia/Seoul",
+    }).format(new Date());
+    return new Date(`${seoul}T12:00:00`);
+  }, []);
 
   return (
     <div className={choiceHubStyles.root}>
@@ -93,6 +98,10 @@ export function ChoiceHub(props: ChoiceHubProps) {
       <main className={choiceHubStyles.main}>
         {props.activeView === "mine" ? (
           <MyChoicesView
+            createdItems={props.createdQuestions}
+            createdPagination={props.createdPagination}
+            isCreatedLoading={props.isCreatedLoading}
+            isCreatedError={props.isCreatedError}
             categoryItems={props.categoryItems}
             appliedSearch={props.appliedSearch}
             items={props.myChoices}
@@ -119,18 +128,90 @@ export function ChoiceHub(props: ChoiceHubProps) {
           />
         ) : (
           <>
-            <section className={choiceHubStyles.intro}>
-              <div>
-                <p className={choiceHubStyles.eyebrow}>{dateLabel}</p>
-                <h1 className={choiceHubStyles.title}>오늘, 당신의 선택은?</h1>
-                <p className={choiceHubStyles.subtitle}>
-                  가볍게 고르고 사람들의 생각을 확인해 보세요.
-                </p>
-              </div>
-              <Link href="/questions/new" className={buttonVariants()}>
+            <nav
+              className={editorialStyles.categories}
+              aria-label="질문 카테고리"
+            >
+              <button
+                onClick={() => props.onCategoriesChange([])}
+                aria-pressed={props.activeCategories.length === 0}
+                className={cn(
+                  editorialStyles.category,
+                  props.activeCategories.length === 0 &&
+                    editorialStyles.categoryActive,
+                )}
+              >
+                전체
+              </button>
+              {props.categoryItems.map((item) => (
+                <button
+                  key={item.code}
+                  aria-pressed={props.activeCategories.includes(item.code)}
+                  onClick={() => props.onCategoriesChange([item.code])}
+                  className={cn(
+                    editorialStyles.category,
+                    props.activeCategories.includes(item.code) &&
+                      editorialStyles.categoryActive,
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+              <Link
+                href="/questions/new"
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  editorialStyles.categoryCreate,
+                )}
+              >
                 <Plus size={17} /> 질문 만들기
               </Link>
+            </nav>
+            <h1 className={choiceHubStyles.pageHeading}>오늘의 질문</h1>
+            <section
+              className={editorialStyles.hero}
+              aria-label="오늘의 대표 질문"
+            >
+              {dailyQuestion ? (
+                <FeaturedQuestion
+                  question={dailyQuestion}
+                  onOpen={props.onOpenQuestion}
+                  isLoggedIn={props.isLoggedIn}
+                  isLikePending={props.likingQuestionId === dailyQuestion.id}
+                  onToggleLike={props.onToggleLike}
+                />
+              ) : (
+                <div className={choiceHubStyles.featuredEmpty}>
+                  <p className={editorialStyles.introTitle}>
+                    {props.isDailyLoading
+                      ? "오늘의 질문을 펼치고 있어요…"
+                      : props.isDailyError
+                        ? "대표 질문을 불러오지 못했어요."
+                        : "오늘의 대표 질문을 준비하고 있어요."}
+                  </p>
+                  {props.isDailyError && (
+                    <Button
+                      className={choiceHubStyles.retryButton}
+                      onClick={props.onRetryDaily}
+                    >
+                      다시 시도
+                    </Button>
+                  )}
+                  <p className={choiceHubStyles.stateDescription}>
+                    아래에서 함께 생각해 볼 질문을 만나보세요.
+                  </p>
+                </div>
+              )}
+              <QuestionCalendar
+                date={today}
+                hasTodayQuestion={Boolean(dailyQuestion)}
+              />
             </section>
+            <div id="questions" className={editorialStyles.listHeader}>
+              <h2 className={editorialStyles.listHeading}>
+                함께 생각해 볼 질문
+              </h2>
+            </div>
             <QuestionFilterBar
               categoryItems={props.categoryItems}
               activeCategories={props.activeCategories}
@@ -180,22 +261,8 @@ export function ChoiceHub(props: ChoiceHubProps) {
               </div>
             ) : (
               <>
-                {dailyQuestion && (
-                  <FeaturedQuestion
-                    question={dailyQuestion}
-                    onOpen={props.onOpenQuestion}
-                    isLoggedIn={props.isLoggedIn}
-                    isLikePending={props.likingQuestionId === dailyQuestion.id}
-                    onToggleLike={props.onToggleLike}
-                  />
-                )}
                 {Boolean(gridQuestions?.length) && (
                   <section>
-                    <div className={choiceHubStyles.sectionHeader}>
-                      <h2 className={choiceHubStyles.sectionTitle}>
-                        지금 많이 고민하는 질문
-                      </h2>
-                    </div>
                     <div className={choiceHubStyles.grid}>
                       {gridQuestions?.map((question, index) => (
                         <QuestionCard

@@ -2,10 +2,11 @@ import { CommentCountButton } from "./CommentCountButton";
 import type { ChoiceQuestion } from "@/app/(page)/(home)/type";
 import { Badge } from "@/components/ui/Badge";
 import { ChevronRight, Users } from "lucide-react";
-import { getQuestionOptions, optionTones } from "./choice-utils";
+import { getQuestionOptions } from "./choice-utils";
 import { QuestionByline } from "./QuestionByline";
 import { LikeButton } from "./LikeButton";
-import { choiceHubStyles, optionLabelVariants } from "./styles";
+import { choiceHubStyles } from "./styles";
+import { cn } from "@/lib/cn";
 
 interface FeaturedQuestionProps {
   question: ChoiceQuestion;
@@ -22,20 +23,11 @@ export function FeaturedQuestion({
   isLikePending,
   onToggleLike,
 }: FeaturedQuestionProps) {
+  const options = getQuestionOptions(question);
   return (
     <article
       className={choiceHubStyles.featured}
-      role="button"
-      tabIndex={0}
       aria-label={`오늘의 질문: ${question.title}`}
-      onClick={() => onOpen(question.id)}
-      onKeyDown={(event) => {
-        if (event.target !== event.currentTarget) return;
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onOpen(question.id);
-        }
-      }}
     >
       <div className={choiceHubStyles.featuredGlow} />
       <div className={choiceHubStyles.featuredContent}>
@@ -44,22 +36,37 @@ export function FeaturedQuestion({
             <Badge>오늘의 질문 · {question.category_label}</Badge>
             {question.my_choice && <Badge variant="success">참여 완료</Badge>}
           </div>
-          <h2 className={choiceHubStyles.featuredTitle}>{question.title}</h2>
+          <h2 className={choiceHubStyles.featuredTitle}>
+            <button
+              className={choiceHubStyles.featuredOpen}
+              onClick={() => onOpen(question.id)}
+            >
+              {question.title}
+            </button>
+          </h2>
           <div className={choiceHubStyles.featuredMeta}>
             <QuestionByline question={question} />
           </div>
-          <div className={choiceHubStyles.featuredOptions}>
-            {getQuestionOptions(question).map(({ option, label }) => (
-              <div key={option} className={choiceHubStyles.featuredOption}>
-                <span
-                  className={optionLabelVariants({
-                    tone: optionTones[option],
-                  })}
-                >
-                  {option}
+          <div
+            className={cn(
+              choiceHubStyles.featuredOptions,
+              options.some((item) => item.label.length > 48) &&
+                choiceHubStyles.featuredOptionsStacked,
+            )}
+          >
+            {options.map(({ option, label }) => (
+              <button
+                type="button"
+                key={option}
+                className={choiceHubStyles.featuredOption}
+                onClick={() => onOpen(question.id)}
+                aria-label={`${label}, 질문 참여하기`}
+              >
+                <span className={choiceHubStyles.featuredLetter}>{option}</span>
+                <span className={choiceHubStyles.featuredOptionText}>
+                  {label}
                 </span>
-                {label}
-              </div>
+              </button>
             ))}
           </div>
           <div className={choiceHubStyles.featuredEngagement}>

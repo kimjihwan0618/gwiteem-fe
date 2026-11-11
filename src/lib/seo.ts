@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const siteUrl = "https://gwiteem.com";
-export const siteName = "Gwiteem";
+export const siteName = "귀뜸";
 export const siteDescription =
-  "직장·소비·관계·일상의 고민, 당신은 어떤 선택을 하나요? Gwiteem에서 선택과 이유를 남기고 투표 결과와 댓글로 다른 사람들의 생각을 만나보세요.";
+  "직장·소비·관계·일상의 고민, 당신은 어떤 선택을 하나요? 귀뜸에서 선택과 이유를 남기고 투표 결과와 댓글로 다른 사람들의 생각을 만나보세요.";
 
 export function pageMetadata(
   title: string,
@@ -13,15 +13,16 @@ export function pageMetadata(
 ): Metadata {
   const url = new URL(path, siteUrl).toString();
   const image = {
-    url: new URL("/brand/gwiteem-share.png", siteUrl).toString(),
+    url: new URL("/brand/gwiteem-share.png?v=ko", siteUrl).toString(),
     width: 1200,
     height: 630,
     type: "image/png",
-    alt: "Gwiteem — 오늘, 당신의 선택은?",
+    alt: "귀뜸 — 오늘, 당신의 선택은?",
   };
   return {
     title: { absolute: title },
     description,
+    keywords: ["귀뜸", "gwiteem", "일상 고민", "선택", "투표", "커뮤니티"],
     alternates: { canonical: url },
     robots: { index, follow: true, "max-image-preview": "large" },
     openGraph: {

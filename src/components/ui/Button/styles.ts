@@ -1,18 +1,17 @@
 import { cva } from "class-variance-authority";
 
 export const buttonVariants = cva(
-  "focus-ring inline-flex items-center justify-center gap-2 rounded-xl font-bold transition duration-200 disabled:cursor-not-allowed disabled:opacity-55",
+  "focus-ring inline-flex items-center justify-center gap-2 rounded-sm font-bold transition duration-200 disabled:cursor-not-allowed disabled:opacity-55",
   {
     variants: {
       variant: {
-        primary:
-          "bg-brand-700 text-white shadow-lg shadow-brand-700/15 hover:bg-brand-800",
+        primary: "bg-brand-700 text-white hover:bg-brand-800",
         danger: "bg-danger-500 text-white hover:bg-danger-700",
         secondary:
-          "border border-border bg-white text-ink-soft hover:bg-surface-muted",
+          "border border-border bg-surface text-ink-soft hover:bg-surface-muted",
         ghost: "text-muted hover:bg-surface-subtle",
         social:
-          "border border-border bg-white text-ink-soft hover:border-border-strong hover:bg-surface-muted",
+          "border border-border bg-surface text-ink-soft hover:border-border-strong hover:bg-surface-muted",
       },
       size: {
         sm: "min-h-9 px-3 text-xs",
